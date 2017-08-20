@@ -37,6 +37,7 @@ func PatchStatefulSet(c clientset.Interface, cur *apps.StatefulSet, transform fu
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("Patching StatefulSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.AppsV1beta1().StatefulSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 

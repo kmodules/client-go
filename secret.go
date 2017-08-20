@@ -34,6 +34,7 @@ func PatchSecret(c clientset.Interface, cur *apiv1.Secret, transform func(*apiv1
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("Patching Secret %s@%s.", cur.Name, cur.Namespace)
 	return c.CoreV1().Secrets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 

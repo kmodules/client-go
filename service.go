@@ -34,6 +34,7 @@ func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*api
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("Patching Service %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.CoreV1().Services(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 

@@ -37,6 +37,7 @@ func PatchDeploymentExtension(c clientset.Interface, cur *extensions.Deployment,
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("Patching Deployment %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.ExtensionsV1beta1().Deployments(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 

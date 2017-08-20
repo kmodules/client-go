@@ -36,6 +36,7 @@ func PatchDaemonSet(c clientset.Interface, cur *extensions.DaemonSet, transform 
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("Patching DaemonSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 
