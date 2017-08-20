@@ -74,7 +74,7 @@ func UpdateReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform f
 func WaitUntilReplicaSetReady(c clientset.Interface, meta metav1.ObjectMeta) error {
 	return backoff.Retry(func() error {
 		if obj, err := c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if types.Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
+			if Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
 				return nil
 			}
 		}

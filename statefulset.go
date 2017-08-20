@@ -74,7 +74,7 @@ func UpdateStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transform 
 func WaitUntilStatefulSetReady(kubeClient clientset.Interface, meta metav1.ObjectMeta) error {
 	return backoff.Retry(func() error {
 		if obj, err := kubeClient.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
+			if Int32(obj.Spec.Replicas) == obj.Status.Replicas {
 				return nil
 			}
 		}
