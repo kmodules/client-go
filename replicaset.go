@@ -37,7 +37,7 @@ func PatchReplicaSet(c clientset.Interface, cur *extensions.ReplicaSet, transfor
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("Patching ReplicaSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
+	glog.V(5).Infof("Patching ReplicaSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.ExtensionsV1beta1().ReplicaSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 

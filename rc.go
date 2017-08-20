@@ -37,7 +37,7 @@ func PatchRC(c clientset.Interface, cur *apiv1.ReplicationController, transform 
 	if err != nil {
 		return nil, err
 	}
-	glog.Infof("Patching ReplicationController %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
+	glog.V(5).Infof("Patching ReplicationController %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	return c.CoreV1().ReplicationControllers(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 
