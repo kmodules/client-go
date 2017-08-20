@@ -42,6 +42,9 @@ func PatchRC(c clientset.Interface, cur *apiv1.ReplicationController, transform 
 	if err != nil {
 		return nil, err
 	}
+	if len(patch) == 0 {
+		return cur, nil
+	}
 	pb, err := json.MarshalIndent(patch, "", "  ")
 	if err != nil {
 		return nil, err

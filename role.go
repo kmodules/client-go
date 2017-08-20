@@ -39,6 +39,9 @@ func PatchRole(c clientset.Interface, cur *rbac.Role, transform func(*rbac.Role)
 	if err != nil {
 		return nil, err
 	}
+	if len(patch) == 0 {
+		return cur, nil
+	}
 	pb, err := json.MarshalIndent(patch, "", "  ")
 	if err != nil {
 		return nil, err

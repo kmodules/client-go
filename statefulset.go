@@ -42,6 +42,9 @@ func PatchStatefulSet(c clientset.Interface, cur *apps.StatefulSet, transform fu
 	if err != nil {
 		return nil, err
 	}
+	if len(patch) == 0 {
+		return cur, nil
+	}
 	pb, err := json.MarshalIndent(patch, "", "  ")
 	if err != nil {
 		return nil, err

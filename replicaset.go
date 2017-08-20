@@ -42,6 +42,9 @@ func PatchReplicaSet(c clientset.Interface, cur *extensions.ReplicaSet, transfor
 	if err != nil {
 		return nil, err
 	}
+	if len(patch) == 0 {
+		return cur, nil
+	}
 	pb, err := json.MarshalIndent(patch, "", "  ")
 	if err != nil {
 		return nil, err
