@@ -1,6 +1,7 @@
 package kutil
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -49,7 +50,12 @@ func PatchDaemonSet(c clientset.Interface, cur *extensions.DaemonSet, transform 
 		return nil, err
 	}
 	glog.V(5).Infof("Patching DaemonSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
-	return c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
+	result, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
+	if ok, err := CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
+		// https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
+		RestartPods(c, cur.Namespace, cur.Spec.Selector)
+	}
+	return result, err
 }
 
 func TryPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
@@ -74,7 +80,25 @@ func TryUpdateDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform
 		if kerr.IsNotFound(err) {
 			return cur, err
 		} else if err == nil {
-			return c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(transform(cur))
+			oJson, err := json.Marshal(cur)
+			if err != nil {
+				return nil, err
+			}
+			modified := transform(cur)
+			mJson, err := json.Marshal(modified)
+			if err != nil {
+				return nil, err
+			}
+			if bytes.Equal(oJson, mJson) {
+				return cur, err
+			}
+
+			result, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(transform(cur))
+			if ok, err := CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
+				// https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
+				RestartPods(c, cur.Namespace, cur.Spec.Selector)
+			}
+			return result, err
 		}
 		glog.Errorf("Attempt %d failed to update DaemonSet %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
 		time.Sleep(retryInterval)
