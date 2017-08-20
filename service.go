@@ -14,14 +14,14 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func CreateOrPatchService(c clientset.Interface, obj *apiv1.Service) (*apiv1.Service, error) {
-	cur, err := c.CoreV1().Services(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
+	cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.CoreV1().Services(obj.Namespace).Create(obj)
+		return c.CoreV1().Services(meta.Namespace).Create(&apiv1.Service{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchService(c, cur, func(*apiv1.Service) *apiv1.Service { return obj })
+	return PatchService(c, cur, transform)
 }
 
 func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {

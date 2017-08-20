@@ -16,14 +16,14 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func CreateOrPatchDaemonSet(c clientset.Interface, obj *extensions.DaemonSet) (*extensions.DaemonSet, error) {
-	cur, err := c.ExtensionsV1beta1().DaemonSets(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
+	cur, err := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.ExtensionsV1beta1().DaemonSets(obj.Namespace).Create(obj)
+		return c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Create(transform(&extensions.DaemonSet{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchDaemonSet(c, cur, func(*extensions.DaemonSet) *extensions.DaemonSet { return obj })
+	return PatchDaemonSet(c, cur, transform)
 }
 
 func PatchDaemonSet(c clientset.Interface, cur *extensions.DaemonSet, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {

@@ -14,14 +14,14 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func CreateOrPatchSecret(c clientset.Interface, obj *apiv1.Secret) (*apiv1.Secret, error) {
-	cur, err := c.CoreV1().Secrets(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchSecret(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Secret) *apiv1.Secret) (*apiv1.Secret, error) {
+	cur, err := c.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.CoreV1().Secrets(obj.Namespace).Create(obj)
+		return c.CoreV1().Secrets(meta.Namespace).Create(&apiv1.Secret{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchSecret(c, cur, func(*apiv1.Secret) *apiv1.Secret { return obj })
+	return PatchSecret(c, cur, transform)
 }
 
 func PatchSecret(c clientset.Interface, cur *apiv1.Secret, transform func(*apiv1.Secret) *apiv1.Secret) (*apiv1.Secret, error) {

@@ -17,14 +17,14 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func CreateOrPatchDeploymentExtension(c clientset.Interface, obj *extensions.Deployment) (*extensions.Deployment, error) {
-	cur, err := c.ExtensionsV1beta1().Deployments(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+	cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.ExtensionsV1beta1().Deployments(obj.Namespace).Create(obj)
+		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(&extensions.Deployment{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchDeploymentExtension(c, cur, func(*extensions.Deployment) *extensions.Deployment { return obj })
+	return PatchDeploymentExtension(c, cur, transform)
 }
 
 func PatchDeploymentExtension(c clientset.Interface, cur *extensions.Deployment, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {

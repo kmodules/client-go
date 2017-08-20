@@ -14,14 +14,14 @@ import (
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
-func CreateOrPatchRoleBinding(c clientset.Interface, obj *rbac.RoleBinding) (*rbac.RoleBinding, error) {
-	cur, err := c.RbacV1beta1().RoleBindings(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {
+	cur, err := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.RbacV1beta1().RoleBindings(obj.Namespace).Create(obj)
+		return c.RbacV1beta1().RoleBindings(meta.Namespace).Create(&rbac.RoleBinding{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchRoleBinding(c, cur, func(*rbac.RoleBinding) *rbac.RoleBinding { return obj })
+	return PatchRoleBinding(c, cur, transform)
 }
 
 func PatchRoleBinding(c clientset.Interface, cur *rbac.RoleBinding, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {

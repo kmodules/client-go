@@ -17,14 +17,14 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func CreateOrPatchReplicaSet(c clientset.Interface, obj *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {
-	cur, err := c.ExtensionsV1beta1().ReplicaSets(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.ReplicaSet) *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {
+	cur, err := c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.ExtensionsV1beta1().ReplicaSets(obj.Namespace).Create(obj)
+		return c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Create(&extensions.ReplicaSet{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchReplicaSet(c, cur, func(*extensions.ReplicaSet) *extensions.ReplicaSet { return obj })
+	return PatchReplicaSet(c, cur, transform)
 }
 
 func PatchReplicaSet(c clientset.Interface, cur *extensions.ReplicaSet, transform func(*extensions.ReplicaSet) *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {

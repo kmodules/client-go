@@ -14,14 +14,14 @@ import (
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
-func CreateOrPatchRole(c clientset.Interface, obj *rbac.Role) (*rbac.Role, error) {
-	cur, err := c.RbacV1beta1().Roles(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, error) {
+	cur, err := c.RbacV1beta1().Roles(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.RbacV1beta1().Roles(obj.Namespace).Create(obj)
+		return c.RbacV1beta1().Roles(meta.Namespace).Create(&rbac.Role{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchRole(c, cur, func(*rbac.Role) *rbac.Role { return obj })
+	return PatchRole(c, cur, transform)
 }
 
 func PatchRole(c clientset.Interface, cur *rbac.Role, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, error) {

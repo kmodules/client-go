@@ -14,14 +14,14 @@ import (
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
 
-func CreateOrPatchConfigMap(c clientset.Interface, obj *apiv1.ConfigMap) (*apiv1.ConfigMap, error) {
-	cur, err := c.CoreV1().ConfigMaps(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchConfigMap(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ConfigMap) *apiv1.ConfigMap) (*apiv1.ConfigMap, error) {
+	cur, err := c.CoreV1().ConfigMaps(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.CoreV1().ConfigMaps(obj.Namespace).Create(obj)
+		return c.CoreV1().ConfigMaps(meta.Namespace).Create(transform(&apiv1.ConfigMap{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchConfigMap(c, cur, func(*apiv1.ConfigMap) *apiv1.ConfigMap { return obj })
+	return PatchConfigMap(c, cur, transform)
 }
 
 func PatchConfigMap(c clientset.Interface, cur *apiv1.ConfigMap, transform func(*apiv1.ConfigMap) *apiv1.ConfigMap) (*apiv1.ConfigMap, error) {

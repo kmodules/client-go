@@ -17,14 +17,14 @@ import (
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
 )
 
-func CreateOrPatchDeploymentApp(c clientset.Interface, obj *apps.Deployment) (*apps.Deployment, error) {
-	cur, err := c.AppsV1beta1().Deployments(obj.Namespace).Get(obj.Name, metav1.GetOptions{})
+func CreateOrPatchDeploymentApp(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (*apps.Deployment, error) {
+	cur, err := c.AppsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.AppsV1beta1().Deployments(obj.Namespace).Create(obj)
+		return c.AppsV1beta1().Deployments(meta.Namespace).Create(&apps.Deployment{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchDeploymentApp(c, cur, func(*apps.Deployment) *apps.Deployment { return obj })
+	return PatchDeploymentApp(c, cur, transform)
 }
 
 func PatchDeploymentApp(c clientset.Interface, cur *apps.Deployment, transform func(*apps.Deployment) *apps.Deployment) (*apps.Deployment, error) {
