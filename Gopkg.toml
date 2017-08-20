@@ -30,6 +30,14 @@
   version = "1.0.0"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/mattbaird/jsonpatch"
+
+[[constraint]]
   name = "k8s.io/apimachinery"
   revision = "1fd2e63a9a370677308a42f24fd40c86438afddf"
 

@@ -20,12 +20,6 @@
   revision = "45732d59b2277b9c7ffdc41d2d5c07a899a20a70"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/appscode/log"
-  packages = ["."]
-  revision = "68e0e42e42c01371f3950571fc87c2298a51dd8f"
-
-[[projects]]
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
   revision = "4918b99a7cb949bb295f3c7bbaf24b577d806e35"
@@ -147,6 +141,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/mattbaird/jsonpatch"
+  packages = ["."]
+  revision = "d220c21cb65bebf730343aee4c00ba60be2d3235"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
   revision = "d0303fe809921458f417bcf828397a65db30a7e4"
@@ -207,6 +207,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7cfc616bb2cc45ed0667493f0dec80e70bbb5496f50231f530667b7bc5b18834"
+  inputs-digest = "de1e99c2f51f03f1b8bd5b6dc30cae686d89dc3a727ca4fd6f45738d923f9060"
   solver-name = "gps-cdcl"
   solver-version = 1
