@@ -20,6 +20,12 @@
   revision = "45732d59b2277b9c7ffdc41d2d5c07a899a20a70"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/appscode/go-version"
+  packages = ["."]
+  revision = "97adb342c1792e9f59701c1d96bf3612d0fc7621"
+
+[[projects]]
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
   revision = "4918b99a7cb949bb295f3c7bbaf24b577d806e35"
@@ -207,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "de1e99c2f51f03f1b8bd5b6dc30cae686d89dc3a727ca4fd6f45738d923f9060"
+  inputs-digest = "6a838257d0ffca2c3b7790635675e24fcd0d9239ab194663f5de921f931eeb0c"
   solver-name = "gps-cdcl"
   solver-version = 1

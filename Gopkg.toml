@@ -26,6 +26,10 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/appscode/go-version"
+
+[[constraint]]
   name = "github.com/cenkalti/backoff"
   version = "1.0.0"
 
