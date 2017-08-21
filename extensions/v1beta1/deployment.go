@@ -21,7 +21,7 @@ import (
 func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(&extensions.Deployment{ObjectMeta: meta})
+		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(transform(&extensions.Deployment{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
 	}

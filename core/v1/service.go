@@ -18,7 +18,7 @@ import (
 func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
 	cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		return c.CoreV1().Services(meta.Namespace).Create(&apiv1.Service{ObjectMeta: meta})
+		return c.CoreV1().Services(meta.Namespace).Create(transform(&apiv1.Service{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
 	}
