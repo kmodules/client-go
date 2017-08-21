@@ -69,7 +69,7 @@ func TryPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*a
 	return nil, fmt.Errorf("Failed to patch ReplicationController %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
+func TryUpdateRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

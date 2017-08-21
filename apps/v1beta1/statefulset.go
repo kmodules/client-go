@@ -69,7 +69,7 @@ func TryPatchStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transfor
 	return nil, fmt.Errorf("Failed to patch StatefulSet %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (*apps.StatefulSet, error) {
+func TryUpdateStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (*apps.StatefulSet, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

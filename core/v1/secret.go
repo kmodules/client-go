@@ -66,7 +66,7 @@ func TryPatchSecret(c clientset.Interface, meta metav1.ObjectMeta, transform fun
 	return nil, fmt.Errorf("Failed to patch Secret %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateSecret(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Secret) *apiv1.Secret) (*apiv1.Secret, error) {
+func TryUpdateSecret(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Secret) *apiv1.Secret) (*apiv1.Secret, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

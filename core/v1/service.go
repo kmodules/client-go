@@ -66,7 +66,7 @@ func TryPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform fu
 	return nil, fmt.Errorf("Failed to patch Service %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
+func TryUpdateService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

@@ -66,7 +66,7 @@ func TryPatchConfigMap(c clientset.Interface, meta metav1.ObjectMeta, transform 
 	return nil, fmt.Errorf("Failed to patch ConfigMap %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateConfigMap(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ConfigMap) *apiv1.ConfigMap) (*apiv1.ConfigMap, error) {
+func TryUpdateConfigMap(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ConfigMap) *apiv1.ConfigMap) (*apiv1.ConfigMap, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().ConfigMaps(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

@@ -69,7 +69,7 @@ func TryPatchReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform
 	return nil, fmt.Errorf("Failed to patch ReplicaSet %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.ReplicaSet) *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {
+func TryUpdateReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.ReplicaSet) *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})

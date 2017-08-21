@@ -66,7 +66,7 @@ func TryPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, trans
 	return nil, fmt.Errorf("Failed to patch ServiceAccount %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func UpdateServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ServiceAccount) *apiv1.ServiceAccount) (*apiv1.ServiceAccount, error) {
+func TryUpdateServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ServiceAccount) *apiv1.ServiceAccount) (*apiv1.ServiceAccount, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
