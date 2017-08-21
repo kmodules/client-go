@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/mattbaird/jsonpatch"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -12,7 +13,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
-	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {

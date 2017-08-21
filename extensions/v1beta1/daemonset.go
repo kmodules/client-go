@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
 	"github.com/mattbaird/jsonpatch"
@@ -15,7 +17,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
@@ -52,9 +53,9 @@ func PatchDaemonSet(c clientset.Interface, cur *extensions.DaemonSet, transform 
 	}
 	glog.V(5).Infof("Patching DaemonSet %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
 	result, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
-	if ok, err := CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
+	if ok, err := kutil.CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
 		// https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
-		RestartPods(c, cur.Namespace, cur.Spec.Selector)
+		core_util.RestartPods(c, cur.Namespace, cur.Spec.Selector)
 	}
 	return result, err
 }
@@ -95,9 +96,9 @@ func TryUpdateDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform
 			}
 
 			result, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(transform(cur))
-			if ok, err := CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
+			if ok, err := kutil.CheckAPIVersion(c, "<= 1.5"); err == nil && ok {
 				// https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
-				RestartPods(c, cur.Namespace, cur.Spec.Selector)
+				core_util.RestartPods(c, cur.Namespace, cur.Spec.Selector)
 			}
 			return result, err
 		}

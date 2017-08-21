@@ -7,6 +7,7 @@ import (
 	"time"
 
 	. "github.com/appscode/go/types"
+	"github.com/appscode/kutil"
 	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
 	"github.com/mattbaird/jsonpatch"
@@ -15,7 +16,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	apps "k8s.io/client-go/pkg/apis/apps/v1beta1"
-	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (*apps.Deployment, error) {
