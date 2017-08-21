@@ -1,4 +1,4 @@
-package kutil
+package v1beta1
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
+	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, error) {
@@ -52,7 +53,7 @@ func PatchRole(c clientset.Interface, cur *rbac.Role, transform func(*rbac.Role)
 
 func TryPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.RbacV1beta1().Roles(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -60,14 +61,14 @@ func TryPatchRole(c clientset.Interface, meta metav1.ObjectMeta, transform func(
 			return PatchRole(c, cur, transform)
 		}
 		glog.Errorf("Attempt %d failed to patch Role %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to patch Role %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
 func TryUpdateRole(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (*rbac.Role, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.RbacV1beta1().Roles(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -75,7 +76,7 @@ func TryUpdateRole(c clientset.Interface, meta metav1.ObjectMeta, transform func
 			return c.RbacV1beta1().Roles(cur.Namespace).Update(transform(cur))
 		}
 		glog.Errorf("Attempt %d failed to update Role %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to update Role %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }

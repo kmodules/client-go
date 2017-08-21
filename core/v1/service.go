@@ -1,4 +1,4 @@
-package kutil
+package v1
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
@@ -52,7 +53,7 @@ func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*api
 
 func TryPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -60,14 +61,14 @@ func TryPatchService(c clientset.Interface, meta metav1.ObjectMeta, transform fu
 			return PatchService(c, cur, transform)
 		}
 		glog.Errorf("Attempt %d failed to patch Service %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to patch Service %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
 func UpdateService(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Service) *apiv1.Service) (*apiv1.Service, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -75,7 +76,7 @@ func UpdateService(c clientset.Interface, meta metav1.ObjectMeta, transform func
 			return c.CoreV1().Services(cur.Namespace).Update(transform(cur))
 		}
 		glog.Errorf("Attempt %d failed to update Service %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to update Service %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }

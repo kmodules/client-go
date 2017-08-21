@@ -1,4 +1,4 @@
-package kutil
+package v1
 
 import (
 	"encoding/json"
@@ -12,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
+	"github.com/appscode/kutil"
 )
 
 func CreateOrPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ServiceAccount) *apiv1.ServiceAccount) (*apiv1.ServiceAccount, error) {
@@ -52,7 +53,7 @@ func PatchServiceAccount(c clientset.Interface, cur *apiv1.ServiceAccount, trans
 
 func TryPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ServiceAccount) *apiv1.ServiceAccount) (*apiv1.ServiceAccount, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -60,14 +61,14 @@ func TryPatchServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, trans
 			return PatchServiceAccount(c, cur, transform)
 		}
 		glog.Errorf("Attempt %d failed to patch ServiceAccount %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to patch ServiceAccount %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
 func UpdateServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ServiceAccount) *apiv1.ServiceAccount) (*apiv1.ServiceAccount, error) {
 	attempt := 0
-	for ; attempt < maxAttempts; attempt = attempt + 1 {
+	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
@@ -75,7 +76,7 @@ func UpdateServiceAccount(c clientset.Interface, meta metav1.ObjectMeta, transfo
 			return c.CoreV1().ServiceAccounts(cur.Namespace).Update(transform(cur))
 		}
 		glog.Errorf("Attempt %d failed to update ServiceAccount %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(retryInterval)
+		time.Sleep(kutil.RetryInterval)
 	}
 	return nil, fmt.Errorf("Failed to update ServiceAccount %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
