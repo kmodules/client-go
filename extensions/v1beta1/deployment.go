@@ -18,17 +18,17 @@ import (
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
 )
 
-func CreateOrPatchDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(&extensions.Deployment{ObjectMeta: meta})
 	} else if err != nil {
 		return nil, err
 	}
-	return PatchDeploymentExtension(c, cur, transform)
+	return PatchDeployment(c, cur, transform)
 }
 
-func PatchDeploymentExtension(c clientset.Interface, cur *extensions.Deployment, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+func PatchDeployment(c clientset.Interface, cur *extensions.Deployment, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -54,14 +54,14 @@ func PatchDeploymentExtension(c clientset.Interface, cur *extensions.Deployment,
 	return c.ExtensionsV1beta1().Deployments(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 
-func TryPatchDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+func TryPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
 			return cur, err
 		} else if err == nil {
-			return PatchDeploymentExtension(c, cur, transform)
+			return PatchDeployment(c, cur, transform)
 		}
 		glog.Errorf("Attempt %d failed to patch Deployment %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
 		time.Sleep(kutil.RetryInterval)
@@ -69,7 +69,7 @@ func TryPatchDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta, 
 	return nil, fmt.Errorf("Failed to patch Deployment %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func TryUpdateDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
+func TryUpdateDeployment(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.Deployment) *extensions.Deployment) (*extensions.Deployment, error) {
 	attempt := 0
 	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
 		cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
@@ -84,7 +84,7 @@ func TryUpdateDeploymentExtension(c clientset.Interface, meta metav1.ObjectMeta,
 	return nil, fmt.Errorf("Failed to update Deployment %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
 }
 
-func WaitUntilDeploymentExtensionReady(c clientset.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilDeploymentReady(c clientset.Interface, meta metav1.ObjectMeta) error {
 	return backoff.Retry(func() error {
 		if obj, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
 			if Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
