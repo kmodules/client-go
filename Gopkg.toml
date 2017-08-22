@@ -39,7 +39,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/mattbaird/jsonpatch"
+  name = "github.com/appscode/jsonpatch"
 
 [[constraint]]
   name = "k8s.io/apimachinery"
