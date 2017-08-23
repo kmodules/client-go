@@ -16,7 +16,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/appscode/go"
-  packages = ["types"]
+  packages = ["encoding/json/types","types"]
   revision = "45732d59b2277b9c7ffdc41d2d5c07a899a20a70"
 
 [[projects]]
@@ -30,6 +30,18 @@
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
   revision = "d220c21cb65bebf730343aee4c00ba60be2d3235"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/appscode/log"
+  packages = ["."]
+  revision = "68e0e42e42c01371f3950571fc87c2298a51dd8f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/appscode/searchlight"
+  packages = ["api","api/install","client/clientset","data","data/files"]
+  revision = "8b5e9ea07967d01e0f1bc7e983a2a46957278a6c"
 
 [[projects]]
   name = "github.com/asaskevich/govalidator"
@@ -147,6 +159,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/k8sdb/apimachinery"
+  packages = ["api","api/install","client/clientset"]
+  revision = "cfbe93778fc3dacca84ddc3415e4759ab1e0004f"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mailru/easyjson"
   packages = ["buffer","jlexer","jwriter"]
   revision = "2f5df55504ebc322e4d52d34df6a1f5b503bf26d"
@@ -213,6 +231,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1c3ef54aef5b7e2e41697bbccb436ee9d02e193fee2570d50ffccab8c96218f2"
+  inputs-digest = "7d19cbbf22a489afdb695cf4b5633fc02b8d1399f2aac29610c370816c3e7ecf"
   solver-name = "gps-cdcl"
   solver-version = 1
