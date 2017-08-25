@@ -1,10 +1,8 @@
 package v1alpha1
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
@@ -14,6 +12,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureClusterAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.ClusterAlert) *aci.ClusterAlert) (*aci.ClusterAlert, error) {
@@ -57,46 +56,44 @@ func PatchClusterAlert(c tcs.ExtensionInterface, cur *aci.ClusterAlert, transfor
 	return result, err
 }
 
-func TryPatchClusterAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.ClusterAlert) *aci.ClusterAlert) (*aci.ClusterAlert, error) {
+func TryPatchClusterAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.ClusterAlert) *aci.ClusterAlert) (result *aci.ClusterAlert, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.ClusterAlerts(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return PatchClusterAlert(c, cur, transform)
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.ClusterAlerts(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = PatchClusterAlert(c, cur, transform)
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to patch ClusterAlert %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to patch ClusterAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to patch ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to patch ClusterAlert %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
-func TryUpdateClusterAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.ClusterAlert) *aci.ClusterAlert) (*aci.ClusterAlert, error) {
+func TryUpdateClusterAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.ClusterAlert) *aci.ClusterAlert) (result *aci.ClusterAlert, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.ClusterAlerts(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			oJson, err := json.Marshal(cur)
-			if err != nil {
-				return nil, err
-			}
-			modified := transform(cur)
-			mJson, err := json.Marshal(modified)
-			if err != nil {
-				return nil, err
-			}
-			if bytes.Equal(oJson, mJson) {
-				return cur, err
-			}
-
-			result, err := c.ClusterAlerts(cur.Namespace).Update(transform(cur))
-			return result, err
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.ClusterAlerts(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = c.ClusterAlerts(cur.Namespace).Update(transform(cur))
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to update ClusterAlert %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to update ClusterAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to update ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to update ClusterAlert %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }

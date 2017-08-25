@@ -1,10 +1,8 @@
 package v1alpha1
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
@@ -14,6 +12,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureSnapshot(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.Snapshot) *aci.Snapshot) (*aci.Snapshot, error) {
@@ -57,46 +56,44 @@ func PatchSnapshot(c tcs.ExtensionInterface, cur *aci.Snapshot, transform func(*
 	return result, err
 }
 
-func TryPatchSnapshot(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Snapshot) *aci.Snapshot) (*aci.Snapshot, error) {
+func TryPatchSnapshot(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Snapshot) *aci.Snapshot) (result *aci.Snapshot, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.Snapshots(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return PatchSnapshot(c, cur, transform)
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.Snapshots(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = PatchSnapshot(c, cur, transform)
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to patch Snapshot %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to patch Snapshot %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to patch Snapshot %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to patch Snapshot %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
-func TryUpdateSnapshot(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Snapshot) *aci.Snapshot) (*aci.Snapshot, error) {
+func TryUpdateSnapshot(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Snapshot) *aci.Snapshot) (result *aci.Snapshot, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.Snapshots(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			oJson, err := json.Marshal(cur)
-			if err != nil {
-				return nil, err
-			}
-			modified := transform(cur)
-			mJson, err := json.Marshal(modified)
-			if err != nil {
-				return nil, err
-			}
-			if bytes.Equal(oJson, mJson) {
-				return cur, err
-			}
-
-			result, err := c.Snapshots(cur.Namespace).Update(transform(cur))
-			return result, err
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.Snapshots(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = c.Snapshots(cur.Namespace).Update(transform(cur))
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to update Snapshot %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to update Snapshot %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to update Snapshot %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to update Snapshot %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }

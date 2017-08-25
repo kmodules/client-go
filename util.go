@@ -10,7 +10,6 @@ import (
 
 const (
 	RetryInterval = 10 * time.Millisecond
-	MaxAttempts   = 5
 	RetryTimeout  = 2 * time.Second
 )
 
