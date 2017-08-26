@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	RetryInterval = 10 * time.Millisecond
+	RetryInterval = 50 * time.Millisecond
 	RetryTimeout  = 2 * time.Second
 )
 
