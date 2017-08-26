@@ -3,7 +3,6 @@ package v1beta1
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
@@ -13,6 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	clientset "k8s.io/client-go/kubernetes"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {
@@ -55,32 +55,44 @@ func PatchRoleBinding(c clientset.Interface, cur *rbac.RoleBinding, transform fu
 	return c.RbacV1beta1().RoleBindings(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 
-func TryPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {
+func TryPatchRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (result *rbac.RoleBinding, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return PatchRoleBinding(c, cur, transform)
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = PatchRoleBinding(c, cur, transform)
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to patch RoleBinding %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to patch RoleBinding %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to patch RoleBinding %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to patch RoleBinding %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
-func TryUpdateRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, error) {
+func TryUpdateRoleBinding(c clientset.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (result *rbac.RoleBinding, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return c.RbacV1beta1().RoleBindings(cur.Namespace).Update(transform(cur))
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.RbacV1beta1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = c.RbacV1beta1().RoleBindings(cur.Namespace).Update(transform(cur))
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to update RoleBinding %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to update RoleBinding %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to update Role %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to update RoleBinding %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }

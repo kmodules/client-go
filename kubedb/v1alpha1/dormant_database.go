@@ -1,10 +1,8 @@
 package v1alpha1
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
@@ -14,6 +12,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
@@ -57,46 +56,44 @@ func PatchDormantDatabase(c tcs.ExtensionInterface, cur *aci.DormantDatabase, tr
 	return result, err
 }
 
-func TryPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
+func TryPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return PatchDormantDatabase(c, cur, transform)
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = PatchDormantDatabase(c, cur, transform)
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to patch DormantDatabase %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to patch DormantDatabase %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to patch DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to patch DormantDatabase %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
-func TryUpdateDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
+func TryUpdateDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name)
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			oJson, err := json.Marshal(cur)
-			if err != nil {
-				return nil, err
-			}
-			modified := transform(cur)
-			mJson, err := json.Marshal(modified)
-			if err != nil {
-				return nil, err
-			}
-			if bytes.Equal(oJson, mJson) {
-				return cur, err
-			}
-
-			result, err := c.DormantDatabases(cur.Namespace).Update(transform(cur))
-			return result, err
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name)
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = c.DormantDatabases(cur.Namespace).Update(transform(cur))
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to update DormantDatabase %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to update DormantDatabase %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to update DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to update DormantDatabase %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }

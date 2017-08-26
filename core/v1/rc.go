@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	. "github.com/appscode/go/types"
+	actypes "github.com/appscode/go/types"
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	"github.com/cenkalti/backoff"
@@ -14,6 +14,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -58,40 +59,52 @@ func PatchRC(c clientset.Interface, cur *apiv1.ReplicationController, transform 
 	return c.CoreV1().ReplicationControllers(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
 }
 
-func TryPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
+func TryPatchRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (result *apiv1.ReplicationController, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return PatchRC(c, cur, transform)
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = PatchRC(c, cur, transform)
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to patch ReplicationController %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to patch ReplicationController %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to patch ReplicationController %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to patch ReplicationController %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
-func TryUpdateRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (*apiv1.ReplicationController, error) {
+func TryUpdateRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.ReplicationController) *apiv1.ReplicationController) (result *apiv1.ReplicationController, err error) {
 	attempt := 0
-	for ; attempt < kutil.MaxAttempts; attempt = attempt + 1 {
-		cur, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
-		if kerr.IsNotFound(err) {
-			return cur, err
-		} else if err == nil {
-			return c.CoreV1().ReplicationControllers(cur.Namespace).Update(transform(cur))
+	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+		attempt++
+		cur, e2 := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if kerr.IsNotFound(e2) {
+			return true, e2
+		} else if e2 == nil {
+			result, e2 = c.CoreV1().ReplicationControllers(cur.Namespace).Update(transform(cur))
+			return e2 == nil, e2
 		}
-		glog.Errorf("Attempt %d failed to update ReplicationController %s@%s due to %s.", attempt, cur.Name, cur.Namespace, err)
-		time.Sleep(kutil.RetryInterval)
+		glog.Errorf("Attempt %d failed to update ReplicationController %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		return false, e2
+	})
+
+	if err != nil {
+		err = fmt.Errorf("Failed to update ReplicationController %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
-	return nil, fmt.Errorf("Failed to update ReplicationController %s@%s after %d attempts.", meta.Name, meta.Namespace, attempt)
+	return
 }
 
 func WaitUntilRCReady(c clientset.Interface, meta metav1.ObjectMeta) error {
 	return backoff.Retry(func() error {
 		if obj, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
+			if actypes.Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
 				return nil
 			}
 		}
