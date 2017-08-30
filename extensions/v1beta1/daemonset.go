@@ -66,17 +66,17 @@ func PatchDaemonSet(c clientset.Interface, cur *extensions.DaemonSet, transform 
 
 func TryPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (result *extensions.DaemonSet, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = PatchDaemonSet(c, cur, transform)
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to patch DaemonSet %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {
@@ -87,17 +87,17 @@ func TryPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform 
 
 func TryUpdateDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (result *extensions.DaemonSet, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(transform(cur))
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update DaemonSet %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {

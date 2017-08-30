@@ -58,17 +58,17 @@ func PatchNodeAlert(c tcs.ExtensionInterface, cur *aci.NodeAlert, transform func
 
 func TryPatchNodeAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.NodeAlert) *aci.NodeAlert) (result *aci.NodeAlert, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.NodeAlerts(meta.Namespace).Get(meta.Name)
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = PatchNodeAlert(c, cur, transform)
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to patch NodeAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {
@@ -79,17 +79,17 @@ func TryPatchNodeAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transfo
 
 func TryUpdateNodeAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.NodeAlert) *aci.NodeAlert) (result *aci.NodeAlert, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.NodeAlerts(meta.Namespace).Get(meta.Name)
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = c.NodeAlerts(cur.Namespace).Update(transform(cur))
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update NodeAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {
