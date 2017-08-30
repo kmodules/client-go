@@ -61,17 +61,17 @@ func PatchStatefulSet(c clientset.Interface, cur *apps.StatefulSet, transform fu
 
 func TryPatchStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (result *apps.StatefulSet, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = PatchStatefulSet(c, cur, transform)
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to patch StatefulSet %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {
@@ -82,17 +82,17 @@ func TryPatchStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transfor
 
 func TryUpdateStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (result *apps.StatefulSet, err error) {
 	attempt := 0
-	err = wait.Poll(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		cur, e2 := c.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
-			return true, e2
+			return false, e2
 		} else if e2 == nil {
 			result, e2 = c.AppsV1beta1().StatefulSets(cur.Namespace).Update(transform(cur))
-			return e2 == nil, e2
+			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update StatefulSet %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
-		return false, e2
+		return false, nil
 	})
 
 	if err != nil {
