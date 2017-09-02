@@ -2,21 +2,18 @@ package v1beta1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
@@ -107,12 +104,10 @@ func TryUpdateDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform
 }
 
 func WaitUntilDaemonSetReady(kubeClient clientset.Interface, meta metav1.ObjectMeta) error {
-	return backoff.Retry(func() error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		if obj, err := kubeClient.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if obj.Status.DesiredNumberScheduled == obj.Status.NumberReady {
-				return nil
-			}
+			return obj.Status.DesiredNumberScheduled == obj.Status.NumberReady, nil
 		}
-		return errors.New("check again")
-	}, backoff.NewConstantBackOff(2*time.Second))
+		return false, nil
+	})
 }

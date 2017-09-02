@@ -2,21 +2,18 @@ package v1beta1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
 	. "github.com/appscode/go/types"
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
-	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	extensions "k8s.io/client-go/pkg/apis/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func EnsureReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.ReplicaSet) *extensions.ReplicaSet) (*extensions.ReplicaSet, error) {
@@ -102,12 +99,10 @@ func TryUpdateReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, transfor
 }
 
 func WaitUntilReplicaSetReady(c clientset.Interface, meta metav1.ObjectMeta) error {
-	return backoff.Retry(func() error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		if obj, err := c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
-				return nil
-			}
+			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil
 		}
-		return errors.New("check again")
-	}, backoff.NewConstantBackOff(2*time.Second))
+		return false, nil
+	})
 }

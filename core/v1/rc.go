@@ -2,14 +2,11 @@ package v1
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
-	"time"
 
-	actypes "github.com/appscode/go/types"
+	. "github.com/appscode/go/types"
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
-	"github.com/cenkalti/backoff"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -102,12 +99,11 @@ func TryUpdateRC(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 }
 
 func WaitUntilRCReady(c clientset.Interface, meta metav1.ObjectMeta) error {
-	return backoff.Retry(func() error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		if obj, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
-			if actypes.Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas {
-				return nil
-			}
+			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil
 		}
-		return errors.New("check again")
-	}, backoff.NewConstantBackOff(2*time.Second))
+
+		return false, nil
+	})
 }
