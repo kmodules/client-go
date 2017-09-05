@@ -27,11 +27,23 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/appscode/go-version"
+  name = "github.com/appscode/jsonpatch"
 
 [[constraint]]
-  name = "github.com/cenkalti/backoff"
-  version = "1.0.0"
+  name = "github.com/appscode/searchlight"
+  version = "3.0.1"
+
+[[constraint]]
+  name = "github.com/appscode/stash"
+  version = "0.4.1"
+
+[[constraint]]
+  name = "github.com/appscode/voyager"
+  version = "3.1.4"
+
+[[constraint]]
+  name = "github.com/coreos/prometheus-operator"
+  version = "0.12.0"
 
 [[constraint]]
   branch = "master"
@@ -39,7 +51,12 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/appscode/jsonpatch"
+  name = "github.com/hashicorp/go-version"
+  source = "https://github.com/appscode/go-version.git"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/k8sdb/apimachinery"
 
 [[constraint]]
   name = "k8s.io/apimachinery"
@@ -48,10 +65,6 @@
 [[constraint]]
   name = "k8s.io/client-go"
   version = "4.0.0"
-
-[[constraint]]
-  name = "github.com/appscode/searchlight"
-  branch = "master"
 
 [[constraint]]
   branch = "release-branch.go1.8"
