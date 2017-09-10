@@ -173,8 +173,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/k8sdb/apimachinery"
-  packages = ["api","api/install","client/clientset"]
-  revision = "cfbe93778fc3dacca84ddc3415e4759ab1e0004f"
+  packages = ["apis/kubedb","apis/kubedb/v1alpha1","client/scheme","client/typed/kubedb/v1alpha1"]
+  revision = "8ba40a27bdd6959fad088984672a418a105196cd"
 
 [[projects]]
   branch = "master"
@@ -250,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ca2a9aaafb1d7246c27e57805034852897fb25de3f2fe3ef467971c8e51e7f94"
+  inputs-digest = "e1fd9ccaa54e8f468c33c906aa11de4db7976e0e5cefd01d36454c43e5d26e4c"
   solver-name = "gps-cdcl"
   solver-version = 1

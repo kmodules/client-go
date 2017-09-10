@@ -7,20 +7,20 @@ import (
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
-	aci "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsurePostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
+func EnsurePostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
 	return CreateOrPatchPostgres(c, meta, transform)
 }
 
-func CreateOrPatchPostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
-	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name)
+func CreateOrPatchPostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
+	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return c.Postgreses(meta.Namespace).Create(transform(&aci.Postgres{ObjectMeta: meta}))
 	} else if err != nil {
@@ -29,7 +29,7 @@ func CreateOrPatchPostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, tra
 	return PatchPostgres(c, cur, transform)
 }
 
-func PatchPostgres(c tcs.ExtensionInterface, cur *aci.Postgres, transform func(*aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
+func PatchPostgres(c tcs.KubedbV1alpha1Interface, cur *aci.Postgres, transform func(*aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func PatchPostgres(c tcs.ExtensionInterface, cur *aci.Postgres, transform func(*
 	return result, err
 }
 
-func TryPatchPostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Postgres) *aci.Postgres) (result *aci.Postgres, err error) {
+func TryPatchPostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.Postgres) *aci.Postgres) (result *aci.Postgres, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Postgreses(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
@@ -77,11 +77,11 @@ func TryPatchPostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transfor
 	return
 }
 
-func TryUpdatePostgres(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.Postgres) *aci.Postgres) (result *aci.Postgres, err error) {
+func TryUpdatePostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.Postgres) *aci.Postgres) (result *aci.Postgres, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.Postgreses(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {

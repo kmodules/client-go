@@ -3,20 +3,20 @@ package v1alpha1
 import (
 	"errors"
 
-	kubedb "github.com/k8sdb/apimachinery/api"
+	"github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
 	switch v.(type) {
-	case *kubedb.Postgres:
-		return kubedb.V1alpha1SchemeGroupVersion.WithKind("Postgres")
-	case *kubedb.Elasticsearch:
-		return kubedb.V1alpha1SchemeGroupVersion.WithKind("Elasticsearch")
-	case *kubedb.Snapshot:
-		return kubedb.V1alpha1SchemeGroupVersion.WithKind("Snapshot")
-	case *kubedb.DormantDatabase:
-		return kubedb.V1alpha1SchemeGroupVersion.WithKind("DormantDatabase")
+	case *v1alpha1.Postgres:
+		return v1alpha1.SchemeGroupVersion.WithKind("Postgres")
+	case *v1alpha1.Elasticsearch:
+		return v1alpha1.SchemeGroupVersion.WithKind("Elasticsearch")
+	case *v1alpha1.Snapshot:
+		return v1alpha1.SchemeGroupVersion.WithKind("Snapshot")
+	case *v1alpha1.DormantDatabase:
+		return v1alpha1.SchemeGroupVersion.WithKind("DormantDatabase")
 	default:
 		return schema.GroupVersionKind{}
 	}
@@ -24,20 +24,20 @@ func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
 
 func AssignTypeKind(v interface{}) error {
 	switch u := v.(type) {
-	case *kubedb.Postgres:
-		u.APIVersion = kubedb.V1alpha1SchemeGroupVersion.String()
+	case *v1alpha1.Postgres:
+		u.APIVersion = v1alpha1.SchemeGroupVersion.String()
 		u.Kind = "Postgres"
 		return nil
-	case *kubedb.Elasticsearch:
-		u.APIVersion = kubedb.V1alpha1SchemeGroupVersion.String()
+	case *v1alpha1.Elasticsearch:
+		u.APIVersion = v1alpha1.SchemeGroupVersion.String()
 		u.Kind = "Elasticsearch"
 		return nil
-	case *kubedb.Snapshot:
-		u.APIVersion = kubedb.V1alpha1SchemeGroupVersion.String()
+	case *v1alpha1.Snapshot:
+		u.APIVersion = v1alpha1.SchemeGroupVersion.String()
 		u.Kind = "Snapshot"
 		return nil
-	case *kubedb.DormantDatabase:
-		u.APIVersion = kubedb.V1alpha1SchemeGroupVersion.String()
+	case *v1alpha1.DormantDatabase:
+		u.APIVersion = v1alpha1.SchemeGroupVersion.String()
 		u.Kind = "DormantDatabase"
 		return nil
 	}

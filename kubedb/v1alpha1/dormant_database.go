@@ -7,20 +7,20 @@ import (
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
-	aci "github.com/k8sdb/apimachinery/api"
-	tcs "github.com/k8sdb/apimachinery/client/clientset"
+	aci "github.com/k8sdb/apimachinery/apis/kubedb/v1alpha1"
+	tcs "github.com/k8sdb/apimachinery/client/typed/kubedb/v1alpha1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsureDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
+func EnsureDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
 	return CreateOrPatchDormantDatabase(c, meta, transform)
 }
 
-func CreateOrPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
-	cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name)
+func CreateOrPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
+	cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return c.DormantDatabases(meta.Namespace).Create(transform(&aci.DormantDatabase{ObjectMeta: meta}))
 	} else if err != nil {
@@ -29,7 +29,7 @@ func CreateOrPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMe
 	return PatchDormantDatabase(c, cur, transform)
 }
 
-func PatchDormantDatabase(c tcs.ExtensionInterface, cur *aci.DormantDatabase, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
+func PatchDormantDatabase(c tcs.KubedbV1alpha1Interface, cur *aci.DormantDatabase, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func PatchDormantDatabase(c tcs.ExtensionInterface, cur *aci.DormantDatabase, tr
 	return result, err
 }
 
-func TryPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
+func TryPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
@@ -77,11 +77,11 @@ func TryPatchDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, t
 	return
 }
 
-func TryUpdateDormantDatabase(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
+func TryUpdateDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.DormantDatabase) *aci.DormantDatabase) (result *aci.DormantDatabase, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
