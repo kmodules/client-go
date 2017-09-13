@@ -6,8 +6,8 @@ import (
 
 	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
-	aci "github.com/appscode/searchlight/api"
-	tcs "github.com/appscode/searchlight/client/clientset"
+	aci "github.com/appscode/searchlight/apis/monitoring/v1alpha1"
+	tcs "github.com/appscode/searchlight/client/typed/monitoring/v1alpha1"
 	"github.com/golang/glog"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,12 +15,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func EnsurePodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
+func EnsurePodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
 	return CreateOrPatchPodAlert(c, meta, transform)
 }
 
-func CreateOrPatchPodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(alert *aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
-	cur, err := c.PodAlerts(meta.Namespace).Get(meta.Name)
+func CreateOrPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
+	cur, err := c.PodAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		return c.PodAlerts(meta.Namespace).Create(transform(&aci.PodAlert{ObjectMeta: meta}))
 	} else if err != nil {
@@ -29,7 +29,7 @@ func CreateOrPatchPodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, tra
 	return PatchPodAlert(c, cur, transform)
 }
 
-func PatchPodAlert(c tcs.ExtensionInterface, cur *aci.PodAlert, transform func(*aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
+func PatchPodAlert(c tcs.MonitoringV1alpha1Interface, cur *aci.PodAlert, transform func(*aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -56,11 +56,11 @@ func PatchPodAlert(c tcs.ExtensionInterface, cur *aci.PodAlert, transform func(*
 	return result, err
 }
 
-func TryPatchPodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.PodAlert) *aci.PodAlert) (result *aci.PodAlert, err error) {
+func TryPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.PodAlert) *aci.PodAlert) (result *aci.PodAlert, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.PodAlerts(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.PodAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
@@ -77,11 +77,11 @@ func TryPatchPodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transfor
 	return
 }
 
-func TryUpdatePodAlert(c tcs.ExtensionInterface, meta metav1.ObjectMeta, transform func(*aci.PodAlert) *aci.PodAlert) (result *aci.PodAlert, err error) {
+func TryUpdatePodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, transform func(*aci.PodAlert) *aci.PodAlert) (result *aci.PodAlert, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.PodAlerts(meta.Namespace).Get(meta.Name)
+		cur, e2 := c.PodAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
