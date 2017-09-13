@@ -16,7 +16,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/appscode/go"
-  packages = ["encoding/json/types","types"]
+  packages = ["encoding/json/types","strings","types"]
   revision = "d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612"
 
 [[projects]]
@@ -32,28 +32,28 @@
   revision = "68e0e42e42c01371f3950571fc87c2298a51dd8f"
 
 [[projects]]
+  branch = "master"
   name = "github.com/appscode/searchlight"
-  packages = ["api","api/install","client/clientset","data","data/files"]
-  revision = "866cb109509579352c2372afd98e4bddd243e9e6"
-  version = "3.0.1"
+  packages = ["apis/monitoring","apis/monitoring/v1alpha1","client/scheme","client/typed/monitoring/v1alpha1","data","data/files"]
+  revision = "f5e8c2ef33e276debbd0f3a891379456bf9e7674"
 
 [[projects]]
+  branch = "master"
   name = "github.com/appscode/stash"
-  packages = ["api"]
-  revision = "e6065cb275eefd915ca4e68ae1a336f6510c091b"
-  version = "0.4.1"
+  packages = ["apis/stash","apis/stash/v1alpha1"]
+  revision = "f7d9c903101a842323a2daccd8d26a442c70be3f"
 
 [[projects]]
+  branch = "master"
   name = "github.com/appscode/voyager"
-  packages = ["api"]
-  revision = "251b21e577a8751cf2ca703d37be7903c3d9c642"
-  version = "3.1.4"
+  packages = ["apis/voyager","apis/voyager/v1beta1"]
+  revision = "9327b67fcda3a8b65439a1630d1bcbebaccd94c6"
 
 [[projects]]
   name = "github.com/asaskevich/govalidator"
   packages = ["."]
-  revision = "4918b99a7cb949bb295f3c7bbaf24b577d806e35"
-  version = "v6"
+  revision = "73945b6115bfbbcc57d89b7316e28109364124e1"
+  version = "v7"
 
 [[projects]]
   name = "github.com/coreos/prometheus-operator"
@@ -174,7 +174,7 @@
   branch = "master"
   name = "github.com/k8sdb/apimachinery"
   packages = ["apis/kubedb","apis/kubedb/v1alpha1","client/scheme","client/typed/kubedb/v1alpha1"]
-  revision = "8ba40a27bdd6959fad088984672a418a105196cd"
+  revision = "fd5179425833280c00e8568dd81fe41b054b992c"
 
 [[projects]]
   branch = "master"
@@ -210,13 +210,13 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["http2","http2/hpack","idna","lex/httplex"]
-  revision = "66aacef3dd8a676686c7ae3716979581e8b03c47"
+  revision = "b129b8e0fbeb39c8358e51a07ab6c50ad415e72e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
   packages = ["internal/gen","internal/triegen","internal/ucd","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable","width"]
-  revision = "bd91bbf73e9a4a801adbfb97133c992678533126"
+  revision = "acd49d43e9b95df46670431bf5c7ae59586daad8"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -250,6 +250,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e1fd9ccaa54e8f468c33c906aa11de4db7976e0e5cefd01d36454c43e5d26e4c"
+  inputs-digest = "89383e2eef8c2812a78ea73157d51b43662fe6424bb42302a1046e6de52d860d"
   solver-name = "gps-cdcl"
   solver-version = 1
