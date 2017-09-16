@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/appscode/jsonpatch"
 	"github.com/appscode/kutil"
 	aci "github.com/appscode/searchlight/apis/monitoring/v1alpha1"
 	tcs "github.com/appscode/searchlight/client/typed/monitoring/v1alpha1"
