@@ -12,6 +12,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -40,19 +41,15 @@ func PatchSnapshot(c tcs.KubedbV1alpha1Interface, cur *aci.Snapshot, transform f
 		return nil, err
 	}
 
-	patch, err := jsonpatch.CreatePatch(curJson, modJson)
+	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, aci.Snapshot{})
 	if err != nil {
 		return nil, err
 	}
 	if len(patch) == 0 {
 		return cur, nil
 	}
-	pb, err := json.MarshalIndent(patch, "", "  ")
-	if err != nil {
-		return nil, err
-	}
-	glog.V(5).Infof("Patching Snapshot %s@%s with %s.", cur.Name, cur.Namespace, string(pb))
-	result, err := c.Snapshots(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
+	glog.V(5).Infof("Patching Snapshot %s@%s with %s.", cur.Name, cur.Namespace, string(patch))
+	result, err := c.Snapshots(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return result, err
 }
 

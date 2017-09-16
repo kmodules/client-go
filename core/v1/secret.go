@@ -10,6 +10,7 @@ import (
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
@@ -40,19 +41,15 @@ func PatchSecret(c clientset.Interface, cur *apiv1.Secret, transform func(*apiv1
 		return nil, err
 	}
 
-	patch, err := jsonpatch.CreatePatch(curJson, modJson)
+	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, apiv1.Secret{})
 	if err != nil {
 		return nil, err
 	}
 	if len(patch) == 0 {
 		return cur, nil
 	}
-	pb, err := json.MarshalIndent(patch, "", "  ")
-	if err != nil {
-		return nil, err
-	}
 	glog.V(5).Infof("Patching Secret %s@%s.", cur.Name, cur.Namespace)
-	return c.CoreV1().Secrets(cur.Namespace).Patch(cur.Name, types.JSONPatchType, pb)
+	return c.CoreV1().Secrets(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
 func TryPatchSecret(c clientset.Interface, meta metav1.ObjectMeta, transform func(*apiv1.Secret) *apiv1.Secret) (result *apiv1.Secret, err error) {
