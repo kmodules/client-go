@@ -168,6 +168,24 @@ func EnsureVolumeDeleted(volumes []apiv1.Volume, name string) []apiv1.Volume {
 	return volumes
 }
 
+func EnsureVolumeMountDeleted(mounts []apiv1.VolumeMount, name string) []apiv1.VolumeMount {
+	for i, v := range mounts {
+		if v.Name == name {
+			return append(mounts[:i], mounts[i+1:]...)
+		}
+	}
+	return mounts
+}
+
+func EnsureEnvVarDeleted(vars []apiv1.EnvVar, name string) []apiv1.EnvVar {
+	for i, v := range vars {
+		if v.Name == name {
+			return append(vars[:i], vars[i+1:]...)
+		}
+	}
+	return vars
+}
+
 func AddFinalizer(pod *apiv1.Pod, finalizer string) {
 	for _, name := range pod.Finalizers {
 		if name == finalizer {
