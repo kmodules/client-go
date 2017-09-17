@@ -44,7 +44,7 @@ func PatchClusterAlert(c tcs.MonitoringV1alpha1Interface, cur *aci.ClusterAlert,
 	if err != nil {
 		return nil, err
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
 	glog.V(5).Infof("Patching ClusterAlert %s@%s with %s.", cur.Name, cur.Namespace, string(patch))

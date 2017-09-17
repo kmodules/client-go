@@ -45,7 +45,7 @@ func PatchReplicaSet(c clientset.Interface, cur *extensions.ReplicaSet, transfor
 	if err != nil {
 		return nil, err
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
 	glog.V(5).Infof("Patching ReplicaSet %s@%s with %s.", cur.Name, cur.Namespace, string(patch))

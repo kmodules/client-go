@@ -44,7 +44,7 @@ func PatchService(c clientset.Interface, cur *apiv1.Service, transform func(*api
 	if err != nil {
 		return nil, err
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
 	glog.V(5).Infof("Patching Service %s@%s with %s.", cur.Name, cur.Namespace, string(patch))

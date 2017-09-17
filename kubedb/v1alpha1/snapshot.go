@@ -44,7 +44,7 @@ func PatchSnapshot(c tcs.KubedbV1alpha1Interface, cur *aci.Snapshot, transform f
 	if err != nil {
 		return nil, err
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
 	glog.V(5).Infof("Patching Snapshot %s@%s with %s.", cur.Name, cur.Namespace, string(patch))

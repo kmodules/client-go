@@ -44,7 +44,7 @@ func PatchElasticsearch(c tcs.KubedbV1alpha1Interface, cur *aci.Elasticsearch, t
 	if err != nil {
 		return nil, err
 	}
-	if len(patch) == 0 {
+	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
 	glog.V(5).Infof("Patching Elasticsearch %s@%s with %s.", cur.Name, cur.Namespace, string(patch))
