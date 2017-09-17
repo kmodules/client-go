@@ -168,6 +168,16 @@ func EnsureVolumeDeleted(volumes []apiv1.Volume, name string) []apiv1.Volume {
 	return volumes
 }
 
+func UpsertVolumeMount(mounts []apiv1.VolumeMount, nv apiv1.VolumeMount) []apiv1.VolumeMount {
+	for i, vol := range mounts {
+		if vol.Name == nv.Name {
+			mounts[i] = nv
+			return mounts
+		}
+	}
+	return append(mounts, nv)
+}
+
 func EnsureVolumeMountDeleted(mounts []apiv1.VolumeMount, name string) []apiv1.VolumeMount {
 	for i, v := range mounts {
 		if v.Name == name {
@@ -175,6 +185,16 @@ func EnsureVolumeMountDeleted(mounts []apiv1.VolumeMount, name string) []apiv1.V
 		}
 	}
 	return mounts
+}
+
+func UpsertEnvVar(vars []apiv1.EnvVar, nv apiv1.EnvVar) []apiv1.EnvVar {
+	for i, vol := range vars {
+		if vol.Name == nv.Name {
+			vars[i] = nv
+			return vars
+		}
+	}
+	return append(vars, nv)
 }
 
 func EnsureEnvVarDeleted(vars []apiv1.EnvVar, name string) []apiv1.EnvVar {
