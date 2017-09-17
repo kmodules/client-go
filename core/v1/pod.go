@@ -177,17 +177,22 @@ func AddFinalizer(pod *apiv1.Pod, finalizer string) {
 	pod.Finalizers = append(pod.Finalizers, finalizer)
 }
 
-func RemoveFinalizer(pod *apiv1.Pod, finalizer string) bool {
-	found := false
+func HasFinalizer(pod *apiv1.Pod, finalizer string) bool {
+	for _, name := range pod.Finalizers {
+		if name == finalizer {
+			return true
+		}
+	}
+	return false
+}
+
+func RemoveFinalizer(pod *apiv1.Pod, finalizer string) {
 	// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
 	r := pod.Finalizers[:0]
 	for _, name := range pod.Finalizers {
 		if name != finalizer {
 			r = append(r, name)
-		} else {
-			found = true
 		}
 	}
 	pod.Finalizers = r
-	return found
 }
