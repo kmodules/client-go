@@ -84,7 +84,7 @@ func AssignTypeKind(v interface{}) error {
 func AddFinalizer(m metav1.ObjectMeta, finalizer string) metav1.ObjectMeta {
 	for _, name := range m.Finalizers {
 		if name == finalizer {
-			return
+			return m
 		}
 	}
 	m.Finalizers = append(m.Finalizers, finalizer)
