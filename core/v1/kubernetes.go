@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/appscode/kutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 )
@@ -78,6 +79,37 @@ func AssignTypeKind(v interface{}) error {
 		return nil
 	}
 	return errors.New("unknown api object type")
+}
+
+func AddFinalizer(m metav1.ObjectMeta, finalizer string) metav1.ObjectMeta {
+	for _, name := range m.Finalizers {
+		if name == finalizer {
+			return
+		}
+	}
+	m.Finalizers = append(m.Finalizers, finalizer)
+	return m
+}
+
+func HasFinalizer(m metav1.ObjectMeta, finalizer string) bool {
+	for _, name := range m.Finalizers {
+		if name == finalizer {
+			return true
+		}
+	}
+	return false
+}
+
+func RemoveFinalizer(m metav1.ObjectMeta, finalizer string) metav1.ObjectMeta {
+	// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
+	r := m.Finalizers[:0]
+	for _, name := range m.Finalizers {
+		if name != finalizer {
+			r = append(r, name)
+		}
+	}
+	m.Finalizers = r
+	return m
 }
 
 func EnsureContainerDeleted(containers []apiv1.Container, name string) []apiv1.Container {

@@ -122,32 +122,3 @@ func RestartPods(kubeClient clientset.Interface, namespace string, selector *met
 		LabelSelector: r.String(),
 	})
 }
-
-func AddFinalizer(pod *apiv1.Pod, finalizer string) {
-	for _, name := range pod.Finalizers {
-		if name == finalizer {
-			return
-		}
-	}
-	pod.Finalizers = append(pod.Finalizers, finalizer)
-}
-
-func HasFinalizer(pod *apiv1.Pod, finalizer string) bool {
-	for _, name := range pod.Finalizers {
-		if name == finalizer {
-			return true
-		}
-	}
-	return false
-}
-
-func RemoveFinalizer(pod *apiv1.Pod, finalizer string) {
-	// https://github.com/golang/go/wiki/SliceTricks#filtering-without-allocating
-	r := pod.Finalizers[:0]
-	for _, name := range pod.Finalizers {
-		if name != finalizer {
-			r = append(r, name)
-		}
-	}
-	pod.Finalizers = r
-}
