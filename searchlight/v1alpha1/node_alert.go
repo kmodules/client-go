@@ -68,7 +68,7 @@ func TryPatchNodeAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to patch NodeAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch NodeAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
@@ -89,7 +89,7 @@ func TryUpdateNodeAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMet
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to update NodeAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update NodeAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }

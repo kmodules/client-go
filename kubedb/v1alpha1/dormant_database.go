@@ -68,7 +68,7 @@ func TryPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMe
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to patch DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
@@ -89,7 +89,7 @@ func TryUpdateDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectM
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to update DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update DormantDatabase %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }

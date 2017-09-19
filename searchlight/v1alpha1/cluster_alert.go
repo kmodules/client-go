@@ -68,7 +68,7 @@ func TryPatchClusterAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectM
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to patch ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
@@ -89,7 +89,7 @@ func TryUpdateClusterAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Object
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to update ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update ClusterAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }

@@ -68,7 +68,7 @@ func TryPatchPostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tra
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to patch Postgres %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch Postgres %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
@@ -89,7 +89,7 @@ func TryUpdatePostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, tr
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to update Postgres %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update Postgres %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
