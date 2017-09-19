@@ -68,7 +68,7 @@ func TryPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta,
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to patch PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
@@ -89,7 +89,7 @@ func TryUpdatePodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta
 	})
 
 	if err != nil {
-		err = fmt.Errorf("Failed to update PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
 	}
 	return
 }
