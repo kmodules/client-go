@@ -237,6 +237,11 @@
   revision = "eb3733d160e74a9c7e442f435eb3bea458e1d19f"
 
 [[projects]]
+  name = "k8s.io/apiextensions-apiserver"
+  packages = ["pkg/apis/apiextensions","pkg/apis/apiextensions/v1beta1"]
+  revision = "5fa44608f6b9b2180a2fd1ecb52e651fd0397794"
+
+[[projects]]
   name = "k8s.io/apimachinery"
   packages = ["pkg/api/equality","pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apimachinery","pkg/apimachinery/announced","pkg/apimachinery/registered","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1alpha1","pkg/conversion","pkg/conversion/queryparams","pkg/conversion/unstructured","pkg/fields","pkg/labels","pkg/openapi","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/diff","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/jsonmergepatch","pkg/util/mergepatch","pkg/util/net","pkg/util/rand","pkg/util/runtime","pkg/util/sets","pkg/util/strategicpatch","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/json","third_party/forked/golang/reflect"]
   revision = "1fd2e63a9a370677308a42f24fd40c86438afddf"
@@ -250,6 +255,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "120192fbc647cc1c023276968b0b8db1bd9c796634b88889af73bb8731891f29"
+  inputs-digest = "77b3c6f87f7fbc3b87509b4f1a0d9c854308fd4d6018a7fefb414265c9af9417"
   solver-name = "gps-cdcl"
   solver-version = 1
