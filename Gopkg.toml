@@ -52,8 +52,8 @@
   source = "https://github.com/appscode/go-version.git"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/k8sdb/apimachinery"
+  branch = "mysqlDB"
 
 [[constraint]]
   name = "k8s.io/apiextensions-apiserver"
