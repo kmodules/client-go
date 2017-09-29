@@ -171,10 +171,10 @@
   revision = "5b9ff866471762aa2ab2dced63c9fb6f53921342"
 
 [[projects]]
-  branch = "master"
+  branch = "mysqlDB"
   name = "github.com/k8sdb/apimachinery"
   packages = ["apis/kubedb","apis/kubedb/v1alpha1","client/scheme","client/typed/kubedb/v1alpha1"]
-  revision = "fd5179425833280c00e8568dd81fe41b054b992c"
+  revision = "a36e36adfcd2c63b165e85314d36e4c3bc0d945d"
 
 [[projects]]
   branch = "master"
@@ -252,9 +252,15 @@
   revision = "d92e8497f71b7b4e0494e5bd204b48d34bd6f254"
   version = "v4.0.0"
 
+[[projects]]
+  name = "k8s.io/kubernetes"
+  packages = ["pkg/api"]
+  revision = "4bc5e7f9a6c25dc4c03d4d656f2cefd21540e28c"
+  version = "v1.7.6"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "77b3c6f87f7fbc3b87509b4f1a0d9c854308fd4d6018a7fefb414265c9af9417"
+  inputs-digest = "2345702e5bdc590a1d541ab13c14fc251719b02b208da628708e46a441c2292f"
   solver-name = "gps-cdcl"
   solver-version = 1
