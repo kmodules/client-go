@@ -22,6 +22,7 @@ func EnsureJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*ba
 func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
 	cur, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		glog.V(3).Infof("Creating Job %s/%s with %s.", meta.Namespace, meta.Name)
 		return c.BatchV1().Jobs(meta.Namespace).Create(transform(&batch.Job{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func PatchJob(c clientset.Interface, cur *batch.Job, transform func(*batch.Job) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(5).Infof("Patching Job %s@%s with %s.", cur.Name, cur.Namespace, string(patch))
+	glog.V(3).Infof("Patching Job %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	return c.BatchV1().Jobs(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
@@ -62,12 +63,12 @@ func TryPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 			result, e2 = PatchJob(c, cur, transform)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to patch Job %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to patch Job %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to patch Job %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch Job %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -83,12 +84,12 @@ func TryUpdateJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(
 			result, e2 = c.BatchV1().Jobs(cur.Namespace).Update(transform(cur))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Job %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to update Job %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Job %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update Job %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }

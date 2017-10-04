@@ -22,6 +22,7 @@ func EnsureRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, transfor
 func CreateOrPatchRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Restic) *aci.Restic) (*aci.Restic, error) {
 	cur, err := c.Restics(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		glog.V(3).Infof("Creating Restic %s/%s with %s.", meta.Namespace, meta.Name)
 		return c.Restics(meta.Namespace).Create(transform(&aci.Restic{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func PatchRestic(c tcs.StashV1alpha1Interface, cur *aci.Restic, transform func(*
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(5).Infof("Patching Restic %s@%s with %s.", cur.Name, cur.Namespace, string(patch))
+	glog.V(3).Infof("Patching Restic %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	result, err := c.Restics(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
 	return result, err
 }
@@ -63,12 +64,12 @@ func TryPatchRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, transf
 			result, e2 = PatchRestic(c, cur, transform)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to patch Restic %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to patch Restic %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to patch Restic %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch Restic %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -84,12 +85,12 @@ func TryUpdateRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, trans
 			result, e2 = c.Restics(cur.Namespace).Update(transform(cur))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Restic %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to update Restic %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update Restic %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update Restic %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
