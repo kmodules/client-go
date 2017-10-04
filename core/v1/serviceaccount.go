@@ -48,7 +48,7 @@ func PatchServiceAccount(c clientset.Interface, cur *apiv1.ServiceAccount, trans
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(3).Infof("Patching ServiceAccount %s@%s with %s", cur.Name, cur.Namespace, string(patch))
+	glog.V(3).Infof("Patching ServiceAccount %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	return c.CoreV1().ServiceAccounts(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 

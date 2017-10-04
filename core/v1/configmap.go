@@ -48,7 +48,7 @@ func PatchConfigMap(c clientset.Interface, cur *apiv1.ConfigMap, transform func(
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(3).Infof("Patching ConfigMap %s@%s with %s", cur.Name, cur.Namespace, string(patch))
+	glog.V(3).Infof("Patching ConfigMap %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	return c.CoreV1().ConfigMaps(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 

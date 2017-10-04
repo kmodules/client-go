@@ -49,7 +49,7 @@ func PatchPod(c clientset.Interface, cur *apiv1.Pod, transform func(*apiv1.Pod) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(3).Infof("Patching Pod %s@%s.", cur.Name, cur.Namespace)
+	glog.V(3).Infof("Patching Pod %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	return c.CoreV1().Pods(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 

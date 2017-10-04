@@ -48,7 +48,7 @@ func PatchSecret(c clientset.Interface, cur *apiv1.Secret, transform func(*apiv1
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(3).Infof("Patching Secret %s@%s.", cur.Name, cur.Namespace)
+	glog.V(3).Infof("Patching Secret %s/%s", cur.Namespace, cur.Name)
 	return c.CoreV1().Secrets(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
