@@ -22,6 +22,7 @@ func EnsurePodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, t
 func CreateOrPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.PodAlert) *aci.PodAlert) (*aci.PodAlert, error) {
 	cur, err := c.PodAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
+		glog.V(3).Infof("Creating PodAlert %s/%s with %s.", meta.Namespace, meta.Name)
 		return c.PodAlerts(meta.Namespace).Create(transform(&aci.PodAlert{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func PatchPodAlert(c tcs.MonitoringV1alpha1Interface, cur *aci.PodAlert, transfo
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, nil
 	}
-	glog.V(5).Infof("Patching PodAlert %s@%s with %s.", cur.Name, cur.Namespace, string(patch))
+	glog.V(3).Infof("Patching PodAlert %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	result, err := c.PodAlerts(cur.Namespace).Patch(cur.Name, types.MergePatchType, patch)
 	return result, err
 }
@@ -63,12 +64,12 @@ func TryPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta,
 			result, e2 = PatchPodAlert(c, cur, transform)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to patch PodAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to patch PodAlert %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to patch PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to patch PodAlert %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
@@ -84,12 +85,12 @@ func TryUpdatePodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.ObjectMeta
 			result, e2 = c.PodAlerts(cur.Namespace).Update(transform(cur))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update PodAlert %s@%s due to %v.", attempt, cur.Name, cur.Namespace, e2)
+		glog.Errorf("Attempt %d failed to update PodAlert %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update PodAlert %s@%s after %d attempts due to %v", meta.Name, meta.Namespace, attempt, err)
+		err = fmt.Errorf("failed to update PodAlert %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
 }
