@@ -26,7 +26,7 @@ func CreateOrPatchElasticsearch(c tcs.KubedbV1alpha1Interface, meta metav1.Objec
 		return c.Elasticsearchs(meta.Namespace).Create(transform(&aci.Elasticsearch{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Elasticsearch",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

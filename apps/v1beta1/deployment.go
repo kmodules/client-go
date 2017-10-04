@@ -27,7 +27,7 @@ func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, tran
 		return c.AppsV1beta1().Deployments(meta.Namespace).Create(transform(&apps.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
-				APIVersion: apps.SchemeGroupVersion.Version,
+				APIVersion: apps.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

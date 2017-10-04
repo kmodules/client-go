@@ -26,7 +26,7 @@ func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform f
 		return c.BatchV1().Jobs(meta.Namespace).Create(transform(&batch.Job{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Job",
-				APIVersion: batch.SchemeGroupVersion.Version,
+				APIVersion: batch.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

@@ -26,7 +26,7 @@ func CreateOrPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Object
 		return c.PodAlerts(meta.Namespace).Create(transform(&aci.PodAlert{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodAlert",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

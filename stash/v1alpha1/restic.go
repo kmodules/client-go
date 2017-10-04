@@ -26,7 +26,7 @@ func CreateOrPatchRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, t
 		return c.Restics(meta.Namespace).Create(transform(&aci.Restic{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Restic",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

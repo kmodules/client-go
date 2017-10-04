@@ -26,7 +26,7 @@ func CreateOrPatchClusterAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Ob
 		return c.ClusterAlerts(meta.Namespace).Create(transform(&aci.ClusterAlert{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ClusterAlert",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

@@ -26,7 +26,7 @@ func CreateOrPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform f
 		return c.CertificatesV1beta1().CertificateSigningRequests().Create(transform(&certificates.CertificateSigningRequest{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "CertificateSigningRequest",
-				APIVersion: certificates.SchemeGroupVersion.Version,
+				APIVersion: certificates.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

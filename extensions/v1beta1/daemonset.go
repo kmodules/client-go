@@ -27,7 +27,7 @@ func CreateOrPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, trans
 		return c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Create(transform(&extensions.DaemonSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "DaemonSet",
-				APIVersion: extensions.SchemeGroupVersion.Version,
+				APIVersion: extensions.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

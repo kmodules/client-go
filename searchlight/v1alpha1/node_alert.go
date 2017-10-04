@@ -26,7 +26,7 @@ func CreateOrPatchNodeAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Objec
 		return c.NodeAlerts(meta.Namespace).Create(transform(&aci.NodeAlert{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "NodeAlert",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

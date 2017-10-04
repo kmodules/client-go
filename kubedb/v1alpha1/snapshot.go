@@ -26,7 +26,7 @@ func CreateOrPatchSnapshot(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 		return c.Snapshots(meta.Namespace).Create(transform(&aci.Snapshot{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Snapshot",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

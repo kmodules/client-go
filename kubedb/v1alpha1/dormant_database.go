@@ -26,7 +26,7 @@ func CreateOrPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.Obj
 		return c.DormantDatabases(meta.Namespace).Create(transform(&aci.DormantDatabase{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "DormantDatabase",
-				APIVersion: aci.SchemeGroupVersion.Version,
+				APIVersion: aci.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

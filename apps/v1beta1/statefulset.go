@@ -27,7 +27,7 @@ func CreateOrPatchStatefulSet(c clientset.Interface, meta metav1.ObjectMeta, tra
 		return c.AppsV1beta1().StatefulSets(meta.Namespace).Create(transform(&apps.StatefulSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "StatefulSet",
-				APIVersion: apps.SchemeGroupVersion.Version,
+				APIVersion: apps.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))

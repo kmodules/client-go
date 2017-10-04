@@ -27,7 +27,7 @@ func CreateOrPatchReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, tran
 		return c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Create(transform(&extensions.ReplicaSet{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ReplicaSet",
-				APIVersion: extensions.SchemeGroupVersion.Version,
+				APIVersion: extensions.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
 		}))
