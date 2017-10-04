@@ -23,7 +23,13 @@ func CreateOrPatchElasticsearch(c tcs.KubedbV1alpha1Interface, meta metav1.Objec
 	cur, err := c.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Elasticsearch %s/%s.", meta.Namespace, meta.Name)
-		return c.Elasticsearchs(meta.Namespace).Create(transform(&aci.Elasticsearch{ObjectMeta: meta}))
+		return c.Elasticsearchs(meta.Namespace).Create(transform(&aci.Elasticsearch{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Elasticsearch",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,13 @@ func CreateOrPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.Obj
 	cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating DormantDatabase %s/%s.", meta.Namespace, meta.Name)
-		return c.DormantDatabases(meta.Namespace).Create(transform(&aci.DormantDatabase{ObjectMeta: meta}))
+		return c.DormantDatabases(meta.Namespace).Create(transform(&aci.DormantDatabase{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "DormantDatabase",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

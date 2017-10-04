@@ -23,7 +23,13 @@ func CreateOrPatchPodAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Object
 	cur, err := c.PodAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PodAlert %s/%s.", meta.Namespace, meta.Name)
-		return c.PodAlerts(meta.Namespace).Create(transform(&aci.PodAlert{ObjectMeta: meta}))
+		return c.PodAlerts(meta.Namespace).Create(transform(&aci.PodAlert{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodAlert",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

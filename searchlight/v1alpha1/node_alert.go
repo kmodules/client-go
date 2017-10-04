@@ -23,7 +23,13 @@ func CreateOrPatchNodeAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Objec
 	cur, err := c.NodeAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating NodeAlert %s/%s.", meta.Namespace, meta.Name)
-		return c.NodeAlerts(meta.Namespace).Create(transform(&aci.NodeAlert{ObjectMeta: meta}))
+		return c.NodeAlerts(meta.Namespace).Create(transform(&aci.NodeAlert{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "NodeAlert",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

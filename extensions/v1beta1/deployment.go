@@ -24,7 +24,13 @@ func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, tran
 	cur, err := c.ExtensionsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Deployment %s/%s.", meta.Namespace, meta.Name)
-		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(transform(&extensions.Deployment{ObjectMeta: meta}))
+		return c.ExtensionsV1beta1().Deployments(meta.Namespace).Create(transform(&extensions.Deployment{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Deployment",
+				APIVersion: extensions.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

@@ -24,7 +24,13 @@ func CreateOrPatchDeployment(c clientset.Interface, meta metav1.ObjectMeta, tran
 	cur, err := c.AppsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Deployment %s/%s.", meta.Namespace, meta.Name)
-		return c.AppsV1beta1().Deployments(meta.Namespace).Create(transform(&apps.Deployment{ObjectMeta: meta}))
+		return c.AppsV1beta1().Deployments(meta.Namespace).Create(transform(&apps.Deployment{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Deployment",
+				APIVersion: apps.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

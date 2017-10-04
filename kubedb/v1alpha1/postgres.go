@@ -23,7 +23,13 @@ func CreateOrPatchPostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Postgres %s/%s.", meta.Namespace, meta.Name)
-		return c.Postgreses(meta.Namespace).Create(transform(&aci.Postgres{ObjectMeta: meta}))
+		return c.Postgreses(meta.Namespace).Create(transform(&aci.Postgres{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Postgres",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,13 @@ func CreateOrPatchClusterAlert(c tcs.MonitoringV1alpha1Interface, meta metav1.Ob
 	cur, err := c.ClusterAlerts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ClusterAlert %s/%s.", meta.Namespace, meta.Name)
-		return c.ClusterAlerts(meta.Namespace).Create(transform(&aci.ClusterAlert{ObjectMeta: meta}))
+		return c.ClusterAlerts(meta.Namespace).Create(transform(&aci.ClusterAlert{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ClusterAlert",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

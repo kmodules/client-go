@@ -23,7 +23,13 @@ func CreateOrPatchRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, t
 	cur, err := c.Restics(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Restic %s/%s.", meta.Namespace, meta.Name)
-		return c.Restics(meta.Namespace).Create(transform(&aci.Restic{ObjectMeta: meta}))
+		return c.Restics(meta.Namespace).Create(transform(&aci.Restic{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Restic",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

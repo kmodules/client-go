@@ -24,7 +24,13 @@ func CreateOrPatchReplicaSet(c clientset.Interface, meta metav1.ObjectMeta, tran
 	cur, err := c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ReplicaSet %s/%s.", meta.Namespace, meta.Name)
-		return c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Create(transform(&extensions.ReplicaSet{ObjectMeta: meta}))
+		return c.ExtensionsV1beta1().ReplicaSets(meta.Namespace).Create(transform(&extensions.ReplicaSet{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "ReplicaSet",
+				APIVersion: extensions.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

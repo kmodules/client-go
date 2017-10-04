@@ -23,7 +23,13 @@ func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform f
 	cur, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Job %s/%s.", meta.Namespace, meta.Name)
-		return c.BatchV1().Jobs(meta.Namespace).Create(transform(&batch.Job{ObjectMeta: meta}))
+		return c.BatchV1().Jobs(meta.Namespace).Create(transform(&batch.Job{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Job",
+				APIVersion: batch.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}

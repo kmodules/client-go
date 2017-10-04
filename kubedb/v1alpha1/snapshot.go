@@ -23,7 +23,13 @@ func CreateOrPatchSnapshot(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 	cur, err := c.Snapshots(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Snapshot %s/%s.", meta.Namespace, meta.Name)
-		return c.Snapshots(meta.Namespace).Create(transform(&aci.Snapshot{ObjectMeta: meta}))
+		return c.Snapshots(meta.Namespace).Create(transform(&aci.Snapshot{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Snapshot",
+				APIVersion: aci.SchemeGroupVersion.Version,
+			},
+			ObjectMeta: meta,
+		}))
 	} else if err != nil {
 		return nil, err
 	}
