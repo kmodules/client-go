@@ -22,7 +22,7 @@ func EnsureSnapshot(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, trans
 func CreateOrPatchSnapshot(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Snapshot) *aci.Snapshot) (*aci.Snapshot, error) {
 	cur, err := c.Snapshots(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Snapshot %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Snapshot %s/%s.", meta.Namespace, meta.Name)
 		return c.Snapshots(meta.Namespace).Create(transform(&aci.Snapshot{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

@@ -23,7 +23,7 @@ func EnsureDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform fu
 func CreateOrPatchDaemonSet(c clientset.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, error) {
 	cur, err := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating DaemonSet %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating DaemonSet %s/%s.", meta.Namespace, meta.Name)
 		return c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Create(transform(&extensions.DaemonSet{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

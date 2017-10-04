@@ -22,7 +22,7 @@ func EnsureCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*ce
 func CreateOrPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
 	cur, err := c.CertificatesV1beta1().CertificateSigningRequests().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating CertificateSigningRequest %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating CertificateSigningRequest %s/%s.", meta.Namespace, meta.Name)
 		return c.CertificatesV1beta1().CertificateSigningRequests().Create(transform(&certificates.CertificateSigningRequest{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

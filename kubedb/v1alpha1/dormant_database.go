@@ -22,7 +22,7 @@ func EnsureDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta
 func CreateOrPatchDormantDatabase(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.DormantDatabase) *aci.DormantDatabase) (*aci.DormantDatabase, error) {
 	cur, err := c.DormantDatabases(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating DormantDatabase %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating DormantDatabase %s/%s.", meta.Namespace, meta.Name)
 		return c.DormantDatabases(meta.Namespace).Create(transform(&aci.DormantDatabase{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

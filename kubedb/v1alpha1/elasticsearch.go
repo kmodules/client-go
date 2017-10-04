@@ -22,7 +22,7 @@ func EnsureElasticsearch(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, 
 func CreateOrPatchElasticsearch(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Elasticsearch) *aci.Elasticsearch) (*aci.Elasticsearch, error) {
 	cur, err := c.Elasticsearchs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Elasticsearch %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Elasticsearch %s/%s.", meta.Namespace, meta.Name)
 		return c.Elasticsearchs(meta.Namespace).Create(transform(&aci.Elasticsearch{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

@@ -22,7 +22,7 @@ func EnsureRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, transfor
 func CreateOrPatchRestic(c tcs.StashV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Restic) *aci.Restic) (*aci.Restic, error) {
 	cur, err := c.Restics(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Restic %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Restic %s/%s.", meta.Namespace, meta.Name)
 		return c.Restics(meta.Namespace).Create(transform(&aci.Restic{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

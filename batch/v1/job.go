@@ -22,7 +22,7 @@ func EnsureJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*ba
 func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
 	cur, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Job %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Job %s/%s.", meta.Namespace, meta.Name)
 		return c.BatchV1().Jobs(meta.Namespace).Create(transform(&batch.Job{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err

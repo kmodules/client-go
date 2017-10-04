@@ -22,7 +22,7 @@ func EnsurePostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, trans
 func CreateOrPatchPostgres(c tcs.KubedbV1alpha1Interface, meta metav1.ObjectMeta, transform func(alert *aci.Postgres) *aci.Postgres) (*aci.Postgres, error) {
 	cur, err := c.Postgreses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Postgres %s/%s with %s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating Postgres %s/%s.", meta.Namespace, meta.Name)
 		return c.Postgreses(meta.Namespace).Create(transform(&aci.Postgres{ObjectMeta: meta}))
 	} else if err != nil {
 		return nil, err
