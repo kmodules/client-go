@@ -132,7 +132,7 @@ func MarshalToYAML(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 }
 
 // UnmarshalToYAML unmarshals an object into yaml.
-func UnmarshalToYAML(obj []byte, gv schema.GroupVersion) (runtime.Object, error) {
+func UnmarshalToYAML(data []byte, gv schema.GroupVersion) (runtime.Object, error) {
 	mediaType := "application/yaml"
 	info, ok := runtime.SerializerInfoForMediaType(clientsetscheme.Codecs.SupportedMediaTypes(), mediaType)
 	if !ok {
@@ -140,7 +140,7 @@ func UnmarshalToYAML(obj []byte, gv schema.GroupVersion) (runtime.Object, error)
 	}
 
 	decoder := clientsetscheme.Codecs.DecoderToVersion(info.Serializer, gv)
-	return runtime.Decode(decoder, obj)
+	return runtime.Decode(decoder, data)
 }
 
 // MarshalToJson marshals an object into json.
@@ -156,7 +156,7 @@ func MarshalToJson(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 }
 
 // UnmarshalToJSON unmarshals an object into json.
-func UnmarshalToJSON(obj []byte, gv schema.GroupVersion) (runtime.Object, error) {
+func UnmarshalToJSON(data []byte, gv schema.GroupVersion) (runtime.Object, error) {
 	mediaType := "application/json"
 	info, ok := runtime.SerializerInfoForMediaType(clientsetscheme.Codecs.SupportedMediaTypes(), mediaType)
 	if !ok {
@@ -164,5 +164,5 @@ func UnmarshalToJSON(obj []byte, gv schema.GroupVersion) (runtime.Object, error)
 	}
 
 	decoder := clientsetscheme.Codecs.DecoderToVersion(info.Serializer, gv)
-	return runtime.Decode(decoder, obj)
+	return runtime.Decode(decoder, data)
 }
