@@ -16,32 +16,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/appscode/go"
-  packages = ["encoding/json/types","strings","types"]
+  packages = ["types"]
   revision = "d1fbd14e5c6e78557c12f6d2c9c282b3c0d0c612"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/appscode/log"
-  packages = ["."]
-  revision = "68e0e42e42c01371f3950571fc87c2298a51dd8f"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/appscode/searchlight"
-  packages = ["apis/monitoring","apis/monitoring/v1alpha1","client/scheme","client/typed/monitoring/v1alpha1","data","data/files"]
-  revision = "f5e8c2ef33e276debbd0f3a891379456bf9e7674"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/appscode/stash"
-  packages = ["apis/stash","apis/stash/v1alpha1","client/scheme","client/typed/stash/v1alpha1"]
-  revision = "f7d9c903101a842323a2daccd8d26a442c70be3f"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/appscode/voyager"
-  packages = ["apis/voyager","apis/voyager/v1beta1","client/scheme","client/typed/voyager/v1beta1"]
-  revision = "9327b67fcda3a8b65439a1630d1bcbebaccd94c6"
 
 [[projects]]
   name = "github.com/asaskevich/govalidator"
@@ -78,12 +54,6 @@
   packages = ["."]
   revision = "dcef7f55730566d41eae5db10e7d6981829720f6"
   version = "1.0.1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/evanphx/json-patch"
-  packages = ["."]
-  revision = "944e07253867aacae43c04b2e6a239005443f33a"
 
 [[projects]]
   name = "github.com/ghodss/yaml"
@@ -172,12 +142,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/k8sdb/apimachinery"
-  packages = ["apis/kubedb","apis/kubedb/v1alpha1","client/scheme","client/typed/kubedb/v1alpha1"]
-  revision = "fd5179425833280c00e8568dd81fe41b054b992c"
-
-[[projects]]
-  branch = "master"
   name = "github.com/mailru/easyjson"
   packages = ["buffer","jlexer","jwriter"]
   revision = "2a92e673c9a6302dd05c3a691ae1f24aef46457d"
@@ -243,7 +207,7 @@
 
 [[projects]]
   name = "k8s.io/apimachinery"
-  packages = ["pkg/api/equality","pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apimachinery","pkg/apimachinery/announced","pkg/apimachinery/registered","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1alpha1","pkg/conversion","pkg/conversion/queryparams","pkg/conversion/unstructured","pkg/fields","pkg/labels","pkg/openapi","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/diff","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/jsonmergepatch","pkg/util/mergepatch","pkg/util/net","pkg/util/rand","pkg/util/runtime","pkg/util/sets","pkg/util/strategicpatch","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/json","third_party/forked/golang/reflect"]
+  packages = ["pkg/api/equality","pkg/api/errors","pkg/api/meta","pkg/api/resource","pkg/apimachinery","pkg/apimachinery/announced","pkg/apimachinery/registered","pkg/apis/meta/v1","pkg/apis/meta/v1/unstructured","pkg/apis/meta/v1alpha1","pkg/conversion","pkg/conversion/queryparams","pkg/conversion/unstructured","pkg/fields","pkg/labels","pkg/openapi","pkg/runtime","pkg/runtime/schema","pkg/runtime/serializer","pkg/runtime/serializer/json","pkg/runtime/serializer/protobuf","pkg/runtime/serializer/recognizer","pkg/runtime/serializer/streaming","pkg/runtime/serializer/versioning","pkg/selection","pkg/types","pkg/util/clock","pkg/util/diff","pkg/util/errors","pkg/util/framer","pkg/util/intstr","pkg/util/json","pkg/util/mergepatch","pkg/util/net","pkg/util/rand","pkg/util/runtime","pkg/util/sets","pkg/util/strategicpatch","pkg/util/validation","pkg/util/validation/field","pkg/util/wait","pkg/util/yaml","pkg/version","pkg/watch","third_party/forked/golang/json","third_party/forked/golang/reflect"]
   revision = "1fd2e63a9a370677308a42f24fd40c86438afddf"
 
 [[projects]]
@@ -255,6 +219,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "77b3c6f87f7fbc3b87509b4f1a0d9c854308fd4d6018a7fefb414265c9af9417"
+  inputs-digest = "c42e5445cede2a1730b1aa2adcd6ad85105db4d6c5055172d107cac8b36819e1"
   solver-name = "gps-cdcl"
   solver-version = 1
