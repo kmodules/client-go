@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -117,6 +118,21 @@ func GetKind(v interface{}) string {
 		val = val.Elem()
 	}
 	return val.Type().Name()
+}
+
+func GetObjectReference(v interface{}, gv schema.GroupVersion) *apiv1.ObjectReference {
+	m, err := meta.Accessor(v)
+	if err != nil {
+		return &apiv1.ObjectReference{}
+	}
+	return &apiv1.ObjectReference{
+		APIVersion:      gv.String(),
+		Kind:            GetKind(v),
+		Namespace:       m.GetNamespace(),
+		Name:            m.GetName(),
+		UID:             m.GetUID(),
+		ResourceVersion: m.GetResourceVersion(),
+	}
 }
 
 // MarshalToYAML marshals an object into yaml.
