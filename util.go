@@ -9,16 +9,16 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"github.com/hashicorp/go-version"
 	"github.com/pkg/errors"
 	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	clientset "k8s.io/client-go/kubernetes"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	apiv1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/rest"
 )
@@ -131,7 +131,19 @@ func MarshalToYAML(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 	return runtime.Encode(encoder, obj)
 }
 
-// MarshalToJson marshals an object into yaml.
+// UnmarshalToYAML unmarshals an object into yaml.
+func UnmarshalToYAML(obj []byte, gv schema.GroupVersion) (runtime.Object, error) {
+	mediaType := "application/yaml"
+	info, ok := runtime.SerializerInfoForMediaType(clientsetscheme.Codecs.SupportedMediaTypes(), mediaType)
+	if !ok {
+		return nil, fmt.Errorf("unsupported media type %q", mediaType)
+	}
+
+	decoder := clientsetscheme.Codecs.DecoderToVersion(info.Serializer, gv)
+	return runtime.Decode(decoder, obj)
+}
+
+// MarshalToJson marshals an object into json.
 func MarshalToJson(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 	mediaType := "application/json"
 	info, ok := runtime.SerializerInfoForMediaType(clientsetscheme.Codecs.SupportedMediaTypes(), mediaType)
@@ -141,4 +153,16 @@ func MarshalToJson(obj runtime.Object, gv schema.GroupVersion) ([]byte, error) {
 
 	encoder := clientsetscheme.Codecs.EncoderForVersion(info.Serializer, gv)
 	return runtime.Encode(encoder, obj)
+}
+
+// UnmarshalToJSON unmarshals an object into json.
+func UnmarshalToJSON(obj []byte, gv schema.GroupVersion) (runtime.Object, error) {
+	mediaType := "application/json"
+	info, ok := runtime.SerializerInfoForMediaType(clientsetscheme.Codecs.SupportedMediaTypes(), mediaType)
+	if !ok {
+		return nil, fmt.Errorf("unsupported media type %q", mediaType)
+	}
+
+	decoder := clientsetscheme.Codecs.DecoderToVersion(info.Serializer, gv)
+	return runtime.Decode(decoder, obj)
 }
