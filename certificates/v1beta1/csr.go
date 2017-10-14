@@ -11,15 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 )
 
-func EnsureCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
-	return CreateOrPatchCSR(c, meta, transform)
-}
-
-func CreateOrPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
+func CreateOrPatchCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
 	cur, err := c.CertificatesV1beta1().CertificateSigningRequests().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating CertificateSigningRequest %s/%s.", meta.Namespace, meta.Name)
@@ -36,7 +32,7 @@ func CreateOrPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform f
 	return PatchCSR(c, cur, transform)
 }
 
-func PatchCSR(c clientset.Interface, cur *certificates.CertificateSigningRequest, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
+func PatchCSR(c kubernetes.Interface, cur *certificates.CertificateSigningRequest, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -58,7 +54,7 @@ func PatchCSR(c clientset.Interface, cur *certificates.CertificateSigningRequest
 	return c.CertificatesV1beta1().CertificateSigningRequests().Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
-func TryPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
+func TryPatchCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -79,7 +75,7 @@ func TryPatchCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 	return
 }
 
-func TryUpdateCSR(c clientset.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
+func TryUpdateCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

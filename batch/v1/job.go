@@ -11,15 +11,11 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes"
 	batch "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
-func EnsureJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
-	return CreateOrPatchJob(c, meta, transform)
-}
-
-func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
+func CreateOrPatchJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
 	cur, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Job %s/%s.", meta.Namespace, meta.Name)
@@ -36,7 +32,7 @@ func CreateOrPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform f
 	return PatchJob(c, cur, transform)
 }
 
-func PatchJob(c clientset.Interface, cur *batch.Job, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
+func PatchJob(c kubernetes.Interface, cur *batch.Job, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
@@ -58,7 +54,7 @@ func PatchJob(c clientset.Interface, cur *batch.Job, transform func(*batch.Job) 
 	return c.BatchV1().Jobs(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 }
 
-func TryPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
+func TryPatchJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -79,7 +75,7 @@ func TryPatchJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*
 	return
 }
 
-func TryUpdateJob(c clientset.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
+func TryUpdateJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
