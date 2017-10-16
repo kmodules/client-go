@@ -25,21 +25,6 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
-  name = "github.com/appscode/jsonpatch"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/appscode/searchlight"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/appscode/stash"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/appscode/voyager"
-
-[[constraint]]
   name = "github.com/coreos/prometheus-operator"
   version = "0.12.0"
 
@@ -50,10 +35,6 @@
   branch = "master"
   name = "github.com/hashicorp/go-version"
   source = "https://github.com/appscode/go-version.git"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/k8sdb/apimachinery"
 
 [[constraint]]
   name = "k8s.io/apiextensions-apiserver"
