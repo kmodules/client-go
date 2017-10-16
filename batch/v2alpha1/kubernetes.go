@@ -6,8 +6,8 @@ import (
 	"reflect"
 
 	"github.com/appscode/kutil"
+	batchv2alpha1 "k8s.io/api/batch/v2alpha1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	batchv2alpha1 "k8s.io/client-go/pkg/apis/batch/v2alpha1"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {

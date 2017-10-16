@@ -6,13 +6,13 @@ import (
 
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
+	certificates "k8s.io/api/certificates/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	certificates "k8s.io/client-go/pkg/apis/certificates/v1beta1"
 )
 
 func CreateOrPatchCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, error) {
