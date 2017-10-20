@@ -1,4 +1,4 @@
-package v2alpha1
+package v1beta1
 
 import (
 	"errors"
@@ -6,12 +6,12 @@ import (
 	"reflect"
 
 	"github.com/appscode/kutil"
-	batchv2alpha1 "k8s.io/api/batch/v2alpha1"
+	batch "k8s.io/api/batch/v1beta1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 func GetGroupVersionKind(v interface{}) schema.GroupVersionKind {
-	return batchv2alpha1.SchemeGroupVersion.WithKind(kutil.GetKind(v))
+	return batch.SchemeGroupVersion.WithKind(kutil.GetKind(v))
 }
 
 func AssignTypeKind(v interface{}) error {
@@ -20,8 +20,8 @@ func AssignTypeKind(v interface{}) error {
 	}
 
 	switch u := v.(type) {
-	case *batchv2alpha1.CronJob:
-		u.APIVersion = batchv2alpha1.SchemeGroupVersion.String()
+	case *batch.CronJob:
+		u.APIVersion = batch.SchemeGroupVersion.String()
 		u.Kind = kutil.GetKind(v)
 		return nil
 	}
