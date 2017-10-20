@@ -6,13 +6,13 @@ import (
 
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
+	batch "k8s.io/api/batch/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
-	batch "k8s.io/client-go/pkg/apis/batch/v1"
 )
 
 func CreateOrPatchJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (*batch.Job, error) {

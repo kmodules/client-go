@@ -25,8 +25,9 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
+  branch = "client-go-5"
   name = "github.com/coreos/prometheus-operator"
-  version = "0.12.0"
+  source = "https://github.com/appscode/prometheus-operator.git"
 
 [[constraint]]
   name = "github.com/golang/glog"
@@ -37,16 +38,20 @@
   source = "https://github.com/appscode/go-version.git"
 
 [[constraint]]
-  name = "k8s.io/apiextensions-apiserver"
-  revision = "5fa44608f6b9b2180a2fd1ecb52e651fd0397794"
+  revision = "fe29995db37613b9c5b2a647544cf627bfa8d299"
+  name = "k8s.io/api"
 
 [[constraint]]
+  branch = "release-1.8"
+  name = "k8s.io/apiextensions-apiserver"
+
+[[constraint]]
+  revision = "019ae5ada31de202164b118aee88ee2d14075c31"
   name = "k8s.io/apimachinery"
-  revision = "1fd2e63a9a370677308a42f24fd40c86438afddf"
 
 [[constraint]]
   name = "k8s.io/client-go"
-  version = "4.0.0"
+  version = "v5.0.0"
 
 [[constraint]]
   branch = "release-branch.go1.8"
