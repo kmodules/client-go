@@ -1,26 +1,20 @@
-package kutil
+package meta
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-version"
-	"github.com/pkg/errors"
 	"io/ioutil"
-	core "k8s.io/api/core/v1"
-	apiextensions "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
-	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/kubernetes"
-	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-	"net/http"
 	"os"
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-version"
+	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes"
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 )
 
 const (
@@ -72,35 +66,6 @@ func CheckAPIVersion(c kubernetes.Interface, constraint string) (bool, error) {
 	return cond.Check(v.ToMutator().ResetPrerelease().ResetMetadata().Done()), nil
 }
 
-func WaitForCRDReady(restClient rest.Interface, crds []*apiextensions.CustomResourceDefinition) error {
-	err := wait.Poll(3*time.Second, 5*time.Minute, func() (bool, error) {
-		for _, crd := range crds {
-			res := restClient.Get().AbsPath("apis", crd.Spec.Group, crd.Spec.Version, crd.Spec.Names.Plural).Do()
-			err := res.Error()
-			if err != nil {
-				// RESTClient returns *apierrors.StatusError for any status codes < 200 or > 206
-				// and http.Client.Do errors are returned directly.
-				if se, ok := err.(*kerr.StatusError); ok {
-					if se.Status().Code == http.StatusNotFound {
-						return false, nil
-					}
-				}
-				return false, err
-			}
-
-			var statusCode int
-			res.StatusCode(&statusCode)
-			if statusCode != http.StatusOK {
-				return false, fmt.Errorf("invalid status code: %d", statusCode)
-			}
-		}
-
-		return true, nil
-	})
-
-	return errors.Wrap(err, fmt.Sprintf("timed out waiting for CRD"))
-}
-
 func DeleteInBackground() *metav1.DeleteOptions {
 	policy := metav1.DeletePropagationBackground
 	return &metav1.DeleteOptions{PropagationPolicy: &policy}
@@ -117,21 +82,6 @@ func GetKind(v interface{}) string {
 		val = val.Elem()
 	}
 	return val.Type().Name()
-}
-
-func GetObjectReference(v interface{}, gv schema.GroupVersion) *core.ObjectReference {
-	m, err := meta.Accessor(v)
-	if err != nil {
-		return &core.ObjectReference{}
-	}
-	return &core.ObjectReference{
-		APIVersion:      gv.String(),
-		Kind:            GetKind(v),
-		Namespace:       m.GetNamespace(),
-		Name:            m.GetName(),
-		UID:             m.GetUID(),
-		ResourceVersion: m.GetResourceVersion(),
-	}
 }
 
 // MarshalToYAML marshals an object into yaml.

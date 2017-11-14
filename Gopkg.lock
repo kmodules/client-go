@@ -161,6 +161,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/kubernetes/apimachinery"
+  packages = ["pkg/conversion"]
+  revision = "18a564baac720819100827c16fdebcadb05b2d0d"
+
+[[projects]]
+  branch = "master"
   name = "github.com/mailru/easyjson"
   packages = ["buffer","jlexer","jwriter"]
   revision = "2a92e673c9a6302dd05c3a691ae1f24aef46457d"
@@ -256,6 +262,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e6f8a43ed07bdd5d38383e3c39809cb6a120b30b3d4cd5cda4486b3c1d70ec36"
+  inputs-digest = "d525c5a37ced17b234895c5f034bb8b8d53bdee9ea04bb96f3519b1a2887dbc8"
   solver-name = "gps-cdcl"
   solver-version = 1
