@@ -38,6 +38,8 @@ func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.Agent
 		in.Annotations["prometheus.io/path"] = sp.Path()
 		if new.Prometheus.Port > 0 {
 			in.Annotations["prometheus.io/port"] = fmt.Sprintf("%d", new.Prometheus.Port)
+		} else {
+			delete(in.Annotations, "prometheus.io/port")
 		}
 		return in
 	})
