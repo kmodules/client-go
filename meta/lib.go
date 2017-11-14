@@ -6,7 +6,6 @@ import (
 	"os"
 	"reflect"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/go-version"
 	core "k8s.io/api/core/v1"
@@ -15,11 +14,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
-)
-
-const (
-	RetryInterval = 50 * time.Millisecond
-	RetryTimeout  = 2 * time.Second
 )
 
 func Namespace() string {
