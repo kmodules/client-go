@@ -134,14 +134,14 @@ func EnsureContainerDeleted(containers []core.Container, name string) []core.Con
 	return containers
 }
 
-func UpsertContainer(containers []core.Container, nv core.Container) []core.Container {
-	for i, vol := range containers {
-		if vol.Name == nv.Name {
-			containers[i] = nv
+func UpsertContainer(containers []core.Container, upsert core.Container) []core.Container {
+	for i, container := range containers {
+		if container.Name == upsert.Name {
+			containers[i] = upsert
 			return containers
 		}
 	}
-	return append(containers, nv)
+	return append(containers, upsert)
 }
 
 func GetString(m map[string]string, key string) string {
@@ -159,6 +159,16 @@ func UpsertVolume(volumes []core.Volume, nv core.Volume) []core.Volume {
 		}
 	}
 	return append(volumes, nv)
+}
+
+func UpsertVolumeClaim(volumeClaims []core.PersistentVolumeClaim, upsert core.PersistentVolumeClaim) []core.PersistentVolumeClaim {
+	for i, vc := range volumeClaims {
+		if vc.Name == upsert.Name {
+			volumeClaims[i] = upsert
+			return volumeClaims
+		}
+	}
+	return append(volumeClaims, upsert)
 }
 
 func EnsureVolumeDeleted(volumes []core.Volume, name string) []core.Volume {
@@ -199,6 +209,13 @@ func UpsertEnvVar(vars []core.EnvVar, nv core.EnvVar) []core.EnvVar {
 	return append(vars, nv)
 }
 
+func UpsertEnvVars(vars []core.EnvVar, upsert []core.EnvVar) []core.EnvVar {
+	for _, env := range upsert {
+		vars = UpsertEnvVar(vars, env)
+	}
+	return vars
+}
+
 func EnsureEnvVarDeleted(vars []core.EnvVar, name string) []core.EnvVar {
 	for i, v := range vars {
 		if v.Name == name {
@@ -206,4 +223,16 @@ func EnsureEnvVarDeleted(vars []core.EnvVar, name string) []core.EnvVar {
 		}
 	}
 	return vars
+}
+
+func UpsertMap(maps, upsert map[string]string) map[string]string {
+	if maps == nil {
+		maps = make(map[string]string)
+	}
+
+	for k, v := range upsert {
+		maps[k] = v
+	}
+
+	return maps
 }
