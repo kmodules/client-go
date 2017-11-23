@@ -199,7 +199,7 @@ func EnsureVolumeMountDeleted(mounts []core.VolumeMount, name string) []core.Vol
 	return mounts
 }
 
-func UpsertEnvVar(vars []core.EnvVar, nv ...core.EnvVar) []core.EnvVar {
+func UpsertEnvVars(vars []core.EnvVar, nv ...core.EnvVar) []core.EnvVar {
 	upsert := func(env core.EnvVar) {
 		for i, v := range vars {
 			if v.Name == env.Name {
