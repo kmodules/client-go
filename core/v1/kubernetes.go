@@ -229,10 +229,8 @@ func UpsertMap(maps, upsert map[string]string) map[string]string {
 	if maps == nil {
 		maps = make(map[string]string)
 	}
-
 	for k, v := range upsert {
 		maps[k] = v
 	}
-
 	return maps
 }
