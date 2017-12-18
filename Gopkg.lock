@@ -28,8 +28,8 @@
 [[projects]]
   branch = "master"
   name = "github.com/appscode/go"
-  packages = ["types"]
-  revision = "f719fe83ed5dd094e07c4456dc68e1227131d581"
+  packages = ["analytics","homedir","types"]
+  revision = "cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a"
 
 [[projects]]
   branch = "client-go-5"
@@ -121,6 +121,12 @@
   name = "github.com/google/gofuzz"
   packages = ["."]
   revision = "24818f796faf91cd76ec7bddd72458fbced7a6c1"
+
+[[projects]]
+  name = "github.com/google/uuid"
+  packages = ["."]
+  revision = "064e2069ce9c359c118179501254f67d7d37ba24"
+  version = "0.2"
 
 [[projects]]
   name = "github.com/googleapis/gnostic"
@@ -268,6 +274,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d942bd601c181905d611423771ea226b9dc4fc3b731cfd318c75d187517b5c3a"
+  inputs-digest = "f76e11463de7129bd88904016d74687caa2a11f68ad43692700b28e6217b210f"
   solver-name = "gps-cdcl"
   solver-version = 1
