@@ -161,12 +161,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/kubernetes/apimachinery"
-  packages = ["pkg/conversion"]
-  revision = "18a564baac720819100827c16fdebcadb05b2d0d"
-
-[[projects]]
-  branch = "master"
   name = "github.com/mailru/easyjson"
   packages = ["buffer","jlexer","jwriter"]
   revision = "2a92e673c9a6302dd05c3a691ae1f24aef46457d"
@@ -190,10 +184,22 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
   revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert"]
+  revision = "69483b4bd14f5845b5a1e55bca19e954e827f1d0"
+  version = "v1.1.4"
 
 [[projects]]
   branch = "master"
@@ -239,7 +245,7 @@
 [[projects]]
   branch = "release-1.8"
   name = "k8s.io/apiextensions-apiserver"
-  packages = ["pkg/apis/apiextensions","pkg/apis/apiextensions/v1beta1"]
+  packages = ["pkg/apis/apiextensions","pkg/apis/apiextensions/v1beta1","pkg/client/clientset/clientset/scheme","pkg/client/clientset/clientset/typed/apiextensions/v1beta1"]
   revision = "89b2a556a65053a90552eaed26f810df4a266367"
 
 [[projects]]
@@ -262,6 +268,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d525c5a37ced17b234895c5f034bb8b8d53bdee9ea04bb96f3519b1a2887dbc8"
+  inputs-digest = "d942bd601c181905d611423771ea226b9dc4fc3b731cfd318c75d187517b5c3a"
   solver-name = "gps-cdcl"
   solver-version = 1
