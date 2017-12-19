@@ -62,9 +62,7 @@ func (agent *PrometheusCoreosOperator) SupportsCoreOSOperator() bool {
 }
 
 func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, new *api.AgentSpec) error {
-
 	old, err := agent.promClient.ServiceMonitors(core.NamespaceAll).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
-
 	if old != nil && (new == nil || old.Namespace != new.Prometheus.Namespace) {
 		err := agent.promClient.ServiceMonitors(old.Namespace).Delete(sp.ServiceMonitorName(), nil)
 		if err != nil && !kerr.IsNotFound(err) {
