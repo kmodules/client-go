@@ -9,6 +9,7 @@ import (
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	core "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -31,14 +32,14 @@ func (agent *PrometheusCoreosOperator) Add(sp api.StatsAccessor, spec *api.Agent
 	if !agent.SupportsCoreOSOperator() {
 		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
-	return agent.ensureServiceMonitor(sp, spec, spec)
+	return agent.ensureServiceMonitor(sp, spec)
 }
 
-func (agent *PrometheusCoreosOperator) Update(sp api.StatsAccessor, old, new *api.AgentSpec) error {
+func (agent *PrometheusCoreosOperator) Update(sp api.StatsAccessor, new *api.AgentSpec) error {
 	if !agent.SupportsCoreOSOperator() {
 		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
-	return agent.ensureServiceMonitor(sp, old, new)
+	return agent.ensureServiceMonitor(sp, new)
 }
 
 func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor, spec *api.AgentSpec) error {
@@ -63,9 +64,12 @@ func (agent *PrometheusCoreosOperator) SupportsCoreOSOperator() bool {
 	return true
 }
 
-func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, old, new *api.AgentSpec) error {
-	if old != nil && (new == nil || old.Prometheus.Namespace != new.Prometheus.Namespace) {
-		err := agent.promClient.ServiceMonitors(old.Prometheus.Namespace).Delete(sp.ServiceMonitorName(), nil)
+func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, new *api.AgentSpec) error {
+
+	old, err := agent.promClient.ServiceMonitors(core.NamespaceAll).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
+
+	if old != nil && (new == nil || old.Namespace != new.Prometheus.Namespace) {
+		err := agent.promClient.ServiceMonitors(old.Namespace).Delete(sp.ServiceMonitorName(), nil)
 		if err != nil && !kerr.IsNotFound(err) {
 			return err
 		}
