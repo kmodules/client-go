@@ -21,10 +21,10 @@ func New(k8sClient kubernetes.Interface) api.Agent {
 }
 
 func (agent *PrometheusBuiltin) Add(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	return agent.Update(sp, spec, spec)
+	return agent.Update(sp, spec)
 }
 
-func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, old, new *api.AgentSpec) error {
+func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, new *api.AgentSpec) error {
 	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
