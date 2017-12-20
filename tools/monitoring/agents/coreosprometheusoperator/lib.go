@@ -76,10 +76,11 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 			if err != nil && !kerr.IsNotFound(err) {
 				return err
 			}
-			if new == nil {
-				return nil
-			}
 		}
+	}
+
+	if new == nil {
+		return nil
 	}
 
 	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
