@@ -9,7 +9,7 @@ import (
 	ecs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -62,14 +62,27 @@ func (agent *PrometheusCoreosOperator) SupportsCoreOSOperator() bool {
 }
 
 func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, new *api.AgentSpec) error {
-	old, err := agent.promClient.ServiceMonitors(core.NamespaceAll).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
-	if old != nil && (new == nil || old.Namespace != new.Prometheus.Namespace) {
-		err := agent.promClient.ServiceMonitors(old.Namespace).Delete(sp.ServiceMonitorName(), nil)
-		if err != nil && !kerr.IsNotFound(err) {
-			return err
-		}
-		if new == nil {
-			return nil
+	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Set{
+			"name": sp.ServiceMonitorName(),
+		}.String(),
+	})
+
+	// var oldItems v1alpha1.ServiceMonitorList
+	// oldByte,err :=yaml.Marshal(old)
+	// yaml.Unmarshal(oldByte, &oldItems)
+
+	oldItems := old.(*prom.ServiceMonitorList)
+
+	for _, item := range oldItems.Items {
+		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
+			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
+			if err != nil && !kerr.IsNotFound(err) {
+				return err
+			}
+			if new == nil {
+				return nil
+			}
 		}
 	}
 
@@ -99,9 +112,14 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 		if err != nil {
 			return err
 		}
+
+		var labels map[string]string
+		labels = svc.Labels
+		labels["name"] = sp.ServiceMonitorName()
+
 		actual.Labels = new.Prometheus.Labels
 		actual.Spec.Selector = metav1.LabelSelector{
-			MatchLabels: svc.Labels,
+			MatchLabels: labels,
 		}
 		actual.Spec.NamespaceSelector = prom.NamespaceSelector{
 			MatchNames: []string{sp.GetNamespace()},
@@ -131,6 +149,10 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		return errors.New("no port found in stats service")
 	}
 
+	var labels map[string]string
+	labels = svc.Labels
+	labels["name"] = sp.ServiceMonitorName()
+
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sp.ServiceMonitorName(),
@@ -149,7 +171,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 				},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: svc.Labels,
+				MatchLabels: labels,
 			},
 		},
 	}
