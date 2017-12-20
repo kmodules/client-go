@@ -111,12 +111,12 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 		}
 
 		var labels map[string]string
-		labels = svc.Labels
+		labels = new.Prometheus.Labels
 		labels["name"] = sp.ServiceMonitorName()
 
-		actual.Labels = new.Prometheus.Labels
+		actual.Labels = labels
 		actual.Spec.Selector = metav1.LabelSelector{
-			MatchLabels: labels,
+			MatchLabels: svc.Labels,
 		}
 		actual.Spec.NamespaceSelector = prom.NamespaceSelector{
 			MatchNames: []string{sp.GetNamespace()},
@@ -147,14 +147,14 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 	}
 
 	var labels map[string]string
-	labels = svc.Labels
+	labels = spec.Prometheus.Labels
 	labels["name"] = sp.ServiceMonitorName()
 
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sp.ServiceMonitorName(),
 			Namespace: spec.Prometheus.Namespace,
-			Labels:    spec.Prometheus.Labels,
+			Labels:    labels,
 		},
 		Spec: prom.ServiceMonitorSpec{
 			NamespaceSelector: prom.NamespaceSelector{
@@ -168,7 +168,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 				},
 			},
 			Selector: metav1.LabelSelector{
-				MatchLabels: labels,
+				MatchLabels: svc.Labels,
 			},
 		},
 	}
