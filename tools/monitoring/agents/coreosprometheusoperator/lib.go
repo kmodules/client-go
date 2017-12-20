@@ -68,10 +68,6 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 		}.String(),
 	})
 
-	// var oldItems v1alpha1.ServiceMonitorList
-	// oldByte,err :=yaml.Marshal(old)
-	// yaml.Unmarshal(oldByte, &oldItems)
-
 	oldItems := old.(*prom.ServiceMonitorList)
 
 	for _, item := range oldItems.Items {
