@@ -26,11 +26,6 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
-  branch = "client-go-5"
-  name = "github.com/coreos/prometheus-operator"
-  source = "https://github.com/appscode/prometheus-operator.git"
-
-[[constraint]]
   branch = "master"
   name = "github.com/golang/glog"
 
