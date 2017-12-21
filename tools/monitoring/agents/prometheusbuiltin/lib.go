@@ -20,11 +20,8 @@ func New(k8sClient kubernetes.Interface) api.Agent {
 	return &PrometheusBuiltin{k8sClient: k8sClient}
 }
 
-func (agent *PrometheusBuiltin) Add(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	return agent.Update(sp, spec)
-}
 
-func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, new *api.AgentSpec) error {
+func (agent *PrometheusBuiltin) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) error {
 	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
 		if in.Annotations == nil {
 			in.Annotations = map[string]string{}
@@ -46,7 +43,7 @@ func (agent *PrometheusBuiltin) Update(sp api.StatsAccessor, new *api.AgentSpec)
 	return err
 }
 
-func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor, spec *api.AgentSpec) error {
+func (agent *PrometheusBuiltin) Delete(sp api.StatsAccessor) error {
 	_, err := core_util.TryPatchService(agent.k8sClient, metav1.ObjectMeta{Namespace: sp.GetNamespace(), Name: sp.ServiceName()}, func(in *core.Service) *core.Service {
 		if in.Annotations != nil {
 			delete(in.Annotations, "prometheus.io/scrape")

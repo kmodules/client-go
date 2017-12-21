@@ -28,22 +28,22 @@ func New(k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Inter
 	}
 }
 
-func (agent *PrometheusCoreosOperator) Add(sp api.StatsAccessor, spec *api.AgentSpec) error {
-	return agent.Update(sp, spec)
-}
-
-func (agent *PrometheusCoreosOperator) Update(sp api.StatsAccessor, new *api.AgentSpec) error {
+func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) error {
 	if !agent.SupportsCoreOSOperator() {
 		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
 	return agent.ensureServiceMonitor(sp, new)
 }
 
-func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor, spec *api.AgentSpec) error {
+func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) error {
 	if !agent.SupportsCoreOSOperator() {
 		return errors.New("cluster does not support CoreOS Prometheus operator")
 	}
-	if err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Delete(sp.ServiceMonitorName(), nil); !kerr.IsNotFound(err) {
+	if err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).DeleteCollection(&metav1.DeleteOptions{}, metav1.ListOptions{
+		LabelSelector: labels.Set{
+			"monitoring.appscode.com/service-key": sp.GetNamespace() + "." + sp.ServiceName(),
+		}.String(),
+	}); !kerr.IsNotFound(err) {
 		return err
 	}
 	return nil
@@ -64,12 +64,11 @@ func (agent *PrometheusCoreosOperator) SupportsCoreOSOperator() bool {
 func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, new *api.AgentSpec) error {
 	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Set{
-			"name": sp.ServiceMonitorName(),
+			"monitoring.appscode.com/service-key": sp.GetNamespace() + "." + sp.ServiceName(),
 		}.String(),
 	})
 
 	oldItems := old.(*prom.ServiceMonitorList)
-
 	for _, item := range oldItems.Items {
 		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
 			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
@@ -78,7 +77,6 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 			}
 		}
 	}
-
 	if new == nil {
 		return nil
 	}
@@ -112,7 +110,7 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 
 		var labels map[string]string
 		labels = new.Prometheus.Labels
-		labels["name"] = sp.ServiceMonitorName()
+		labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
 
 		actual.Labels = labels
 		actual.Spec.Selector = metav1.LabelSelector{
@@ -148,7 +146,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 
 	var labels map[string]string
 	labels = spec.Prometheus.Labels
-	labels["name"] = sp.ServiceMonitorName()
+	labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
 
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
