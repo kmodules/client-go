@@ -28,7 +28,7 @@ func CreateOrPatchService(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 		}))
 		return out, true, err
 	} else if err != nil {
-		return nil,false, err
+		return nil, false, err
 	}
 	return PatchService(c, cur, transform)
 }
