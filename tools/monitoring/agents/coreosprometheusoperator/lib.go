@@ -84,20 +84,23 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 	})
 
 	ok := false
-
 	oldItems := old.(*prom.ServiceMonitorList)
 	for _, item := range oldItems.Items {
 		if item != nil && (new == nil || item.Namespace != new.Prometheus.Namespace) {
 			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
 			if err != nil && !kerr.IsNotFound(err) {
 				return false, err
+			} else if err == nil {
+				ok = true
 			}
 		}
-		ok = true
 	}
 	if new == nil {
 		return ok, nil
 	}
+
+	// Unique Label Selector for ServiceMonitor
+	new.Prometheus.Labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
 
 	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -126,11 +129,7 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 			return false, err
 		}
 
-		var labels map[string]string
-		labels = new.Prometheus.Labels
-		labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
-
-		actual.Labels = labels
+		actual.Labels = new.Prometheus.Labels
 		actual.Spec.Selector = metav1.LabelSelector{
 			MatchLabels: svc.Labels,
 		}
@@ -162,15 +161,11 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		return false, errors.New("no port found in stats service")
 	}
 
-	var labels map[string]string
-	labels = spec.Prometheus.Labels
-	labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
-
 	sm := &prom.ServiceMonitor{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      sp.ServiceMonitorName(),
 			Namespace: spec.Prometheus.Namespace,
-			Labels:    labels,
+			Labels:    spec.Prometheus.Labels,
 		},
 		Spec: prom.ServiceMonitorSpec{
 			NamespaceSelector: prom.NamespaceSelector{
@@ -188,7 +183,7 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 			},
 		},
 	}
-	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Create(sm); !kerr.IsAlreadyExists(err) {
+	if _, err := agent.promClient.ServiceMonitors(spec.Prometheus.Namespace).Create(sm); err != nil && !kerr.IsAlreadyExists(err) {
 		return false, err
 	}
 	return true, nil
