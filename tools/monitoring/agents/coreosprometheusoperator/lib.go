@@ -13,6 +13,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+const serviceKey = "monitoring.appscode.com/service-key"
+
 // PrometheusCoreosOperator creates `ServiceMonitor` so that CoreOS Prometheus operator can generate necessary config for Prometheus.
 type PrometheusCoreosOperator struct {
 	k8sClient  kubernetes.Interface
@@ -29,57 +31,12 @@ func New(k8sClient kubernetes.Interface, extClient ecs.ApiextensionsV1beta1Inter
 }
 
 func (agent *PrometheusCoreosOperator) CreateOrUpdate(sp api.StatsAccessor, new *api.AgentSpec) (bool, error) {
-	if !agent.SupportsCoreOSOperator() {
+	if !agent.supportsCoreOSOperator() {
 		return false, errors.New("cluster does not support CoreOS Prometheus operator")
 	}
-	return agent.ensureServiceMonitor(sp, new)
-}
-
-func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (bool, error) {
-	if !agent.SupportsCoreOSOperator() {
-		return false, errors.New("cluster does not support CoreOS Prometheus operator")
-	}
-
 	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
 		LabelSelector: labels.Set{
-			"monitoring.appscode.com/service-key": sp.GetNamespace() + "." + sp.ServiceName(),
-		}.String(),
-	})
-	if err != nil && !kerr.IsNotFound(err) {
-		return false, err
-	}
-
-	ok := false
-	oldItems := old.(*prom.ServiceMonitorList)
-	for _, item := range oldItems.Items {
-		if item != nil {
-			err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
-			if err != nil && !kerr.IsNotFound(err) {
-				return false, err
-			} else if err == nil {
-				ok = true
-			}
-		}
-	}
-	return ok, nil
-}
-
-func (agent *PrometheusCoreosOperator) SupportsCoreOSOperator() bool {
-	_, err := agent.extClient.CustomResourceDefinitions().Get(prom.PrometheusName+"."+prom.Group, metav1.GetOptions{})
-	if err != nil {
-		return false
-	}
-	_, err = agent.extClient.CustomResourceDefinitions().Get(prom.ServiceMonitorName+"."+prom.Group, metav1.GetOptions{})
-	if err != nil {
-		return false
-	}
-	return true
-}
-
-func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor, new *api.AgentSpec) (bool, error) {
-	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
-		LabelSelector: labels.Set{
-			"monitoring.appscode.com/service-key": sp.GetNamespace() + "." + sp.ServiceName(),
+			serviceKey: sp.GetNamespace() + "." + sp.ServiceName(),
 		}.String(),
 	})
 
@@ -100,7 +57,10 @@ func (agent *PrometheusCoreosOperator) ensureServiceMonitor(sp api.StatsAccessor
 	}
 
 	// Unique Label Selector for ServiceMonitor
-	new.Prometheus.Labels["monitoring.appscode.com/service-key"] = sp.GetNamespace() + "." + sp.ServiceName()
+	if new.Prometheus.Labels == nil {
+		new.Prometheus.Labels = map[string]string{}
+	}
+	new.Prometheus.Labels[serviceKey] = sp.GetNamespace() + "." + sp.ServiceName()
 
 	actual, err := agent.promClient.ServiceMonitors(new.Prometheus.Namespace).Get(sp.ServiceMonitorName(), metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
@@ -187,4 +147,43 @@ func (agent *PrometheusCoreosOperator) createServiceMonitor(sp api.StatsAccessor
 		return false, err
 	}
 	return true, nil
+}
+
+func (agent *PrometheusCoreosOperator) Delete(sp api.StatsAccessor) (bool, error) {
+	if !agent.supportsCoreOSOperator() {
+		return false, errors.New("cluster does not support CoreOS Prometheus operator")
+	}
+
+	old, err := agent.promClient.ServiceMonitors(metav1.NamespaceAll).List(metav1.ListOptions{
+		LabelSelector: labels.Set{
+			serviceKey: sp.GetNamespace() + "." + sp.ServiceName(),
+		}.String(),
+	})
+	if err != nil && !kerr.IsNotFound(err) {
+		return false, err
+	}
+
+	ok := false
+	oldItems := old.(*prom.ServiceMonitorList)
+	for _, item := range oldItems.Items {
+		err := agent.promClient.ServiceMonitors(item.Namespace).Delete(sp.ServiceMonitorName(), nil)
+		if err != nil && !kerr.IsNotFound(err) {
+			return false, err
+		} else if err == nil {
+			ok = true
+		}
+	}
+	return ok, nil
+}
+
+func (agent *PrometheusCoreosOperator) supportsCoreOSOperator() bool {
+	_, err := agent.extClient.CustomResourceDefinitions().Get(prom.PrometheusName+"."+prom.Group, metav1.GetOptions{})
+	if err != nil {
+		return false
+	}
+	_, err = agent.extClient.CustomResourceDefinitions().Get(prom.ServiceMonitorName+"."+prom.Group, metav1.GetOptions{})
+	if err != nil {
+		return false
+	}
+	return true
 }
