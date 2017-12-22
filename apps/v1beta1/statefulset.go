@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	. "github.com/appscode/go/types"
+	atypes "github.com/appscode/go/types"
 	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/golang/glog"
 	apps "k8s.io/api/apps/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -106,4 +108,31 @@ func WaitUntilStatefulSetReady(kubeClient kubernetes.Interface, meta metav1.Obje
 		}
 		return false, nil
 	})
+}
+
+func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+	statefulSet, err := kubeClient.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		if kerr.IsNotFound(err) {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	// Update StatefulSet
+	_, _, err = PatchStatefulSet(kubeClient, statefulSet, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Spec.Replicas = atypes.Int32P(0)
+		return in
+	})
+	if err != nil {
+		return err
+	}
+
+	err = core_util.WaitUntilPodDeletedBySelector(kubeClient, statefulSet.Namespace, statefulSet.Spec.Selector)
+	if err != nil {
+		return err
+	}
+
+	return kubeClient.AppsV1beta1().StatefulSets(statefulSet.Namespace).Delete(statefulSet.Name, nil)
 }
