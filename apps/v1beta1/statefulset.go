@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	. "github.com/appscode/go/types"
+	atypes "github.com/appscode/go/types"
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	apps "k8s.io/api/apps/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -106,4 +108,42 @@ func WaitUntilStatefulSetReady(kubeClient kubernetes.Interface, meta metav1.Obje
 		}
 		return false, nil
 	})
+}
+
+func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+	statefulSet, err := kubeClient.AppsV1beta1().StatefulSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	if err != nil {
+		if kerr.IsNotFound(err) {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	// Update StatefulSet
+	_, err = TryPatchStatefulSet(kubeClient, meta, func(in *apps.StatefulSet) *apps.StatefulSet {
+		in.Spec.Replicas = atypes.Int32P(0)
+		return in
+	})
+	if err != nil {
+		return err
+	}
+
+	err = wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
+		podList, err := kubeClient.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{
+			LabelSelector: labels.Set(statefulSet.Spec.Selector.MatchLabels).AsSelector().String(),
+		})
+		if err != nil {
+			return false, err
+		}
+		if len(podList.Items) == 0 {
+			return true, nil
+		}
+		return false, nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return kubeClient.AppsV1beta1().StatefulSets(statefulSet.Namespace).Delete(statefulSet.Name, nil)
 }

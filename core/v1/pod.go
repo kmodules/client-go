@@ -127,3 +127,13 @@ func RestartPods(kubeClient kubernetes.Interface, namespace string, selector *me
 		LabelSelector: r.String(),
 	})
 }
+
+func WaitUntilPodRunning(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
+		if pod, err := kubeClient.CoreV1().Pods(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
+			runningAndReady, _ := PodRunningAndReady(*pod)
+			return runningAndReady, nil
+		}
+		return false, nil
+	})
+}
