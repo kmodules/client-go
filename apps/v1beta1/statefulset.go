@@ -121,7 +121,7 @@ func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) 
 	}
 
 	// Update StatefulSet
-	_, err = TryPatchStatefulSet(kubeClient, meta, func(in *apps.StatefulSet) *apps.StatefulSet {
+	_, _, err = PatchStatefulSet(kubeClient, statefulSet, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Spec.Replicas = atypes.Int32P(0)
 		return in
 	})
