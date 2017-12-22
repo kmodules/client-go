@@ -7,11 +7,11 @@ import (
 	. "github.com/appscode/go/types"
 	atypes "github.com/appscode/go/types"
 	"github.com/appscode/kutil"
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/golang/glog"
 	apps "k8s.io/api/apps/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -129,18 +129,7 @@ func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) 
 		return err
 	}
 
-	err = wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		podList, err := kubeClient.CoreV1().Pods(metav1.NamespaceAll).List(metav1.ListOptions{
-			LabelSelector: labels.Set(statefulSet.Spec.Selector.MatchLabels).AsSelector().String(),
-		})
-		if err != nil {
-			return false, err
-		}
-		if len(podList.Items) == 0 {
-			return true, nil
-		}
-		return false, nil
-	})
+	err = core_util.WaitUntilPodDeletedBySelector(kubeClient, statefulSet.Namespace, statefulSet.Spec.Selector)
 	if err != nil {
 		return err
 	}
