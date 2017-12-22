@@ -32,6 +32,12 @@
   revision = "cb650d0b1a3c04a86595cf2a31fa704dbf1bc42a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/appscode/mergo"
+  packages = ["."]
+  revision = "e3000cb3d28c72b837601cac94debd91032d19fe"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
@@ -291,6 +297,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2fc41feb9a5b0b2c54f8082be147ac88104a8ea45555ec375d98239dbc8a2196"
+  inputs-digest = "a1bf5fda889af37e648e42c184311f047176ceb6dde803b7895f7d2d6d796c3e"
   solver-name = "gps-cdcl"
   solver-version = 1
