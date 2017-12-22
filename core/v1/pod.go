@@ -152,16 +152,17 @@ func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace st
 			return false, nil
 		}
 
-		if len(podList.Items) == count {
-			for _, pod := range podList.Items {
-				runningAndReady, _ := PodRunningAndReady(pod)
-				if !runningAndReady {
-					return false, nil
-				}
-			}
-			return true, nil
+		if len(podList.Items) != count {
+			return false, nil
 		}
-		return false, nil
+
+		for _, pod := range podList.Items {
+			runningAndReady, _ := PodRunningAndReady(pod)
+			if !runningAndReady {
+				return false, nil
+			}
+		}
+		return true, nil
 	})
 	return err
 }
