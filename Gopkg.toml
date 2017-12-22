@@ -27,6 +27,10 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/appscode/mergo"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/golang/glog"
 
 [[constraint]]
