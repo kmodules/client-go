@@ -144,7 +144,7 @@ func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace st
 		return err
 	}
 
-	err = wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
 		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{
 			LabelSelector: r.String(),
 		})
@@ -164,7 +164,6 @@ func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace st
 		}
 		return true, nil
 	})
-	return err
 }
 
 func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
@@ -180,9 +179,6 @@ func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace st
 		if err != nil {
 			return false, nil
 		}
-		if len(podList.Items) == 0 {
-			return true, nil
-		}
-		return false, nil
+		return len(podList.Items) == 0, nil
 	})
 }
