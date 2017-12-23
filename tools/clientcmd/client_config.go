@@ -3,6 +3,7 @@ package clientcmd
 import (
 	"fmt"
 
+	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -22,6 +23,14 @@ func BuildConfigFromContext(kubeconfigPath, contextName string) (*rest.Config, e
 		ClusterDefaults: clientcmd.ClusterDefaults,
 	}
 	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loader, overrides).ClientConfig()
+}
+
+func ClientFromContext(kubeconfigPath, contextName string) (kubernetes.Interface, error) {
+	cfg, err := BuildConfigFromContext(kubeconfigPath, contextName)
+	if err != nil {
+		return nil, err
+	}
+	return kubernetes.NewForConfig(cfg)
 }
 
 func NamespaceFromContext(kubeconfigPath, contextName string) (string, error) {
