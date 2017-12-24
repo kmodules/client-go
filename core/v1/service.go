@@ -119,6 +119,9 @@ func MergeServicePorts(cur, desired []core.ServicePort) []core.ServicePort {
 		if dp.NodePort == 0 {
 			dp.NodePort = cp.NodePort // avoid reassigning port
 		}
+		if dp.Protocol == "" {
+			dp.Protocol = cp.Protocol
+		}
 		desired[i] = dp
 	}
 	return desired
