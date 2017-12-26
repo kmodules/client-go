@@ -35,6 +35,10 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/google/go-cmp"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/hashicorp/go-version"
   source = "https://github.com/appscode/go-version.git"
 
