@@ -28,7 +28,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/appscode/go"
-  packages = ["analytics","homedir","types"]
+  packages = ["analytics","homedir","net","sets","types"]
   revision = "f08cee5a2aa53a1ab6d30e4ae11e381d1b265f81"
 
 [[projects]]
@@ -303,6 +303,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e5a7a004180f633c5387abb4e5f5e1f6a80da378d5b63b2c2303b5ae915fa8fb"
+  inputs-digest = "f386bef64df7c18b12c6620227400109007bd7ac4270d101fbb7f863c59e6eea"
   solver-name = "gps-cdcl"
   solver-version = 1
