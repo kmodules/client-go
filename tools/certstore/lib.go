@@ -1,4 +1,4 @@
-package certmanager
+package certstore
 
 import (
 	"crypto/rsa"
@@ -15,7 +15,7 @@ import (
 	"k8s.io/client-go/util/cert"
 )
 
-type CertManager struct {
+type CertStore struct {
 	caKey  *rsa.PrivateKey
 	caCert *x509.Certificate
 
@@ -23,13 +23,13 @@ type CertManager struct {
 	Expiry time.Duration
 }
 
-func NewCertStore(rootDir string) (*CertManager, error) {
+func NewCertStore(rootDir string) (*CertStore, error) {
 	dir := filepath.Join(rootDir, "pki")
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dir `%s`. Reason: %v", dir, err)
 	}
-	cm := &CertManager{dir: dir}
+	cm := &CertStore{dir: dir}
 	if cm.PairExists("ca") {
 		cm.caCert, cm.caKey, err = cm.Read("ca")
 		if err == nil {
@@ -62,19 +62,19 @@ func NewCertStore(rootDir string) (*CertManager, error) {
 	return cm, nil
 }
 
-func (cm *CertManager) Location() string {
+func (cm *CertStore) Location() string {
 	return cm.dir
 }
 
-func (cm *CertManager) CACert() []byte {
+func (cm *CertStore) CACert() []byte {
 	return cert.EncodeCertPEM(cm.caCert)
 }
 
-func (cm *CertManager) CAKey() []byte {
+func (cm *CertStore) CAKey() []byte {
 	return cert.EncodePrivateKeyPEM(cm.caKey)
 }
 
-func (cm *CertManager) NewHostCertPair() ([]byte, []byte, error) {
+func (cm *CertStore) NewHostCertPair() ([]byte, []byte, error) {
 	var sans cert.AltNames
 	publicIPs, privateIPs, _ := netz.HostIPs()
 	for _, ip := range publicIPs {
@@ -86,7 +86,7 @@ func (cm *CertManager) NewHostCertPair() ([]byte, []byte, error) {
 	return cm.NewServerCertPair("127.0.0.1", sans)
 }
 
-func (cm *CertManager) NewServerCertPair(cn string, sans cert.AltNames) ([]byte, []byte, error) {
+func (cm *CertStore) NewServerCertPair(cn string, sans cert.AltNames) ([]byte, []byte, error) {
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: []string{"AppsCode", "Eng"},
@@ -104,7 +104,7 @@ func (cm *CertManager) NewServerCertPair(cn string, sans cert.AltNames) ([]byte,
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
 
-func (cm *CertManager) NewClientCertPair(cn string) ([]byte, []byte, error) {
+func (cm *CertStore) NewClientCertPair(cn string) ([]byte, []byte, error) {
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: []string{"AppsCode", "Eng"},
@@ -121,7 +121,7 @@ func (cm *CertManager) NewClientCertPair(cn string) ([]byte, []byte, error) {
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
 
-func (cm *CertManager) IsExists(name string) bool {
+func (cm *CertStore) IsExists(name string) bool {
 	if _, err := os.Stat(cm.CertFile(name)); err == nil {
 		return true
 	}
@@ -131,7 +131,7 @@ func (cm *CertManager) IsExists(name string) bool {
 	return false
 }
 
-func (cm *CertManager) PairExists(name string) bool {
+func (cm *CertStore) PairExists(name string) bool {
 	if _, err := os.Stat(cm.CertFile(name)); err == nil {
 		if _, err := os.Stat(cm.KeyFile(name)); err == nil {
 			return true
@@ -140,15 +140,15 @@ func (cm *CertManager) PairExists(name string) bool {
 	return false
 }
 
-func (cm *CertManager) CertFile(name string) string {
+func (cm *CertStore) CertFile(name string) string {
 	return filepath.Join(cm.dir, strings.ToLower(name)+".crt")
 }
 
-func (cm *CertManager) KeyFile(name string) string {
+func (cm *CertStore) KeyFile(name string) string {
 	return filepath.Join(cm.dir, strings.ToLower(name)+".key")
 }
 
-func (cm *CertManager) Write(name string, crt *x509.Certificate, key *rsa.PrivateKey) error {
+func (cm *CertStore) Write(name string, crt *x509.Certificate, key *rsa.PrivateKey) error {
 	if err := ioutil.WriteFile(cm.CertFile(name), cert.EncodeCertPEM(crt), 0644); err != nil {
 		return fmt.Errorf("failed to write `%cm`. Reason: %v", cm.CertFile(name), err)
 	}
@@ -158,7 +158,7 @@ func (cm *CertManager) Write(name string, crt *x509.Certificate, key *rsa.Privat
 	return nil
 }
 
-func (cm *CertManager) WriteBytes(name string, crt, key []byte) error {
+func (cm *CertStore) WriteBytes(name string, crt, key []byte) error {
 	if err := ioutil.WriteFile(cm.CertFile(name), crt, 0644); err != nil {
 		return fmt.Errorf("failed to write `%cm`. Reason: %v", cm.CertFile(name), err)
 	}
@@ -168,7 +168,7 @@ func (cm *CertManager) WriteBytes(name string, crt, key []byte) error {
 	return nil
 }
 
-func (cm *CertManager) Read(name string) (*x509.Certificate, *rsa.PrivateKey, error) {
+func (cm *CertStore) Read(name string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	crtBytes, err := ioutil.ReadFile(cm.CertFile(name))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read certificate `%cm`. Reason: %v", cm.CertFile(name), err)
@@ -189,7 +189,7 @@ func (cm *CertManager) Read(name string) (*x509.Certificate, *rsa.PrivateKey, er
 	return crt[0], key.(*rsa.PrivateKey), nil
 }
 
-func (cm *CertManager) ReadBytes(name string) ([]byte, []byte, error) {
+func (cm *CertStore) ReadBytes(name string) ([]byte, []byte, error) {
 	crtBytes, err := ioutil.ReadFile(cm.CertFile(name))
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to read certificate `%cm`. Reason: %v", cm.CertFile(name), err)
