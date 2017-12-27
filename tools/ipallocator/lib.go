@@ -5,16 +5,24 @@ import (
 	"strings"
 )
 
+type DiscoverVia string
+
+const (
+	DiscoverViaIP  DiscoverVia = "ip"
+	DiscoverViaDNS DiscoverVia = "dns"
+)
+
 type IPAllocator struct {
 	serviceSubnet string
 	services      map[string]int64
-	useDNS        bool // all services must be in the same namespace
+	discoverVia   DiscoverVia // all services must be in the same namespace
 }
 
-func New(serviceSubnet string, services []string) *IPAllocator {
+func New(serviceSubnet string, services []string, discoverVia DiscoverVia) *IPAllocator {
 	ipa := &IPAllocator{
 		serviceSubnet: serviceSubnet,
 		services:      map[string]int64{},
+		discoverVia:   discoverVia,
 	}
 	for i, svc := range services {
 		ipa.services[svc] = int64(i + 1)
@@ -35,8 +43,12 @@ func (ipa IPAllocator) ClusterIP(svc string) string {
 }
 
 func (ipa IPAllocator) ServiceAddress(svc string) string {
-	if ipa.useDNS {
+	switch ipa.discoverVia {
+	case DiscoverViaDNS:
 		return svc
+	case DiscoverViaIP:
+		return ipa.ClusterIP(svc)
+	default:
+		panic("unknown discovery mechanism " + ipa.discoverVia)
 	}
-	return ipa.ClusterIP(svc)
 }
