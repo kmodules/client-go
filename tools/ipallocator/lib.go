@@ -55,3 +55,7 @@ func (ipa IPAllocator) ServiceAddress(svc string) string {
 		panic("unknown discovery mechanism " + ipa.discoverVia)
 	}
 }
+
+func (ipa IPAllocator) HostNetwork() bool {
+	return ipa.discoverVia != DiscoverViaDNS
+}
