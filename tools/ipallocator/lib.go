@@ -8,6 +8,8 @@ import (
 type DiscoverVia string
 
 const (
+	// DiscoverViaIP is a replacement for kube-dns. It uses a predefined map for service name to cluster ip.
+	// This reduces Kubernetes related overhead in a cluster.
 	DiscoverViaIP  DiscoverVia = "ip"
 	DiscoverViaDNS DiscoverVia = "dns"
 )
