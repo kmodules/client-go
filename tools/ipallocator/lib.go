@@ -31,6 +31,9 @@ func New(serviceSubnet string, services []string, discoverVia DiscoverVia) *IPAl
 }
 
 func (ipa IPAllocator) ClusterIP(svc string) string {
+	if ipa.discoverVia == DiscoverViaDNS {
+		return ""
+	}
 	seq, ok := ipa.services[svc]
 	if !ok {
 		return ""
