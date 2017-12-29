@@ -93,9 +93,8 @@ func DeleteDeployment(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) e
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
-		} else {
-			return err
 		}
+		return err
 	}
 	deletePolicy := metav1.DeletePropagationForeground
 	if err := kubeClient.AppsV1beta1().Deployments(deployment.Namespace).Delete(deployment.Name, &metav1.DeleteOptions{
