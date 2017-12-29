@@ -43,6 +43,10 @@
   source = "https://github.com/appscode/go-version.git"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/spf13/afero"
+
+[[constraint]]
   revision = "fe29995db37613b9c5b2a647544cf627bfa8d299"
   name = "k8s.io/api"
 
