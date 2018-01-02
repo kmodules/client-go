@@ -1,6 +1,9 @@
 package kutil
 
-import "time"
+import (
+	"errors"
+	"time"
+)
 
 const (
 	RetryInterval    = 50 * time.Millisecond
