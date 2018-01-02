@@ -18,18 +18,22 @@ func GetInt(m map[string]string, key string) (int, error) {
 	if m == nil {
 		return 0, kutil.ErrNotFound
 	}
-	s, ok := m[key]
+	v, ok := m[key]
 	if !ok {
 		return 0, kutil.ErrNotFound
 	}
-	return strconv.Atoi(s)
+	return strconv.Atoi(v)
 }
 
-func GetString(m map[string]string, key string) string {
+func GetString(m map[string]string, key string) (string, error) {
 	if m == nil {
-		return ""
+		return "", kutil.ErrNotFound
 	}
-	return m[key]
+	v, ok := m[key]
+	if !ok {
+		return "", kutil.ErrNotFound
+	}
+	return v, nil
 }
 
 func HasKey(m map[string]string, key string) bool {
