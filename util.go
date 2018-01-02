@@ -17,3 +17,7 @@ const (
 	VerbUpdated   VerbType = "updated"
 	VerbDeleted   VerbType = "deleted"
 )
+
+var (
+	ErrNotFound = errors.New("not found")
+)
