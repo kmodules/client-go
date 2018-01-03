@@ -117,7 +117,7 @@ func reasonForError(err error) string {
 	case kerr.APIStatus:
 		return "$k8s$err$" + string(t.Status().Reason)
 	}
-	return "$k8s$err$" + err.Error()[:32] // 32 = length of uuid
+	return "$k8s$err$" + trim(err.Error(), 32) // 32 = length of uuid
 }
 
 // ref: https://cloud.google.com/compute/docs/storing-retrieving-metadata
@@ -125,12 +125,12 @@ func tryGKE() string {
 	client := &http.Client{Timeout: time.Millisecond * 100}
 	req, err := http.NewRequest(http.MethodGet, "http://metadata.google.internal/computeMetadata/v1/instance/attributes/kube-env", nil)
 	if err != nil {
-		return "$gke$err$" + err.Error()[:32] // 32 = length of uuid
+		return "$gke$err$" + trim(err.Error(), 32) // 32 = length of uuid
 	}
 	req.Header.Set("Metadata-Flavor", "Google")
 	resp, err := client.Do(req)
 	if err != nil {
-		return "$gke$err$" + err.Error()[:32] // 32 = length of uuid
+		return "$gke$err$" + trim(err.Error(), 32) // 32 = length of uuid
 	}
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
@@ -149,4 +149,11 @@ func tryGKE() string {
 	masterIP := v.(string)
 	hashed := md5.Sum([]byte(masterIP))
 	return hex.EncodeToString(hashed[:])
+}
+
+func trim(s string, length int) string {
+	if len(s) > length {
+		return s[:length]
+	}
+	return s
 }
