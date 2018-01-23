@@ -46,22 +46,22 @@
   branch = "master"
   name = "github.com/spf13/afero"
 
-[[constraint]]
-  revision = "fe29995db37613b9c5b2a647544cf627bfa8d299"
+[[override]]
   name = "k8s.io/api"
+  version = "kubernetes-1.9.0"
 
-[[constraint]]
-  branch = "release-1.8"
+[[override]]
   name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.9.0"
 
-[[constraint]]
-  revision = "019ae5ada31de202164b118aee88ee2d14075c31"
+[[override]]
   name = "k8s.io/apimachinery"
+  version = "kubernetes-1.9.0"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/client-go"
-  version = "v5.0.0"
+  version = "v6.0.0"
 
 [[constraint]]
-  branch = "release-branch.go1.8"
+  branch = "release-branch.go1.9"
   name = "golang.org/x/net"
