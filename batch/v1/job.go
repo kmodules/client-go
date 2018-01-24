@@ -79,7 +79,7 @@ func TryUpdateJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 }
 
 func WaitUntilJobCompletion(c kubernetes.Interface, meta metav1.ObjectMeta) error {
-	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
+	return wait.PollInfinite(kutil.RetryInterval, func() (bool, error) {
 		job, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if err != nil {
 			if kerr.IsNotFound(err) {
