@@ -232,3 +232,19 @@ func UpsertMap(maps, upsert map[string]string) map[string]string {
 	}
 	return maps
 }
+
+func MergeLocalObjectReferences(old, new []core.LocalObjectReference) []core.LocalObjectReference {
+	m := make(map[string]core.LocalObjectReference)
+	for _, ref := range old {
+		m[ref.Name] = ref
+	}
+	for _, ref := range new {
+		m[ref.Name] = ref
+	}
+
+	result := make([]core.LocalObjectReference, 0, len(m))
+	for _, ref := range m {
+		result = append(result, ref)
+	}
+	return result
+}
