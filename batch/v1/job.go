@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/appscode/go/types"
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	batch "k8s.io/api/batch/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	ktypes "k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -52,7 +53,7 @@ func PatchJob(c kubernetes.Interface, cur *batch.Job, transform func(*batch.Job)
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Job %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.BatchV1().Jobs(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.BatchV1().Jobs(cur.Namespace).Patch(cur.Name, ktypes.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
 
@@ -75,4 +76,21 @@ func TryUpdateJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 		err = fmt.Errorf("failed to update Job %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func WaitUntilJobCompletion(c kubernetes.Interface, meta metav1.ObjectMeta) error {
+	return wait.PollInfinite(kutil.RetryInterval, func() (bool, error) {
+		job, err := c.BatchV1().Jobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		if err != nil {
+			if kerr.IsNotFound(err) {
+				return true, nil
+			}
+			return false, nil
+		}
+
+		if job.Status.Succeeded > 0 || job.Status.Failed > types.Int32(job.Spec.BackoffLimit) {
+			return true, nil
+		}
+		return false, nil
+	})
 }
