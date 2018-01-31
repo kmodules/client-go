@@ -39,6 +39,14 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/yudai/gojsondiff"
+
+[[constraint]]
+  name = "github.com/json-iterator/go"
+  version = "v1.0.0"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/hashicorp/go-version"
   source = "https://github.com/appscode/go-version.git"
 
@@ -62,6 +70,10 @@
   name = "k8s.io/client-go"
   version = "v6.0.0"
 
-[[constraint]]
+[[override]]
   branch = "release-branch.go1.9"
   name = "golang.org/x/net"
+
+[prune]
+  unused-packages = true
+  go-tests = true
