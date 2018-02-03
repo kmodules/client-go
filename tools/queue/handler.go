@@ -62,13 +62,13 @@ func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 	glog.V(6).Infof("Update event for %+v\n", newObj)
 	if h.enqueueUpdate == nil || h.enqueueUpdate(oldObj, newObj) {
-		h.Enqueue(h.queue, newObj)
+		Enqueue(h.queue, newObj)
 	}
 }
 
 func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 	glog.V(6).Infof("Delete event for %+v\n", obj)
 	if h.enqueueDelete {
-		h.Enqueue(h.queue, obj)
+		Enqueue(h.queue, obj)
 	}
 }
