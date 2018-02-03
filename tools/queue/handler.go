@@ -16,7 +16,7 @@ type QueueingEventHandler struct {
 
 var _ cache.ResourceEventHandler = &QueueingEventHandler{}
 
-func DefaultEventHandler(queue workqueue.RateLimitingInterface) cache.ResourceEventHandler {
+func DefaultEventHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
 		enqueueAdd:    true,
@@ -25,7 +25,7 @@ func DefaultEventHandler(queue workqueue.RateLimitingInterface) cache.ResourceEv
 	}
 }
 
-func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool) cache.ResourceEventHandler {
+func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
 		enqueueAdd:    true,
@@ -34,7 +34,7 @@ func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(o
 	}
 }
 
-func NewDeleteHandler(queue workqueue.RateLimitingInterface) cache.ResourceEventHandler {
+func NewDeleteHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
 		enqueueAdd:    false,
@@ -43,7 +43,7 @@ func NewDeleteHandler(queue workqueue.RateLimitingInterface) cache.ResourceEvent
 	}
 }
 
-func (h *QueueingEventHandler) enqueue(obj interface{}) {
+func (h *QueueingEventHandler) Enqueue(obj interface{}) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
 		glog.Errorf("Couldn't get key for object %+v: %v", obj, err)
@@ -55,20 +55,20 @@ func (h *QueueingEventHandler) enqueue(obj interface{}) {
 func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 	glog.V(6).Infof("Add event for %+v\n", obj)
 	if h.enqueueAdd {
-		h.enqueue(obj)
+		h.Enqueue(obj)
 	}
 }
 
 func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 	glog.V(6).Infof("Update event for %+v\n", newObj)
 	if h.enqueueUpdate == nil || h.enqueueUpdate(oldObj, newObj) {
-		h.enqueue(newObj)
+		h.Enqueue(newObj)
 	}
 }
 
 func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 	glog.V(6).Infof("Delete event for %+v\n", obj)
 	if h.enqueueDelete {
-		h.enqueue(obj)
+		h.Enqueue(obj)
 	}
 }
