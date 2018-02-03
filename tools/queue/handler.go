@@ -43,32 +43,32 @@ func NewDeleteHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandl
 	}
 }
 
-func (h *QueueingEventHandler) Enqueue(obj interface{}) {
+func Enqueue(queue workqueue.RateLimitingInterface, obj interface{}) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
 		glog.Errorf("Couldn't get key for object %+v: %v", obj, err)
 		return
 	}
-	h.queue.Add(key)
+	queue.Add(key)
 }
 
 func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 	glog.V(6).Infof("Add event for %+v\n", obj)
 	if h.enqueueAdd {
-		h.Enqueue(obj)
+		Enqueue(h.queue, obj)
 	}
 }
 
 func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 	glog.V(6).Infof("Update event for %+v\n", newObj)
 	if h.enqueueUpdate == nil || h.enqueueUpdate(oldObj, newObj) {
-		h.Enqueue(newObj)
+		h.Enqueue(h.queue, newObj)
 	}
 }
 
 func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 	glog.V(6).Infof("Delete event for %+v\n", obj)
 	if h.enqueueDelete {
-		h.Enqueue(obj)
+		h.Enqueue(h.queue, obj)
 	}
 }
