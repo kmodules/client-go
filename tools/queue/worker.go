@@ -11,16 +11,16 @@ import (
 
 // Worker continuously runs a Reconcile function against a message Queue
 type Worker struct {
+	name        string
 	queue       workqueue.RateLimitingInterface
 	maxRetries  int
-	name        string
-	reconcile   func(key string) error
 	threadiness int
+	reconcile   func(key string) error
 }
 
-func New(name string, fn func(key string) error, threadiness int) *Worker {
+func New(name string, maxRetries, threadiness int, fn func(key string) error) *Worker {
 	q := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name)
-	return &Worker{q, 5, name, fn, threadiness}
+	return &Worker{name, q, maxRetries, threadiness, fn}
 }
 
 func (w *Worker) GetQueue() workqueue.RateLimitingInterface {
