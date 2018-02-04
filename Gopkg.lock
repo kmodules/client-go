@@ -42,7 +42,7 @@
     "sets",
     "types"
   ]
-  revision = "99dbf420807d9459b63d1d0bf702537bb7aa976f"
+  revision = "437df2b94ce2ea60464ff580c10462fbeb3e8f52"
 
 [[projects]]
   branch = "master"
@@ -102,7 +102,7 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "8ed76de6feb4b8fe26d62c50fdff14a3328b4a81"
+  revision = "f3499b5df53897321d6f5e9c22cf19309d41d3bc"
 
 [[projects]]
   branch = "master"
@@ -116,8 +116,8 @@
     "proto",
     "sortkeys"
   ]
-  revision = "342cbe0a04158f6dcb03ca0079991a51a4248c02"
-  version = "v0.5"
+  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -152,7 +152,7 @@
     "cmp/internal/function",
     "cmp/internal/value"
   ]
-  revision = "97aa668b73e764ccdd786bc3ccd2edffe621150e"
+  revision = "3af367b6b30c263d47e8895973edcca9a49cf029"
 
 [[projects]]
   branch = "master"
@@ -188,7 +188,7 @@
     "openstack/utils",
     "pagination"
   ]
-  revision = "b2667db96072181f10f4ef7af905a34c078e91f6"
+  revision = "3b177406222d4b76d93e90d6ab412e7b7dc160f4"
 
 [[projects]]
   branch = "master"
@@ -297,8 +297,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "b91bfb9ebec76498946beb6af7c0230c7cc7ba6c"
-  version = "v1.2.0"
+  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
+  version = "v1.2.1"
 
 [[projects]]
   branch = "master"
@@ -353,7 +353,7 @@
     "unix",
     "windows"
   ]
-  revision = "3dbebcf8efb6a5011a60c2b4591c1022a759af8a"
+  revision = "37707fdb30a5b38865cfb95e5aab41707daec7fd"
 
 [[projects]]
   branch = "master"
@@ -577,11 +577,11 @@
     "pkg/common",
     "pkg/util/proto"
   ]
-  revision = "ebe1c38352a6121e0446d4fa098e76a528921e0c"
+  revision = "275e2ce91dec4c05a4094a7b1daee5560b555ac9"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e39429d0e42ea6635ae7a6578b80093852cbc5d1c94a92ee84c9980b5ae1d398"
+  inputs-digest = "74984950f0a025ca698e5be881de77e12bfd78d2af6e6ee78c66b551bdca3fa4"
   solver-name = "gps-cdcl"
   solver-version = 1
