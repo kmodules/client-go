@@ -35,7 +35,9 @@
   name = "github.com/appscode/go"
   packages = [
     "analytics",
+    "context",
     "homedir",
+    "log",
     "net",
     "sets",
     "types"
@@ -580,6 +582,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "44c829c468c0e73efa14a75ca16d6ab00a179ac9ac2f17a6497a0209789c6342"
+  inputs-digest = "e39429d0e42ea6635ae7a6578b80093852cbc5d1c94a92ee84c9980b5ae1d398"
   solver-name = "gps-cdcl"
   solver-version = 1

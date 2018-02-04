@@ -13,12 +13,26 @@ import (
 	"k8s.io/client-go/discovery"
 )
 
-func DetectResource(restmapper *DefaultRESTMapper, obj interface{}) (schema.GroupVersionKind, error) {
+func DetectResource(restmapper *DefaultRESTMapper, obj interface{}) (schema.GroupVersionResource, error) {
 	gvk, err := guessGVK(obj)
 	if err != nil {
-		return schema.GroupVersionKind{}, err
+		return schema.GroupVersionResource{}, err
 	}
-	return restmapper.ResourceForKind(gvk)
+	resources, err := restmapper.ResourcesForKind(gvk)
+	if err != nil {
+		return schema.GroupVersionResource{}, err
+	}
+	result := make([]schema.GroupVersionResource, 0, len(resources))
+	for _, resource := range resources {
+		if strings.ContainsRune(resource.Resource, '/') {
+			continue
+		}
+		result = append(result, resource)
+	}
+	if len(result) == 1 {
+		return result[0], nil
+	}
+	return schema.GroupVersionResource{}, &AmbiguousResourceError{PartialResource: gvk, MatchingResources: resources}
 }
 
 func LoadRestMapper(client discovery.DiscoveryInterface) (*DefaultRESTMapper, error) {
@@ -105,7 +119,7 @@ func (m *DefaultRESTMapper) AddSpecific(kind schema.GroupVersionKind, plural, si
 	m.kindToPluralResource[kind] = plural
 }
 
-func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]schema.GroupVersionKind, error) {
+func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]schema.GroupVersionResource, error) {
 	gvk := coerceKindForMatching(input)
 
 	hasResource := len(gvk.Kind) > 0
@@ -116,7 +130,7 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 		return nil, fmt.Errorf("a resource must be present, got: %v", gvk)
 	}
 
-	var ret []schema.GroupVersionKind
+	var ret []schema.GroupVersionResource
 	switch {
 	case hasGroup:
 		// given a group, prefer an exact match.  If you don't find one, resort to a prefix match on group
@@ -129,7 +143,7 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 			}
 			if kind.GroupKind() == requestedGroupKind && (!hasVersion || kind.Version == gvk.Version) {
 				foundExactMatch = true
-				ret = append(ret, kind)
+				ret = append(ret, plural)
 			}
 		}
 
@@ -145,7 +159,7 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 					continue
 				}
 				if kind.Kind == requestedGroupKind.Kind && (!hasVersion || kind.Version == gvk.Version) {
-					ret = append(ret, kind)
+					ret = append(ret, plural)
 				}
 			}
 		}
@@ -157,7 +171,7 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 				continue
 			}
 			if kind.Version == gvk.Version && kind.Kind == gvk.Kind {
-				ret = append(ret, kind)
+				ret = append(ret, plural)
 			}
 		}
 
@@ -168,7 +182,7 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 				continue
 			}
 			if kind.Kind == gvk.Kind {
-				ret = append(ret, kind)
+				ret = append(ret, plural)
 			}
 		}
 	}
@@ -177,20 +191,20 @@ func (m *DefaultRESTMapper) ResourcesForKind(input schema.GroupVersionKind) ([]s
 		return nil, fmt.Errorf("no matches for %v", gvk)
 	}
 
-	sort.Sort(kindByPreferredGroupVersion{ret, m.defaultGroupVersions})
+	sort.Sort(resourceByPreferredGroupVersion{ret, m.defaultGroupVersions})
 	return ret, nil
 }
 
-func (m *DefaultRESTMapper) ResourceForKind(input schema.GroupVersionKind) (schema.GroupVersionKind, error) {
+func (m *DefaultRESTMapper) ResourceForKind(input schema.GroupVersionKind) (schema.GroupVersionResource, error) {
 	resources, err := m.ResourcesForKind(input)
 	if err != nil {
-		return schema.GroupVersionKind{}, err
+		return schema.GroupVersionResource{}, err
 	}
 	if len(resources) == 1 {
 		return resources[0], nil
 	}
 
-	return schema.GroupVersionKind{}, &AmbiguousResourceError{PartialResource: input, MatchingResources: resources}
+	return schema.GroupVersionResource{}, &AmbiguousResourceError{PartialResource: input, MatchingResources: resources}
 }
 
 // coerceKindForMatching makes the resource lower case and converts internal versions to unspecified (legacy behavior)
@@ -469,7 +483,7 @@ func (o resourceByPreferredGroupVersion) Less(i, j int) bool {
 type AmbiguousResourceError struct {
 	PartialResource schema.GroupVersionKind
 
-	MatchingResources []schema.GroupVersionKind
+	MatchingResources []schema.GroupVersionResource
 	MatchingKinds     []schema.GroupVersionKind
 }
 
