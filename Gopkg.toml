@@ -54,6 +54,10 @@
   branch = "master"
   name = "github.com/spf13/afero"
 
+[[constraint]]
+  name = "github.com/fsnotify/fsnotify"
+  version = "v1.4.7"
+
 [[override]]
   name = "k8s.io/api"
   version = "kubernetes-1.9.0"
