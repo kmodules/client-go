@@ -81,6 +81,12 @@
   version = "v2.5.0"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/evanphx/json-patch"
+  packages = ["."]
+  revision = "944e07253867aacae43c04b2e6a239005443f33a"
+
+[[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
@@ -491,6 +497,7 @@
     "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/jsonmergepatch",
     "pkg/util/mergepatch",
     "pkg/util/net",
     "pkg/util/runtime",
@@ -588,6 +595,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "4bc43f37a8c7eb1f94c9a1e7352414b8950bf6e4ecaa8d37b02d241350c8318b"
+  inputs-digest = "919abef5eef801974cec1fd8d83d8dcf351f4593f66aa65d35ab6e621467fe94"
   solver-name = "gps-cdcl"
   solver-version = 1
