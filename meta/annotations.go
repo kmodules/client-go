@@ -7,14 +7,22 @@ import (
 	"github.com/appscode/kutil"
 )
 
-func GetBool(m map[string]string, key string) (bool, error) {
+type ParserFunc func(map[string]string, string) (interface{}, error)
+
+var _ ParserFunc = GetBool
+var _ ParserFunc = GetInt
+var _ ParserFunc = GetString
+var _ ParserFunc = GetList
+var _ ParserFunc = GetMap
+
+func GetBool(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return false, kutil.ErrNotFound
 	}
 	return strconv.ParseBool(m[key])
 }
 
-func GetInt(m map[string]string, key string) (int, error) {
+func GetInt(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return 0, kutil.ErrNotFound
 	}
@@ -25,7 +33,7 @@ func GetInt(m map[string]string, key string) (int, error) {
 	return strconv.Atoi(v)
 }
 
-func GetString(m map[string]string, key string) (string, error) {
+func GetString(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return "", kutil.ErrNotFound
 	}
@@ -52,7 +60,7 @@ func RemoveKey(m map[string]string, key string) map[string]string {
 	return m
 }
 
-func GetList(m map[string]string, key string) ([]string, error) {
+func GetList(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return []string{}, kutil.ErrNotFound
 	}
@@ -65,7 +73,7 @@ func GetList(m map[string]string, key string) ([]string, error) {
 	return v, err
 }
 
-func GetMap(m map[string]string, key string) (map[string]string, error) {
+func GetMap(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return map[string]string{}, kutil.ErrNotFound
 	}
