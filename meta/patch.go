@@ -9,13 +9,13 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 )
 
-func CreateStrategicPatch(cur runtime.Object, transform func(runtime.Object) runtime.Object) ([]byte, error) {
+func CreateStrategicPatch(cur runtime.Object, mod runtime.Object) ([]byte, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopyObject()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, err
 	}
@@ -23,13 +23,13 @@ func CreateStrategicPatch(cur runtime.Object, transform func(runtime.Object) run
 	return strategicpatch.CreateTwoWayMergePatch(curJson, modJson, apps.DaemonSet{})
 }
 
-func CreateJSONMergePatch(cur runtime.Object, transform func(runtime.Object) runtime.Object) ([]byte, error) {
+func CreateJSONMergePatch(cur runtime.Object, mod runtime.Object) ([]byte, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopyObject()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, err
 	}
