@@ -22,9 +22,9 @@ func GetBool(m map[string]string, key string) (interface{}, error) {
 	return strconv.ParseBool(m[key])
 }
 
-func GetBoolValue(m map[string]string, key string) bool {
-	v, _ := GetBool(m, key)
-	return v.(bool)
+func GetBoolValue(m map[string]string, key string) (bool, error) {
+	v, err := GetBool(m, key)
+	return v.(bool), err
 }
 
 func GetInt(m map[string]string, key string) (interface{}, error) {
@@ -38,9 +38,9 @@ func GetInt(m map[string]string, key string) (interface{}, error) {
 	return strconv.Atoi(v)
 }
 
-func GetIntValue(m map[string]string, key string) int {
-	v, _ := GetInt(m, key)
-	return v.(int)
+func GetIntValue(m map[string]string, key string) (int, error) {
+	v, err := GetInt(m, key)
+	return v.(int), err
 }
 
 func GetString(m map[string]string, key string) (interface{}, error) {
@@ -54,9 +54,9 @@ func GetString(m map[string]string, key string) (interface{}, error) {
 	return v, nil
 }
 
-func GetStringValue(m map[string]string, key string) string {
-	v, _ := GetInt(m, key)
-	return v.(string)
+func GetStringValue(m map[string]string, key string) (string, error) {
+	v, err := GetInt(m, key)
+	return v.(string), err
 }
 
 func HasKey(m map[string]string, key string) bool {
@@ -88,9 +88,9 @@ func GetList(m map[string]string, key string) (interface{}, error) {
 	return v, err
 }
 
-func GetListValue(m map[string]string, key string) []string {
-	v, _ := GetList(m, key)
-	return v.([]string)
+func GetListValue(m map[string]string, key string) ([]string, error) {
+	v, err := GetList(m, key)
+	return v.([]string), err
 }
 
 func GetMap(m map[string]string, key string) (interface{}, error) {
@@ -106,7 +106,7 @@ func GetMap(m map[string]string, key string) (interface{}, error) {
 	return v, err
 }
 
-func GetMapValue(m map[string]string, key string) map[string]string {
-	v, _ := GetMap(m, key)
-	return v.(map[string]string)
+func GetMapValue(m map[string]string, key string) (map[string]string, error) {
+	v, err := GetMap(m, key)
+	return v.(map[string]string), err
 }
