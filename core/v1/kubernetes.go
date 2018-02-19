@@ -1,11 +1,10 @@
 package v1
 
 import (
-	"errors"
-
 	"github.com/appscode/go/types"
 	"github.com/appscode/kutil/meta"
 	"github.com/appscode/mergo"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
