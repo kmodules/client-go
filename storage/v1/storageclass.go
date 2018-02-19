@@ -2,10 +2,10 @@ package v1
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/appscode/kutil"
 	"github.com/golang/glog"
+	"github.com/pkg/errors"
 	storage "k8s.io/api/storage/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -72,7 +72,7 @@ func TryUpdateStorageClass(c kubernetes.Interface, meta metav1.ObjectMeta, trans
 	})
 
 	if err != nil {
-		err = fmt.Errorf("failed to update StorageClass %s after %d attempts due to %v", meta.Name, attempt, err)
+		err = errors.Errorf("failed to update StorageClass %s after %d attempts due to %v", meta.Name, attempt, err)
 	}
 	return
 }

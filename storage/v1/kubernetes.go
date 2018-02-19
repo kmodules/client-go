@@ -1,9 +1,8 @@
 package v1
 
 import (
-	"errors"
-
 	"github.com/appscode/kutil/meta"
+	"github.com/pkg/errors"
 	storage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime/schema"
