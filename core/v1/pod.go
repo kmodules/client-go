@@ -161,3 +161,15 @@ func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace st
 		return len(podList.Items) == 0, nil
 	})
 }
+
+// Wait until all pods are terminated match by the label. Maximum retry is 20 times(60 sec)
+func WaitUntillPodTerminatedByLabel(kubeClient kubernetes.Interface, namespace string, label string) error {
+
+	return wait.PollImmediate(kutil.OneSecondInterval, kutil.OneMinuteTimeout, func() (bool, error) {
+		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: label})
+		if err != nil {
+			return false, nil
+		}
+		return len(podList.Items) == 0, nil
+	})
+}
