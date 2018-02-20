@@ -162,9 +162,8 @@ func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace st
 	})
 }
 
-// WaitUntillPodTerminatedByLabel wait until all pods with the label are terminated. Timeout is 5 minutes.
+// WaitUntillPodTerminatedByLabel waits until all pods with the label are terminated. Timeout is 5 minutes.
 func WaitUntillPodTerminatedByLabel(kubeClient kubernetes.Interface, namespace string, label string) error {
-
 	return wait.PollImmediate(kutil.RetryInterval, kutil.PodTerminationTimeout, func() (bool, error) {
 		podList, err := kubeClient.CoreV1().Pods(namespace).List(metav1.ListOptions{LabelSelector: label})
 		if err != nil {
