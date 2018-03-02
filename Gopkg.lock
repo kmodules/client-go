@@ -510,7 +510,6 @@
     "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
-    "pkg/util/jsonmergepatch",
     "pkg/util/mergepatch",
     "pkg/util/net",
     "pkg/util/runtime",
@@ -608,6 +607,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14ad9744c2128d6bd946bfcbcc83b7bfee69b59aef8a2ad409d5dec6f9426c31"
+  inputs-digest = "8c41a04781747920d694c8fdfeeddf1fb027ad1055526003e6c8b22956d134e1"
   solver-name = "gps-cdcl"
   solver-version = 1

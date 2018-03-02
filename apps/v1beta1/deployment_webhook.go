@@ -97,7 +97,7 @@ func (a *DeploymentWebhook) Admit(req *admission.AdmissionRequest) *admission.Ad
 			return status
 		}
 
-		v1Mod, err := a.handler.OnAdd(v1Obj)
+		v1Mod, err := a.handler.OnCreate(v1Obj)
 		if err != nil {
 			status.Allowed = false
 			status.Result = &metav1.Status{
@@ -116,7 +116,7 @@ func (a *DeploymentWebhook) Admit(req *admission.AdmissionRequest) *admission.Ad
 				return status
 			}
 			status.Patch = patch
-			patchType := admission.PatchTypeJSONPatch // Fix
+			patchType := admission.PatchTypeJSONPatch
 			status.PatchType = &patchType
 		}
 	case admission.Update:
@@ -158,7 +158,7 @@ func (a *DeploymentWebhook) Admit(req *admission.AdmissionRequest) *admission.Ad
 				return status
 			}
 			status.Patch = patch
-			patchType := admission.PatchTypeJSONPatch // Fix
+			patchType := admission.PatchTypeJSONPatch
 			status.PatchType = &patchType
 		}
 	}
