@@ -78,6 +78,14 @@
   branch = "release-branch.go1.9"
   name = "golang.org/x/net"
 
+[[override]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  version = "v11.1.1-beta"
+
+[[override]]
+  name = "github.com/Azure/go-autorest"
+  version = "v9.1.0"
+
 [prune]
   unused-packages = true
   go-tests = true
