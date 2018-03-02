@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"net/http"
 	"sync"
 
 	"github.com/appscode/kutil/admission/api"
@@ -12,6 +11,7 @@ import (
 	"k8s.io/api/apps/v1beta1"
 	"k8s.io/api/apps/v1beta2"
 	extensions "k8s.io/api/extensions/v1beta1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -31,6 +31,14 @@ type StatefulSetWebhook struct {
 }
 
 var _ api.AdmissionHook = &StatefulSetWebhook{}
+
+func NewStatefulSetWebhook(plural schema.GroupVersionResource, singular string, handler api.ResourceHandler) *StatefulSetWebhook {
+	return &StatefulSetWebhook{
+		plural:   plural,
+		singular: singular,
+		handler:  handler,
+	}
+}
 
 func (a *StatefulSetWebhook) Resource() (plural schema.GroupVersionResource, singular string) {
 	return plural, singular
@@ -62,12 +70,7 @@ func (a *StatefulSetWebhook) Admit(req *admission.AdmissionRequest) *admission.A
 	a.lock.RLock()
 	defer a.lock.RUnlock()
 	if !a.initialized {
-		status.Allowed = false
-		status.Result = &metav1.Status{
-			Status: metav1.StatusFailure, Code: http.StatusInternalServerError, Reason: metav1.StatusReasonInternalError,
-			Message: "not initialized",
-		}
-		return status
+		return api.StatusUninitialized()
 	}
 	gv := schema.GroupVersion{Group: req.Kind.Group, Version: req.Kind.Version}
 
@@ -75,45 +78,27 @@ func (a *StatefulSetWebhook) Admit(req *admission.AdmissionRequest) *admission.A
 	case admission.Delete:
 		// req.Object.Raw = nil, so read from kubernetes
 		obj, err := a.client.AppsV1().StatefulSets(req.Namespace).Get(req.Name, metav1.GetOptions{})
-		if err == nil {
+		if err != nil && !kerr.IsNotFound(err) {
+			return api.StatusInternalServerError(err)
+		} else if err == nil {
 			err2 := a.handler.OnDelete(obj)
 			if err2 != nil {
-				status.Allowed = false
-				status.Result = &metav1.Status{
-					Status: metav1.StatusFailure, Code: http.StatusBadRequest, Reason: metav1.StatusReasonBadRequest,
-					Message: err.Error(),
-				}
-				return status
+				return api.StatusBadRequest(err)
 			}
 		}
 	case admission.Create:
 		v1Obj, originalObj, err := convert_to_v1_statefulset(gv, req.Object.Raw)
 		if err != nil {
-			status.Allowed = false
-			status.Result = &metav1.Status{
-				Status: metav1.StatusFailure, Code: http.StatusBadRequest, Reason: metav1.StatusReasonBadRequest,
-				Message: err.Error(),
-			}
-			return status
+			return api.StatusBadRequest(err)
 		}
 
 		v1Mod, err := a.handler.OnCreate(v1Obj)
 		if err != nil {
-			status.Allowed = false
-			status.Result = &metav1.Status{
-				Status: metav1.StatusFailure, Code: http.StatusForbidden, Reason: metav1.StatusReasonForbidden,
-				Message: err.Error(),
-			}
-			return status
+			return api.StatusForbidden(err)
 		} else if v1Mod != nil {
 			patch, err := create_statefulset_patch(gv, originalObj, v1Mod)
 			if err != nil {
-				status.Allowed = false
-				status.Result = &metav1.Status{
-					Status: metav1.StatusFailure, Code: http.StatusInternalServerError, Reason: metav1.StatusReasonInternalError,
-					Message: err.Error(),
-				}
-				return status
+				return api.StatusInternalServerError(err)
 			}
 			status.Patch = patch
 			patchType := admission.PatchTypeJSONPatch
@@ -122,40 +107,20 @@ func (a *StatefulSetWebhook) Admit(req *admission.AdmissionRequest) *admission.A
 	case admission.Update:
 		v1Obj, originalObj, err := convert_to_v1_statefulset(gv, req.Object.Raw)
 		if err != nil {
-			status.Allowed = false
-			status.Result = &metav1.Status{
-				Status: metav1.StatusFailure, Code: http.StatusBadRequest, Reason: metav1.StatusReasonBadRequest,
-				Message: err.Error(),
-			}
-			return status
+			return api.StatusBadRequest(err)
 		}
 		v1OldObj, _, err := convert_to_v1_statefulset(gv, req.OldObject.Raw)
 		if err != nil {
-			status.Allowed = false
-			status.Result = &metav1.Status{
-				Status: metav1.StatusFailure, Code: http.StatusBadRequest, Reason: metav1.StatusReasonBadRequest,
-				Message: err.Error(),
-			}
-			return status
+			return api.StatusBadRequest(err)
 		}
 
 		v1Mod, err := a.handler.OnUpdate(v1OldObj, v1Obj)
 		if err != nil {
-			status.Allowed = false
-			status.Result = &metav1.Status{
-				Status: metav1.StatusFailure, Code: http.StatusForbidden, Reason: metav1.StatusReasonForbidden,
-				Message: err.Error(),
-			}
-			return status
+			return api.StatusForbidden(err)
 		} else if v1Mod != nil {
 			patch, err := create_statefulset_patch(gv, originalObj, v1Mod)
 			if err != nil {
-				status.Allowed = false
-				status.Result = &metav1.Status{
-					Status: metav1.StatusFailure, Code: http.StatusInternalServerError, Reason: metav1.StatusReasonInternalError,
-					Message: err.Error(),
-				}
-				return status
+				return api.StatusInternalServerError(err)
 			}
 			status.Patch = patch
 			patchType := admission.PatchTypeJSONPatch
