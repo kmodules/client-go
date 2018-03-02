@@ -274,6 +274,12 @@
   version = "1.0.0"
 
 [[projects]]
+  name = "github.com/pborman/uuid"
+  packages = ["."]
+  revision = "e790cca94e6cc75c7064b1332e63811d4aae1a53"
+  version = "v1.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/petar/GoLLRB"
   packages = ["llrb"]
@@ -480,12 +486,16 @@
 [[projects]]
   name = "k8s.io/apimachinery"
   packages = [
+    "pkg/api/equality",
     "pkg/api/errors",
     "pkg/api/meta",
     "pkg/api/resource",
+    "pkg/api/validation",
+    "pkg/api/validation/path",
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
+    "pkg/apis/meta/v1/validation",
     "pkg/apis/meta/v1alpha1",
     "pkg/conversion",
     "pkg/conversion/queryparams",
@@ -512,9 +522,11 @@
     "pkg/util/json",
     "pkg/util/mergepatch",
     "pkg/util/net",
+    "pkg/util/rand",
     "pkg/util/runtime",
     "pkg/util/sets",
     "pkg/util/strategicpatch",
+    "pkg/util/uuid",
     "pkg/util/validation",
     "pkg/util/validation/field",
     "pkg/util/wait",
@@ -526,6 +538,23 @@
     "third_party/forked/golang/reflect"
   ]
   revision = "180eddb345a5be3a157cea1c624700ad5bd27b8f"
+  version = "kubernetes-1.9.0"
+
+[[projects]]
+  name = "k8s.io/apiserver"
+  packages = [
+    "pkg/admission",
+    "pkg/apis/apiserver",
+    "pkg/apis/apiserver/v1alpha1",
+    "pkg/apis/audit",
+    "pkg/authentication/user",
+    "pkg/endpoints/request",
+    "pkg/features",
+    "pkg/registry/rest",
+    "pkg/storage/names",
+    "pkg/util/feature"
+  ]
+  revision = "91e14f394e4796abf5a994a349a222e7081d86b6"
   version = "kubernetes-1.9.0"
 
 [[projects]]
@@ -607,6 +636,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8c41a04781747920d694c8fdfeeddf1fb027ad1055526003e6c8b22956d134e1"
+  inputs-digest = "d7c25be82f837bfe2608d3e0fe54d1e56fcfcac5267f6a65c1274cf8778b8a62"
   solver-name = "gps-cdcl"
   solver-version = 1
