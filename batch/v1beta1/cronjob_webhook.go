@@ -50,7 +50,7 @@ func (a *CronJobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admis
 	if a.handler == nil ||
 		(req.Operation != admission.Create && req.Operation != admission.Update && req.Operation != admission.Delete) ||
 		len(req.SubResource) != 0 ||
-		(req.Kind.Group != v1beta1.GroupName && req.Kind.Group != extensions.GroupName) ||
+		(req.Kind.Group != v1beta1.GroupName) ||
 		req.Kind.Kind != "CronJob" {
 		status.Allowed = true
 		return status
@@ -94,7 +94,7 @@ func (a *CronJobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admis
 			return status
 		}
 
-		v1Mod, err := a.handler.OnAdd(v1Obj)
+		v1Mod, err := a.handler.OnCreate(v1Obj)
 		if err != nil {
 			status.Allowed = false
 			status.Result = &metav1.Status{
@@ -113,7 +113,7 @@ func (a *CronJobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admis
 				return status
 			}
 			status.Patch = patch
-			patchType := admission.PatchTypeJSONPatch // Fix
+			patchType := admission.PatchTypeJSONPatch
 			status.PatchType = &patchType
 		}
 	case admission.Update:
@@ -155,7 +155,7 @@ func (a *CronJobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admis
 				return status
 			}
 			status.Patch = patch
-			patchType := admission.PatchTypeJSONPatch // Fix
+			patchType := admission.PatchTypeJSONPatch
 			status.PatchType = &patchType
 		}
 	}
