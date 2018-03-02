@@ -191,7 +191,7 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod)
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.Deployment{}
@@ -199,10 +199,10 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta2Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case v1beta1.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta1Mod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Mod.(runtime.Object))
 
 	case extensions.SchemeGroupVersion:
 		extMod := &extensions.Deployment{}
@@ -210,7 +210,7 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), extMod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
 	return nil, errors.New("unknown")
 }

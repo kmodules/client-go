@@ -46,6 +46,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/appscode/jsonpatch"
+  packages = ["."]
+  revision = "d554673fce2c0bef30d385e7946996a27f6be827"
+
+[[projects]]
+  branch = "master"
   name = "github.com/appscode/mergo"
   packages = ["."]
   revision = "e3000cb3d28c72b837601cac94debd91032d19fe"
@@ -114,13 +120,13 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "1de3e0542de65ad8d75452a595886fdd0befb363"
+  revision = "d8000b5bfbd1147255710505a27c735b6b2ae2ac"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/swag"
   packages = ["."]
-  revision = "0d03ad0b6405ada874d59d97c416b5cf4234e154"
+  revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
 
 [[projects]]
   name = "github.com/gogo/protobuf"
@@ -200,7 +206,7 @@
     "openstack/utils",
     "pagination"
   ]
-  revision = "afbf0422412f5dc726fa12be280fa0c3cb31fcbd"
+  revision = "32083cdce4c64eff52ec57f82b2d3b522d1ba48a"
 
 [[projects]]
   branch = "master"
@@ -383,7 +389,7 @@
     "unix",
     "windows"
   ]
-  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
+  revision = "dd2ff4accc098aceecb86b36eaa7829b2a17b1c9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -636,6 +642,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d7c25be82f837bfe2608d3e0fe54d1e56fcfcac5267f6a65c1274cf8778b8a62"
+  inputs-digest = "89e0980321f9926c8296200c8bc77aab36e5a66a2e8e48498f68efdd2ceb29c6"
   solver-name = "gps-cdcl"
   solver-version = 1

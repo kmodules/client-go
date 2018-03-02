@@ -172,7 +172,7 @@ func convert_to_v1_daemonset(gv schema.GroupVersion, raw []byte) (*v1.DaemonSet,
 func create_daemonset_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.DaemonSet{}
@@ -180,7 +180,7 @@ func create_daemonset_patch(gv schema.GroupVersion, originalObj, v1Mod interface
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta2Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case extensions.SchemeGroupVersion:
 		extMod := &extensions.DaemonSet{}
@@ -188,7 +188,7 @@ func create_daemonset_patch(gv schema.GroupVersion, originalObj, v1Mod interface
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), extMod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
 	return nil, errors.New("unknown")
 }
