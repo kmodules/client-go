@@ -2,17 +2,16 @@ package api
 
 // ResourceHandler can handle admission requests that happen to a
 // resource.
-//  * OnCreate is called when an object is added.
-//  * OnUpdate is called when an object is modified. Note that oldObj is the
-//      last known state of the object-- it is possible that several changes
-//      were combined together, so you can't use this to see every single
-//      change. OnUpdate is also called when a re-list happens, and it will
-//      get called even if nothing changed. This is useful for periodically
-//      evaluating or syncing something.
-//  * OnDelete will get the final state of the item if it is known, otherwise
-//      it will get an object of type DeletedFinalStateUnknown. This can
-//      happen if the watch is closed and misses the delete event and we don't
-//      notice the deletion until the subsequent re-list.
+//  * OnCreate is called when an object is created. If an error is
+//      returned admission is denied. Otherwise, if an object is
+//      returned, it is used to compute a patch and should be used as
+//      MutatingAdmissionWebhook.
+//  * OnUpdate is called when an object is updated. Note that oldObj is
+//      the existing object.  If an error is  returned admission is denied.
+//      Otherwise, if an object is returned, it is used to compute a patch
+//      and should be used as MutatingAdmissionWebhook.
+//  * OnDelete will gets the current state of object when delete request
+//      is received.
 type ResourceHandler interface {
 	OnCreate(obj interface{}) (interface{}, error)
 	OnUpdate(oldObj, newObj interface{}) (interface{}, error)
