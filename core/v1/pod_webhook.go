@@ -144,7 +144,7 @@ func convert_to_v1_pod(gv schema.GroupVersion, raw []byte) (*v1.Pod, runtime.Obj
 func create_pod_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 	}
 	return nil, errors.New("unknown")
 }

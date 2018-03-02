@@ -173,7 +173,7 @@ func convert_to_v1_statefulset(gv schema.GroupVersion, raw []byte) (*v1.Stateful
 func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.StatefulSet{}
@@ -181,7 +181,7 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interfa
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta2Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case v1beta1.SchemeGroupVersion:
 		v1beta1Mod := &v1beta1.StatefulSet{}
@@ -189,7 +189,7 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interfa
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta1Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Mod)
 	}
 	return nil, errors.New("unknown")
 }

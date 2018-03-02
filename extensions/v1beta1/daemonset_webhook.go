@@ -177,7 +177,7 @@ func create_daemonset_patch(gv schema.GroupVersion, originalObj, extMod interfac
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod)
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.DaemonSet{}
@@ -185,10 +185,10 @@ func create_daemonset_patch(gv schema.GroupVersion, originalObj, extMod interfac
 		if err != nil {
 			return nil, err
 		}
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1beta2Mod)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case extensions.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), extMod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod.(runtime.Object))
 	}
 	return nil, errors.New("unknown")
 }

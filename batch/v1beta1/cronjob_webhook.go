@@ -143,7 +143,7 @@ func convert_to_v1beta1_cronjob(gv schema.GroupVersion, raw []byte) (*v1beta1.Cr
 func create_cronjob_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1beta1.SchemeGroupVersion:
-		return meta.CreateJSONMergePatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 	}
 	return nil, errors.New("unknown")
 }
