@@ -37,6 +37,7 @@
     "analytics",
     "context",
     "homedir",
+    "ioutil",
     "log",
     "net",
     "sets",
@@ -246,6 +247,12 @@
   version = "0.3.2"
 
 [[projects]]
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
   revision = "3353055b2a1a5ae1b6a8dfde887a524e7088f3a2"
@@ -256,6 +263,12 @@
   packages = ["."]
   revision = "59fac5042749a5afb9af70e813da1dd5474f0167"
   version = "1.0.1"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/kardianos/osext"
+  packages = ["."]
+  revision = "ae77be60afb1dcacde03767a8c37337fad28ac14"
 
 [[projects]]
   branch = "master"
@@ -323,6 +336,12 @@
     "mem"
   ]
   revision = "bbf41cb36dffe15dff5bf7e18c447801e7ffe163"
+
+[[projects]]
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  revision = "7b2c5ac9fc04fc5efafb60700713d4fa609b777b"
+  version = "v0.0.1"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -639,9 +658,15 @@
   ]
   revision = "50ae88d24ede7b8bad68e23c805b5d3da5c8abaf"
 
+[[projects]]
+  name = "k8s.io/kubernetes"
+  packages = ["pkg/kubectl/plugins"]
+  revision = "d2835416544f298c919e2ead3be3d0864b52323b"
+  version = "v1.9.3"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "89e0980321f9926c8296200c8bc77aab36e5a66a2e8e48498f68efdd2ceb29c6"
+  inputs-digest = "5e36ee327951c2097d6db9e357352b5978b3d138f6db9954e3e79ba116a5cada"
   solver-name = "gps-cdcl"
   solver-version = 1
