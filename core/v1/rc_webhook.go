@@ -3,9 +3,9 @@ package v1
 import (
 	"sync"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -138,7 +138,7 @@ func convert_to_v1_rc(gv schema.GroupVersion, raw []byte) (*v1.ReplicationContro
 		}
 		return v1Obj.(*v1.ReplicationController), v1Obj, nil
 	}
-	return nil, nil, errors.New("unknown")
+	return nil, nil, kutil.ErrUnknown
 }
 
 func create_rc_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
@@ -146,5 +146,5 @@ func create_rc_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]
 	case v1.SchemeGroupVersion:
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 	}
-	return nil, errors.New("unknown")
+	return nil, kutil.ErrUnknown
 }

@@ -3,9 +3,9 @@ package v1beta1
 import (
 	"sync"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/apps/v1"
 	"k8s.io/api/apps/v1beta2"
@@ -166,7 +166,7 @@ func convert_to_extensions_daemonset(gv schema.GroupVersion, raw []byte) (*exten
 		}
 		return extObj.(*extensions.DaemonSet), extObj, nil
 	}
-	return nil, nil, errors.New("unknown")
+	return nil, nil, kutil.ErrUnknown
 }
 
 func create_daemonset_patch(gv schema.GroupVersion, originalObj, extMod interface{}) ([]byte, error) {
@@ -190,5 +190,5 @@ func create_daemonset_patch(gv schema.GroupVersion, originalObj, extMod interfac
 	case extensions.SchemeGroupVersion:
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod.(runtime.Object))
 	}
-	return nil, errors.New("unknown")
+	return nil, kutil.ErrUnknown
 }

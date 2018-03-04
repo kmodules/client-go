@@ -3,9 +3,9 @@ package v1beta1
 import (
 	"sync"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/batch/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -137,7 +137,7 @@ func convert_to_v1beta1_cronjob(gv schema.GroupVersion, raw []byte) (*v1beta1.Cr
 		}
 		return v1Obj.(*v1beta1.CronJob), v1Obj, nil
 	}
-	return nil, nil, errors.New("unknown")
+	return nil, nil, kutil.ErrUnknown
 }
 
 func create_cronjob_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
@@ -145,5 +145,5 @@ func create_cronjob_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}
 	case v1beta1.SchemeGroupVersion:
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
 	}
-	return nil, errors.New("unknown")
+	return nil, kutil.ErrUnknown
 }
