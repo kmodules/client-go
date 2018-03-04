@@ -1,4 +1,4 @@
-package main
+package plugin_installer
 
 import (
 	"bytes"
@@ -52,20 +52,7 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 				p.LongDesc = cmd.Long
 				p.Example = cmd.Example
 				p.Command = "./" + strings.TrimSpace(cmd.CommandPath())
-
-				cmd.InheritedFlags().VisitAll(func(flag *pflag.Flag) {
-					if flag.Hidden {
-						return
-					}
-					p.Flags = append(p.Flags, plugins.Flag{
-						Name:      flag.Name,
-						Shorthand: flag.Shorthand,
-						Desc:      flag.Usage,
-						DefValue:  flag.DefValue,
-					})
-				})
-
-				cmd.LocalFlags().VisitAll(func(flag *pflag.Flag) {
+				cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 					if flag.Hidden {
 						return
 					}
