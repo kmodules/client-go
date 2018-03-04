@@ -3,9 +3,9 @@ package v1
 import (
 	"sync"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/apps/v1"
 	"k8s.io/api/apps/v1beta2"
@@ -166,7 +166,7 @@ func convert_to_v1_replicaset(gv schema.GroupVersion, raw []byte) (*v1.ReplicaSe
 		}
 		return v1Obj, extObj, nil
 	}
-	return nil, nil, errors.New("unknown")
+	return nil, nil, kutil.ErrUnknown
 }
 
 func create_replicaset_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
@@ -190,5 +190,5 @@ func create_replicaset_patch(gv schema.GroupVersion, originalObj, v1Mod interfac
 		}
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
-	return nil, errors.New("unknown")
+	return nil, kutil.ErrUnknown
 }

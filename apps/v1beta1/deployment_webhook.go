@@ -3,9 +3,9 @@ package v1beta1
 import (
 	"sync"
 
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
-	"github.com/pkg/errors"
 	admission "k8s.io/api/admission/v1beta1"
 	"k8s.io/api/apps/v1"
 	"k8s.io/api/apps/v1beta1"
@@ -180,7 +180,7 @@ func convert_to_v1beta1_deployment(gv schema.GroupVersion, raw []byte) (*v1beta1
 		}
 		return v1beta1Obj, extObj, nil
 	}
-	return nil, nil, errors.New("unknown")
+	return nil, nil, kutil.ErrUnknown
 }
 
 func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod interface{}) ([]byte, error) {
@@ -212,5 +212,5 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		}
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
-	return nil, errors.New("unknown")
+	return nil, kutil.ErrUnknown
 }
