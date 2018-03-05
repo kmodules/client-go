@@ -2,10 +2,8 @@ package plugin_installer
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/appscode/go/ioutil"
@@ -24,17 +22,6 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 		Short:             "Install as kubectl plugin",
 		DisableAutoGenTag: true,
 		Run: func(cmd *cobra.Command, args []string) {
-			var e []string
-			for _, pair := range os.Environ() {
-				if strings.HasPrefix(pair, "KUBECTL_") {
-					e = append(e, pair)
-				}
-			}
-			sort.Strings(e)
-			for _, v := range e {
-				fmt.Println(v)
-			}
-
 			dir := filepath.Join(homedir.HomeDir(), ".kube", "plugins", rootCmd.Name())
 			os.MkdirAll(dir, 0755)
 
@@ -51,18 +38,21 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 				p.ShortDesc = cmd.Short
 				p.LongDesc = cmd.Long
 				p.Example = cmd.Example
-				p.Command = "./" + strings.TrimSpace(cmd.CommandPath())
-				cmd.Flags().VisitAll(func(flag *pflag.Flag) {
-					if flag.Hidden {
-						return
-					}
-					p.Flags = append(p.Flags, plugins.Flag{
-						Name:      flag.Name,
-						Shorthand: flag.Shorthand,
-						Desc:      flag.Usage,
-						DefValue:  flag.DefValue,
+
+				if len(cmd.Commands()) == 0 {
+					p.Command = "./" + strings.TrimSpace(cmd.CommandPath())
+					cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+						if flag.Hidden {
+							return
+						}
+						p.Flags = append(p.Flags, plugins.Flag{
+							Name:      flag.Name,
+							Shorthand: flag.Shorthand,
+							Desc:      flag.Usage,
+							DefValue:  flag.DefValue,
+						})
 					})
-				})
+				}
 
 				for _, cc := range cmd.Commands() {
 					cp := &plugins.Plugin{}
@@ -73,8 +63,6 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 
 			plugin := &plugins.Plugin{}
 			traverse(rootCmd, plugin)
-			plugin.Command = ""
-			plugin.Flags = nil
 
 			data, err := yaml.Marshal(plugin)
 			if err != nil {
