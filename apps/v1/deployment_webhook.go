@@ -40,8 +40,8 @@ func NewDeploymentWebhook(plural schema.GroupVersionResource, singular string, h
 	}
 }
 
-func (a *DeploymentWebhook) Resource() (plural schema.GroupVersionResource, singular string) {
-	return plural, singular
+func (a *DeploymentWebhook) Resource() (schema.GroupVersionResource, string) {
+	return a.plural, a.singular
 }
 
 func (a *DeploymentWebhook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

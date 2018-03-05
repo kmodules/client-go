@@ -36,8 +36,8 @@ func NewJobWebhook(plural schema.GroupVersionResource, singular string, handler 
 	}
 }
 
-func (a *JobWebhook) Resource() (plural schema.GroupVersionResource, singular string) {
-	return plural, singular
+func (a *JobWebhook) Resource() (schema.GroupVersionResource, string) {
+	return a.plural, a.singular
 }
 
 func (a *JobWebhook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
