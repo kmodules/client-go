@@ -11,44 +11,50 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/plugins"
 )
 
-func BindFlags(flags *pflag.FlagSet, plugin bool) clientcmd.ClientConfig {
+func BindGlobalFlags(flags *pflag.FlagSet, plugin bool) clientcmd.ClientConfig {
 	flags.AddGoFlagSet(flag.CommandLine)
 	// Normalize all flags that are coming from other packages or pre-configurations
 	// a.k.a. change all "_" to "-". e.g. glog package
 	flags.SetNormalizeFunc(utilflag.WordSepNormalizeFunc)
 	clientConfig := util.DefaultClientConfig(flags)
 	if plugin {
-		loadFromEnv(flags, "kubeconfig")
-		loadFromEnv(flags, clientcmd.FlagClusterName)
-		loadFromEnv(flags, clientcmd.FlagAuthInfoName)
-		loadFromEnv(flags, clientcmd.FlagContext)
-		loadFromEnv(flags, clientcmd.FlagNamespace)
-		loadFromEnv(flags, clientcmd.FlagAPIServer)
-		loadFromEnv(flags, clientcmd.FlagInsecure)
-		loadFromEnv(flags, clientcmd.FlagCertFile)
-		loadFromEnv(flags, clientcmd.FlagKeyFile)
-		loadFromEnv(flags, clientcmd.FlagCAFile)
-		loadFromEnv(flags, clientcmd.FlagBearerToken)
-		loadFromEnv(flags, clientcmd.FlagImpersonate)
-		loadFromEnv(flags, clientcmd.FlagImpersonateGroup)
-		loadFromEnv(flags, clientcmd.FlagUsername)
-		loadFromEnv(flags, clientcmd.FlagPassword)
-		loadFromEnv(flags, clientcmd.FlagTimeout)
+		loadFromEnv(flags, "kubeconfig", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagClusterName, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagAuthInfoName, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagContext, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagNamespace, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagAPIServer, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagInsecure, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagCertFile, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagKeyFile, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagCAFile, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagBearerToken, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagImpersonate, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagImpersonateGroup, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagUsername, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagPassword, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, clientcmd.FlagTimeout, "KUBECTL_PLUGINS_GLOBAL_FLAG_")
 
-		loadFromEnv(flags, "alsologtostderr")
-		loadFromEnv(flags, "log-backtrace-at")
-		loadFromEnv(flags, "log-dir")
-		loadFromEnv(flags, "logtostderr")
-		loadFromEnv(flags, "stderrthreshold")
-		loadFromEnv(flags, "v")
-		loadFromEnv(flags, "vmodule")
+		loadFromEnv(flags, "alsologtostderr", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "log-backtrace-at", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "log-dir", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "logtostderr", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "stderrthreshold", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "v", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
+		loadFromEnv(flags, "vmodule", "KUBECTL_PLUGINS_GLOBAL_FLAG_")
 	}
 	return clientConfig
 }
 
-func loadFromEnv(flags *pflag.FlagSet, name string) {
-	v, found := os.LookupEnv(plugins.FlagToEnvName(name, "KUBECTL_PLUGINS_GLOBAL_FLAG_"))
+func loadFromEnv(flags *pflag.FlagSet, name, prefix string) {
+	v, found := os.LookupEnv(plugins.FlagToEnvName(name, prefix))
 	if found && (name != clientcmd.FlagImpersonateGroup || v != "[]") {
 		flags.Set(name, v)
 	}
+}
+
+func LoadFlags(flags *pflag.FlagSet) {
+	flags.VisitAll(func(f *pflag.Flag) {
+		loadFromEnv(flags, f.Name, "KUBECTL_PLUGINS_LOCAL_FLAG_")
+	})
 }

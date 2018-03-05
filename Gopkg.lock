@@ -46,12 +46,6 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
-  name = "github.com/Sirupsen/logrus"
-  packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
-
-[[projects]]
   branch = "master"
   name = "github.com/appscode/go"
   packages = [
@@ -70,7 +64,7 @@
   branch = "master"
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
-  revision = "d554673fce2c0bef30d385e7946996a27f6be827"
+  revision = "3e75a56b8967932466984d4432401e1c1a7ff61e"
 
 [[projects]]
   branch = "master"
@@ -139,11 +133,10 @@
 [[projects]]
   name = "github.com/docker/distribution"
   packages = [
-    "digest",
+    "digestset",
     "reference"
   ]
-  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
-  version = "v2.6.2"
+  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
 [[projects]]
   name = "github.com/docker/docker"
@@ -157,12 +150,12 @@
     "api/types/registry",
     "api/types/strslice",
     "api/types/swarm",
+    "api/types/swarm/runtime",
     "api/types/versions",
     "pkg/term",
     "pkg/term/windows"
   ]
-  revision = "092cba3727bb9b4a2f0e922cd6c0f93ea270e363"
-  version = "v1.13.1"
+  revision = "4f3616fb1c112e206b88cb7a9922bf49067a7756"
 
 [[projects]]
   name = "github.com/docker/go-connections"
@@ -173,8 +166,7 @@
 [[projects]]
   name = "github.com/docker/go-units"
   packages = ["."]
-  revision = "0dadbb0345b35ec7ef35e228dabb8de89a65bf52"
-  version = "v0.3.2"
+  revision = "9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1"
 
 [[projects]]
   branch = "master"
@@ -441,6 +433,21 @@
   version = "1.0.0"
 
 [[projects]]
+  name = "github.com/opencontainers/go-digest"
+  packages = ["."]
+  revision = "279bed98673dd5bef374d3b6e4b09e2af76183bf"
+  version = "v1.0.0-rc1"
+
+[[projects]]
+  name = "github.com/opencontainers/image-spec"
+  packages = [
+    "specs-go",
+    "specs-go/v1"
+  ]
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/pborman/uuid"
   packages = ["."]
   revision = "e790cca94e6cc75c7064b1332e63811d4aae1a53"
@@ -506,8 +513,7 @@
 [[projects]]
   name = "github.com/russross/blackfriday"
   packages = ["."]
-  revision = "cadec560ec52d93835bf2f15bd794700d3a2473b"
-  version = "v2.0.0"
+  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
 
 [[projects]]
   name = "github.com/sergi/go-diff"
@@ -520,6 +526,12 @@
   name = "github.com/shurcooL/sanitized_anchor_name"
   packages = ["."]
   revision = "86672fcb3f950f35f2e675df2240550f2a50762f"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
+  version = "v1.0.4"
 
 [[projects]]
   branch = "master"
@@ -1117,8 +1129,8 @@
     "plugin/pkg/scheduler/util",
     "plugin/pkg/scheduler/volumebinder"
   ]
-  revision = "d2835416544f298c919e2ead3be3d0864b52323b"
-  version = "v1.9.3"
+  revision = "925c127ec6b946659ad0fd596fa959be43f0cc05"
+  version = "v1.9.0"
 
 [[projects]]
   branch = "master"
@@ -1135,6 +1147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e56efda428797d9e188dc0bdcc0d02afc5e7618d559a47a235bd0199df73f2e1"
+  inputs-digest = "df147acd4cd9db491527812fa1d57641d16fb66b55645767cfccb3d32bca0cd9"
   solver-name = "gps-cdcl"
   solver-version = 1
