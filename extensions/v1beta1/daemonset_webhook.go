@@ -135,7 +135,7 @@ func convert_to_extensions_daemonset(gv schema.GroupVersion, raw []byte) (*exten
 	switch gv {
 	case v1.SchemeGroupVersion:
 		v1Obj := &v1.DaemonSet{}
-		err :=json.Unmarshal(raw,&v1Obj)
+		err := json.Unmarshal(raw, v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -149,7 +149,7 @@ func convert_to_extensions_daemonset(gv schema.GroupVersion, raw []byte) (*exten
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Obj := &v1beta2.Daemonset{}
-		err :=json.Unmarshal(raw,&v1beta2Obj)
+		err := json.Unmarshal(raw, v1beta2Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -163,7 +163,7 @@ func convert_to_extensions_daemonset(gv schema.GroupVersion, raw []byte) (*exten
 
 	case extensions.SchemeGroupVersion:
 		extObj := &extensions.Daemonset{}
-		err :=json.Unmarshal(raw,&extObj)
+		err := json.Unmarshal(raw, extObj)
 		if err != nil {
 			return nil, nil, err
 		}

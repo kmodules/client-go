@@ -1,7 +1,6 @@
 package discovery
 
 import (
-	"github.com/hashicorp/go-version"
 	"k8s.io/client-go/discovery"
 )
 

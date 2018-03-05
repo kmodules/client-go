@@ -136,7 +136,7 @@ func convert_to_v1beta1_deployment(gv schema.GroupVersion, raw []byte) (*v1beta1
 	switch gv {
 	case v1.SchemeGroupVersion:
 		v1Obj := &v1.Deployment{}
-		err :=json.Unmarshal(raw,&v1Obj)
+		err := json.Unmarshal(raw, v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -150,7 +150,7 @@ func convert_to_v1beta1_deployment(gv schema.GroupVersion, raw []byte) (*v1beta1
 
 	case v1beta1.SchemeGroupVersion:
 		v1beta1Obj := &v1beta1.Deployment{}
-		err :=json.Unmarshal(raw,&v1beta1Obj)
+		err := json.Unmarshal(raw, v1beta1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -158,7 +158,7 @@ func convert_to_v1beta1_deployment(gv schema.GroupVersion, raw []byte) (*v1beta1
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Obj := &v1beta2.Deployment{}
-		err :=json.Unmarshal(raw,&v1beta2Obj)
+		err := json.Unmarshal(raw, v1beta2Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -172,7 +172,7 @@ func convert_to_v1beta1_deployment(gv schema.GroupVersion, raw []byte) (*v1beta1
 
 	case extensions.SchemeGroupVersion:
 		extObj := &extensions.Deployment{}
-		err :=json.Unmarshal(raw,&extObj)
+		err := json.Unmarshal(raw, extObj)
 		if err != nil {
 			return nil, nil, err
 		}

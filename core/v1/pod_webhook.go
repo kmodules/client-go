@@ -133,7 +133,7 @@ func convert_to_v1_pod(gv schema.GroupVersion, raw []byte) (*v1.Pod, runtime.Obj
 	switch gv {
 	case v1.SchemeGroupVersion:
 		v1Obj := &v1.Pod{}
-		err :=json.Unmarshal(raw,&v1Obj)
+		err := json.Unmarshal(raw, v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}

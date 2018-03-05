@@ -2,7 +2,6 @@ package meta
 
 import (
 	jp "github.com/appscode/jsonpatch"
-	"github.com/evanphx/json-patch"
 	"github.com/json-iterator/go"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"

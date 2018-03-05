@@ -132,7 +132,7 @@ func convert_to_v1beta1_cronjob(gv schema.GroupVersion, raw []byte) (*v1beta1.Cr
 	switch gv {
 	case v1beta1.SchemeGroupVersion:
 		v1beta1Obj := &v1beta1.Job{}
-		err :=json.Unmarshal(raw,&v1beta1Obj)
+		err := json.Unmarshal(raw, v1beta1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
