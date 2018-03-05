@@ -36,8 +36,8 @@ func NewCronJobWebhook(plural schema.GroupVersionResource, singular string, hand
 	}
 }
 
-func (a *CronJobWebhook) Resource() (plural schema.GroupVersionResource, singular string) {
-	return plural, singular
+func (a *CronJobWebhook) Resource() (schema.GroupVersionResource, string) {
+	return a.plural, a.singular
 }
 
 func (a *CronJobWebhook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {

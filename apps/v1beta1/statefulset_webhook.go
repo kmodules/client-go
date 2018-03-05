@@ -40,8 +40,8 @@ func NewStatefulSetWebhook(plural schema.GroupVersionResource, singular string, 
 	}
 }
 
-func (a *StatefulSetWebhook) Resource() (plural schema.GroupVersionResource, singular string) {
-	return plural, singular
+func (a *StatefulSetWebhook) Resource() (schema.GroupVersionResource, string) {
+	return a.plural, a.singular
 }
 
 func (a *StatefulSetWebhook) Initialize(config *rest.Config, stopCh <-chan struct{}) error {
