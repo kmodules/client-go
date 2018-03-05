@@ -136,7 +136,7 @@ func convert_to_v1_job(gv schema.GroupVersion, raw []byte) (*v1.Job, runtime.Obj
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1Obj.(*v1.Job), v1Obj, nil
+		return v1Obj, v1Obj, nil
 	}
 	return nil, nil, kutil.ErrUnknown
 }

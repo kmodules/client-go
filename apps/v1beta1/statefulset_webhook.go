@@ -154,7 +154,7 @@ func convert_to_v1beta1_statefulset(gv schema.GroupVersion, raw []byte) (*v1beta
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1beta1Obj.(*v1beta1.StatefulSet), v1beta1Obj, nil
+		return v1beta1Obj, v1beta1Obj, nil
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Obj := &v1beta2.StatefulSet{}

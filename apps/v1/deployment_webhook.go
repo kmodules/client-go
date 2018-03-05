@@ -140,7 +140,7 @@ func convert_to_v1_deployment(gv schema.GroupVersion, raw []byte) (*v1.Deploymen
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1Obj.(*v1.Deployment), v1Obj, nil
+		return v1Obj, v1Obj, nil
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Obj := &v1beta2.Deployment{}

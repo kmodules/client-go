@@ -167,7 +167,7 @@ func convert_to_extensions_replicaset(gv schema.GroupVersion, raw []byte) (*exte
 		if err != nil {
 			return nil, nil, err
 		}
-		return extObj.(*extensions.ReplicaSet), extObj, nil
+		return extObj, extObj, nil
 	}
 	return nil, nil, kutil.ErrUnknown
 }

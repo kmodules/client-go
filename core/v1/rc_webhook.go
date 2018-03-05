@@ -137,7 +137,7 @@ func convert_to_v1_rc(gv schema.GroupVersion, raw []byte) (*v1.ReplicationContro
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1Obj.(*v1.ReplicationController), v1Obj, nil
+		return v1Obj, v1Obj, nil
 	}
 	return nil, nil, kutil.ErrUnknown
 }
