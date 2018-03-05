@@ -135,14 +135,16 @@ func (a *DeploymentWebhook) Admit(req *admission.AdmissionRequest) *admission.Ad
 func convert_to_v1_deployment(gv schema.GroupVersion, raw []byte) (*v1.Deployment, runtime.Object, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		v1Obj, err := meta.UnmarshalToJSON(raw, v1.SchemeGroupVersion)
+		v1Obj := &v1.Deployment{}
+		err :=json.Unmarshal(raw,&v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
 		return v1Obj.(*v1.Deployment), v1Obj, nil
 
 	case v1beta2.SchemeGroupVersion:
-		v1beta2Obj, err := meta.UnmarshalToJSON(raw, v1beta2.SchemeGroupVersion)
+		v1beta2Obj := &v1beta2.Deployment{}
+		err :=json.Unmarshal(raw,&v1beta2Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -155,7 +157,8 @@ func convert_to_v1_deployment(gv schema.GroupVersion, raw []byte) (*v1.Deploymen
 		return v1Obj, v1beta2Obj, nil
 
 	case v1beta1.SchemeGroupVersion:
-		v1beta1Obj, err := meta.UnmarshalToJSON(raw, v1beta1.SchemeGroupVersion)
+		v1beta1Obj := &v1beta1.Deployment{}
+		err :=json.Unmarshal(raw,&v1beta1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -168,7 +171,8 @@ func convert_to_v1_deployment(gv schema.GroupVersion, raw []byte) (*v1.Deploymen
 		return v1Obj, v1beta1Obj, nil
 
 	case extensions.SchemeGroupVersion:
-		extObj, err := meta.UnmarshalToJSON(raw, extensions.SchemeGroupVersion)
+		extObj := &extensions.Deployment{}
+		err :=json.Unmarshal(raw,&extObj)
 		if err != nil {
 			return nil, nil, err
 		}

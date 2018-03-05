@@ -131,7 +131,8 @@ func (a *JobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admission
 func convert_to_v1_job(gv schema.GroupVersion, raw []byte) (*v1.Job, runtime.Object, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		v1Obj, err := meta.UnmarshalToJSON(raw, v1.SchemeGroupVersion)
+		v1Obj := &v1.Job{}
+		err :=json.Unmarshal(raw,&v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
