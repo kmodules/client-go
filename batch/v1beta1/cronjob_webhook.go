@@ -131,11 +131,12 @@ func (a *CronJobWebhook) Admit(req *admission.AdmissionRequest) *admission.Admis
 func convert_to_v1beta1_cronjob(gv schema.GroupVersion, raw []byte) (*v1beta1.CronJob, runtime.Object, error) {
 	switch gv {
 	case v1beta1.SchemeGroupVersion:
-		v1Obj, err := meta.UnmarshalToJSON(raw, v1beta1.SchemeGroupVersion)
+		v1beta1Obj := &v1beta1.CronJob{}
+		err := json.Unmarshal(raw, v1beta1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1Obj.(*v1beta1.CronJob), v1Obj, nil
+		return v1beta1Obj, v1beta1Obj, nil
 	}
 	return nil, nil, kutil.ErrUnknown
 }

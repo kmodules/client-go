@@ -135,7 +135,8 @@ func (a *StatefulSetWebhook) Admit(req *admission.AdmissionRequest) *admission.A
 func convert_to_v1beta1_statefulset(gv schema.GroupVersion, raw []byte) (*v1beta1.StatefulSet, runtime.Object, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		v1Obj, err := meta.UnmarshalToJSON(raw, v1.SchemeGroupVersion)
+		v1Obj := &v1.StatefulSet{}
+		err := json.Unmarshal(raw, v1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -148,14 +149,16 @@ func convert_to_v1beta1_statefulset(gv schema.GroupVersion, raw []byte) (*v1beta
 		return v1beta1Obj, v1Obj, nil
 
 	case v1beta1.SchemeGroupVersion:
-		v1beta1Obj, err := meta.UnmarshalToJSON(raw, v1beta1.SchemeGroupVersion)
+		v1beta1Obj := &v1beta1.StatefulSet{}
+		err := json.Unmarshal(raw, v1beta1Obj)
 		if err != nil {
 			return nil, nil, err
 		}
-		return v1beta1Obj.(*v1beta1.StatefulSet), v1beta1Obj, nil
+		return v1beta1Obj, v1beta1Obj, nil
 
 	case v1beta2.SchemeGroupVersion:
-		v1beta2Obj, err := meta.UnmarshalToJSON(raw, v1beta2.SchemeGroupVersion)
+		v1beta2Obj := &v1beta2.StatefulSet{}
+		err := json.Unmarshal(raw, v1beta2Obj)
 		if err != nil {
 			return nil, nil, err
 		}
