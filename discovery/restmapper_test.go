@@ -32,7 +32,7 @@ import (
 	storage "k8s.io/api/storage/v1"
 )
 
-func TestRestMapper(t *testing.T) {
+func testRestMapper(t *testing.T) {
 	masterURL := ""
 	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
 
