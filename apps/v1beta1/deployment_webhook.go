@@ -3,26 +3,6 @@ package v1beta1
 import (
 	"sync"
 
-	"k8s.io/kubernetes/pkg/api/legacyscheme"
-	//_ "k8s.io/kubernetes/pkg/apis/admission/install"
-	//_ "k8s.io/kubernetes/pkg/apis/admissionregistration/install"
-	_ "k8s.io/kubernetes/pkg/apis/apps/install"
-	//_ "k8s.io/kubernetes/pkg/apis/authentication/install"
-	//_ "k8s.io/kubernetes/pkg/apis/authorization/install"
-	//_ "k8s.io/kubernetes/pkg/apis/autoscaling/install"
-	//_ "k8s.io/kubernetes/pkg/apis/batch/install"
-	//_ "k8s.io/kubernetes/pkg/apis/certificates/install"
-	//_ "k8s.io/kubernetes/pkg/apis/componentconfig/install"
-	//_ "k8s.io/kubernetes/pkg/apis/core/install"
-	//_ "k8s.io/kubernetes/pkg/apis/events/install"
-	//_ "k8s.io/kubernetes/pkg/apis/extensions/install"
-	//_ "k8s.io/kubernetes/pkg/apis/imagepolicy/install"
-	//_ "k8s.io/kubernetes/pkg/apis/networking/install"
-	//_ "k8s.io/kubernetes/pkg/apis/policy/install"
-	//_ "k8s.io/kubernetes/pkg/apis/rbac/install"
-	//_ "k8s.io/kubernetes/pkg/apis/scheduling/install"
-	//_ "k8s.io/kubernetes/pkg/apis/settings/install"
-	//_ "k8s.io/kubernetes/pkg/apis/storage/install"
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
@@ -38,6 +18,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	_ "k8s.io/kubernetes/pkg/apis/apps/install"
 )
 
 type DeploymentWebhook struct {
@@ -228,8 +210,6 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case v1beta1.SchemeGroupVersion:
-		legacyscheme.Scheme.Default()
-
 		v1beta1Obj := v1beta1Mod.(runtime.Object)
 		legacyscheme.Scheme.Default(v1beta1Obj)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Obj)

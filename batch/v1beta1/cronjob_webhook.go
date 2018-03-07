@@ -14,6 +14,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	_ "k8s.io/kubernetes/pkg/apis/apps/install"
 )
 
 type CronJobWebhook struct {
@@ -141,10 +143,12 @@ func convert_to_v1beta1_cronjob(gv schema.GroupVersion, raw []byte) (*v1beta1.Cr
 	return nil, nil, kutil.ErrUnknown
 }
 
-func create_cronjob_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
+func create_cronjob_patch(gv schema.GroupVersion, originalObj, v1beta1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1beta1.SchemeGroupVersion:
-		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		v1beta1Obj := v1beta1Mod.(runtime.Object)
+		legacyscheme.Scheme.Default(v1beta1Obj)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Obj)
 	}
 	return nil, kutil.ErrUnknown
 }
