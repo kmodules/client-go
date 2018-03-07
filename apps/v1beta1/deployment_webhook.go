@@ -3,6 +3,7 @@ package v1beta1
 import (
 	"sync"
 
+	clientsetscheme "k8s.io/client-go/kubernetes/scheme"
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/admission/api"
 	"github.com/appscode/kutil/meta"
@@ -195,6 +196,7 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
+		clientsetscheme.Scheme.Default(v1Mod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod)
 
 	case v1beta2.SchemeGroupVersion:
@@ -203,10 +205,13 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
+		clientsetscheme.Scheme.Default(v1beta2Mod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case v1beta1.SchemeGroupVersion:
-		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Mod.(runtime.Object))
+		v1beta1Obj := v1beta1Mod.(runtime.Object)
+		clientsetscheme.Scheme.Default(v1beta1Obj)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Obj)
 
 	case extensions.SchemeGroupVersion:
 		extMod := &extensions.Deployment{}
@@ -214,6 +219,7 @@ func create_deployment_patch(gv schema.GroupVersion, originalObj, v1beta1Mod int
 		if err != nil {
 			return nil, err
 		}
+		clientsetscheme.Scheme.Default(extMod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
 	return nil, kutil.ErrUnknown
