@@ -41,7 +41,7 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 
 				if len(cmd.Commands()) == 0 {
 					p.Command = "./" + strings.TrimSpace(cmd.CommandPath())
-					cmd.Flags().VisitAll(func(flag *pflag.Flag) {
+					fn := func(flag *pflag.Flag) {
 						if flag.Hidden {
 							return
 						}
@@ -51,7 +51,9 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 							Desc:      flag.Usage,
 							DefValue:  flag.DefValue,
 						})
-					})
+					}
+					cmd.NonInheritedFlags().VisitAll(fn)
+					cmd.InheritedFlags().VisitAll(fn)
 				}
 
 				for _, cc := range cmd.Commands() {
