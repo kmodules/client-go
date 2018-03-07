@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
 type StatefulSetWebhook struct {
@@ -181,6 +182,7 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1beta1Mod in
 		if err != nil {
 			return nil, err
 		}
+		legacyscheme.Scheme.Default(v1Mod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod)
 
 	case v1beta2.SchemeGroupVersion:
@@ -189,10 +191,13 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1beta1Mod in
 		if err != nil {
 			return nil, err
 		}
+		legacyscheme.Scheme.Default(v1beta2Mod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case v1beta1.SchemeGroupVersion:
-		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Mod.(runtime.Object))
+		v1beta1Obj := v1beta1Mod.(runtime.Object)
+		legacyscheme.Scheme.Default(v1beta1Obj)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta1Obj)
 	}
 	return nil, kutil.ErrUnknown
 }

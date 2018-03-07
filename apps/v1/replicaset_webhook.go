@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
 type ReplicaSetWebhook struct {
@@ -175,7 +176,9 @@ func convert_to_v1_replicaset(gv schema.GroupVersion, raw []byte) (*v1.ReplicaSe
 func create_replicaset_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
 	switch gv {
 	case v1.SchemeGroupVersion:
-		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Mod.(runtime.Object))
+		v1Obj := v1Mod.(runtime.Object)
+		legacyscheme.Scheme.Default(v1Obj)
+		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1Obj)
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.ReplicaSet{}
@@ -183,6 +186,7 @@ func create_replicaset_patch(gv schema.GroupVersion, originalObj, v1Mod interfac
 		if err != nil {
 			return nil, err
 		}
+		legacyscheme.Scheme.Default(v1beta2Mod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), v1beta2Mod)
 
 	case extensions.SchemeGroupVersion:
@@ -191,6 +195,7 @@ func create_replicaset_patch(gv schema.GroupVersion, originalObj, v1Mod interfac
 		if err != nil {
 			return nil, err
 		}
+		legacyscheme.Scheme.Default(extMod)
 		return meta.CreateJSONPatch(originalObj.(runtime.Object), extMod)
 	}
 	return nil, kutil.ErrUnknown
