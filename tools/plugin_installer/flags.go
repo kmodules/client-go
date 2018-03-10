@@ -3,6 +3,7 @@ package plugin_installer
 import (
 	"flag"
 	"os"
+	"strings"
 
 	"github.com/spf13/pflag"
 	utilflag "k8s.io/apiserver/pkg/util/flag"
@@ -48,9 +49,16 @@ func BindGlobalFlags(flags *pflag.FlagSet, plugin bool) clientcmd.ClientConfig {
 
 func LoadFromEnv(flags *pflag.FlagSet, name, prefix string) {
 	v, found := os.LookupEnv(plugins.FlagToEnvName(name, prefix))
-	if found && (name != clientcmd.FlagImpersonateGroup || v != "[]") {
-		flags.Set(name, v)
+	if !found {
+		return
 	}
+	if strings.HasPrefix(v, "[") && strings.HasSuffix(v, "]") {
+		v = v[1 : len(v)-1]
+		if v == "" {
+			return
+		}
+	}
+	flags.Set(name, v)
 }
 
 func LoadFlags(flags *pflag.FlagSet) {
