@@ -562,6 +562,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/the-redback/go-oneliners"
+  packages = ["."]
+  revision = "82a97ec58df4809a2bc57ebbbcc1e6a2feb78111"
+
+[[projects]]
+  branch = "master"
   name = "github.com/yudai/gojsondiff"
   packages = [
     ".",
@@ -1147,6 +1153,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "397c96552deaf396c2499bf0bc9070fa125885fac710be9c5841327b4c2d8138"
+  inputs-digest = "684558ca886a07b77b6083c7ac438d5f8d5ebcc78f5d3c4793ff7f565f7b4c10"
   solver-name = "gps-cdcl"
   solver-version = 1
