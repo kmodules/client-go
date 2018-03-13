@@ -110,8 +110,8 @@
     "service/kms",
     "service/sts"
   ]
-  revision = "1f8fb9d0919e5a58992207db9512a03f76ab0274"
-  version = "v1.13.12"
+  revision = "4c9c8e98642a1a5e7c27d7a644cf9140809d49ee"
+  version = "v1.13.13"
 
 [[projects]]
   branch = "master"
@@ -580,7 +580,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "182114d582623c1caa54f73de9c7224e23a48487"
+  revision = "c4a91bd4f524f10d064139674cf55852e055ad01"
 
 [[projects]]
   branch = "release-branch.go1.9"
