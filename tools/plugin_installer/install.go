@@ -30,7 +30,7 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 				log.Fatal(err)
 			}
 			p = filepath.Clean(p)
-			ioutil.CopyFile(filepath.Join(dir, filepath.Base(p)), p, 0755)
+			ioutil.CopyFile(filepath.Join(dir, filepath.Base(p)), p)
 
 			var traverse func(cmd *cobra.Command, p *plugins.Plugin)
 			traverse = func(cmd *cobra.Command, p *plugins.Plugin) {
