@@ -1,12 +1,12 @@
 package plugin_installer
 
 import (
-	"bytes"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/appscode/go/ioutil"
+	ioutilz "github.com/appscode/go/ioutil"
 	"github.com/appscode/go/log"
 	"github.com/ghodss/yaml"
 	"github.com/kardianos/osext"
@@ -30,7 +30,7 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 				log.Fatal(err)
 			}
 			p = filepath.Clean(p)
-			ioutil.CopyFile(filepath.Join(dir, filepath.Base(p)), p, 0755)
+			ioutilz.CopyFile(filepath.Join(dir, filepath.Base(p)), p)
 
 			var traverse func(cmd *cobra.Command, p *plugins.Plugin)
 			traverse = func(cmd *cobra.Command, p *plugins.Plugin) {
@@ -70,7 +70,7 @@ func NewCmdInstall(rootCmd *cobra.Command) *cobra.Command {
 			if err != nil {
 				log.Fatal(err)
 			}
-			ioutil.WriteFile(filepath.Join(dir, "plugin.yaml"), bytes.NewBuffer(data), 0755)
+			ioutil.WriteFile(filepath.Join(dir, "plugin.yaml"), data, 0755)
 		},
 	}
 	return cmd

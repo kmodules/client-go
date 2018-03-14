@@ -19,6 +19,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
+	"k8s.io/kubernetes/pkg/apis/apps"
 )
 
 type StatefulSetWebhook struct {
@@ -149,9 +150,13 @@ func convert_to_v1_statefulset(gv schema.GroupVersion, raw []byte) (*v1.Stateful
 		if err != nil {
 			return nil, nil, err
 		}
-
+		internalObj := &apps.StatefulSet{}
+		err = legacyscheme.Scheme.Convert(v1beta2Obj, internalObj, nil)
+		if err != nil {
+			return nil, nil, err
+		}
 		v1Obj := &v1.StatefulSet{}
-		err = scheme.Scheme.Convert(v1beta2Obj, v1Obj, nil)
+		err = scheme.Scheme.Convert(internalObj, v1Obj, nil)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -164,8 +169,14 @@ func convert_to_v1_statefulset(gv schema.GroupVersion, raw []byte) (*v1.Stateful
 			return nil, nil, err
 		}
 
+		internalObj := &apps.StatefulSet{}
+		err = legacyscheme.Scheme.Convert(v1beta1Obj, internalObj, nil)
+		if err != nil {
+			return nil, nil, err
+		}
+
 		v1Obj := &v1.StatefulSet{}
-		err = scheme.Scheme.Convert(v1beta1Obj, v1Obj, nil)
+		err = scheme.Scheme.Convert(internalObj, v1Obj, nil)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -175,6 +186,11 @@ func convert_to_v1_statefulset(gv schema.GroupVersion, raw []byte) (*v1.Stateful
 }
 
 func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interface{}) ([]byte, error) {
+	internalObj := &apps.StatefulSet{}
+	err := legacyscheme.Scheme.Convert(v1Mod, internalObj, nil)
+	if err != nil {
+		return nil, err
+	}
 	switch gv {
 	case v1.SchemeGroupVersion:
 		v1Obj := v1Mod.(runtime.Object)
@@ -183,7 +199,7 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interfa
 
 	case v1beta2.SchemeGroupVersion:
 		v1beta2Mod := &v1beta2.StatefulSet{}
-		err := scheme.Scheme.Convert(v1Mod, v1beta2Mod, nil)
+		err = scheme.Scheme.Convert(internalObj, v1beta2Mod, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -192,7 +208,7 @@ func create_statefulset_patch(gv schema.GroupVersion, originalObj, v1Mod interfa
 
 	case v1beta1.SchemeGroupVersion:
 		v1beta1Mod := &v1beta1.StatefulSet{}
-		err := scheme.Scheme.Convert(v1Mod, v1beta1Mod, nil)
+		err = scheme.Scheme.Convert(internalObj, v1beta1Mod, nil)
 		if err != nil {
 			return nil, err
 		}
