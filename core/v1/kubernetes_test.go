@@ -39,22 +39,40 @@ func TestRemoveOwnerReference(t *testing.T) {
 		UID:        "3",
 	}
 
-	meta := RemoveOwnerReference(objectMeta, &ref)
-	if !reflect.DeepEqual(meta, objectMeta) {
-		t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", objectMeta, meta)
-	}
-
 	appendedMeta := objectMeta
-	appendedMeta.OwnerReferences = append(meta.OwnerReferences, metav1.OwnerReference{
+	appendedMeta.OwnerReferences = append(appendedMeta.OwnerReferences, metav1.OwnerReference{
 		UID:        ref.UID,
 		APIVersion: ref.APIVersion,
 		Name:       ref.Name,
 		Kind:       ref.Kind,
 	})
 
-	meta = RemoveOwnerReference(appendedMeta, &ref)
-	if !reflect.DeepEqual(meta, objectMeta) {
-		t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", objectMeta, meta)
+	cases := []struct {
+		testName string
+		objMeta  metav1.ObjectMeta
+		owner    core.ObjectReference
+		newMeta  metav1.ObjectMeta
+	}{
+		{
+			"Reference is Not Owner of Object",
+			objectMeta,
+			ref,
+			objectMeta,
+		},
+		{
+			"Reference is Owner of Object",
+			appendedMeta,
+			ref,
+			objectMeta,
+		},
 	}
 
+	for _, c := range cases {
+		t.Run(c.testName, func(t *testing.T) {
+			meta := RemoveOwnerReference(c.objMeta, &c.owner)
+			if !reflect.DeepEqual(meta, c.newMeta) {
+				t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", c.newMeta, meta)
+			}
+		})
+	}
 }
