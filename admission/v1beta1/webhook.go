@@ -22,11 +22,16 @@ type Getter interface {
 	Get(namespace, name string) (runtime.Object, error)
 }
 
+type GetterFactory interface {
+	New(config *rest.Config) (Getter, error)
+}
+
 type GenericWebhook struct {
 	plural   schema.GroupVersionResource
 	singular string
 
 	target  schema.GroupVersionKind
+	factory GetterFactory
 	getter  Getter
 	handler admission.ResourceHandler
 
@@ -40,13 +45,13 @@ func NewGenericWebhook(
 	plural schema.GroupVersionResource,
 	singular string,
 	target schema.GroupVersionKind,
-	getter Getter,
+	factory GetterFactory,
 	handler admission.ResourceHandler) *GenericWebhook {
 	return &GenericWebhook{
 		plural:   plural,
 		singular: singular,
 		target:   target,
-		getter:   getter,
+		factory:  factory,
 		handler:  handler,
 	}
 }
@@ -61,7 +66,11 @@ func (h *GenericWebhook) Initialize(config *rest.Config, stopCh <-chan struct{})
 
 	h.initialized = true
 
-	return nil
+	var err error
+	if h.factory != nil {
+		h.getter, err = h.factory.New(config)
+	}
+	return err
 }
 
 func (h *GenericWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.AdmissionResponse {
