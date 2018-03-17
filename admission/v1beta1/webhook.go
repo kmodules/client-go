@@ -18,12 +18,10 @@ import (
 	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
-type Getter interface {
-	Get(namespace, name string) (runtime.Object, error)
-}
+type GetFunc func(namespace, name string) (runtime.Object, error)
 
 type GetterFactory interface {
-	New(config *rest.Config) (Getter, error)
+	New(config *rest.Config) (GetFunc, error)
 }
 
 type GenericWebhook struct {
@@ -32,7 +30,7 @@ type GenericWebhook struct {
 
 	target  schema.GroupVersionKind
 	factory GetterFactory
-	getter  Getter
+	get     GetFunc
 	handler admission.ResourceHandler
 
 	initialized bool
@@ -68,7 +66,7 @@ func (h *GenericWebhook) Initialize(config *rest.Config, stopCh <-chan struct{})
 
 	var err error
 	if h.factory != nil {
-		h.getter, err = h.factory.New(config)
+		h.get, err = h.factory.New(config)
 	}
 	return err
 }
@@ -99,11 +97,11 @@ func (h *GenericWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admission
 
 	switch req.Operation {
 	case v1beta1.Delete:
-		if h.getter == nil {
+		if h.get == nil {
 			break
 		}
 		// req.Object.Raw = nil, so read from kubernetes
-		obj, err := h.getter.Get(req.Namespace, req.Name)
+		obj, err := h.get(req.Namespace, req.Name)
 		if err != nil && !kerr.IsNotFound(err) {
 			return StatusInternalServerError(err)
 		} else if err == nil {
