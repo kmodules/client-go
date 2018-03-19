@@ -18,11 +18,11 @@ import (
 	core "k8s.io/api/core/v1"
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/rest"
+	"k8s.io/kubernetes/pkg/api/legacyscheme"
 )
 
 // WorkloadWebhook avoids the bidirectional conversion needed for GenericWebhooks. Only supports workload types.
@@ -117,6 +117,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 			return StatusBadRequest(err)
 		}
 		obj.GetObjectKind().SetGroupVersionKind(*kind)
+		legacyscheme.Scheme.Default(obj)
 		w, err := h.convertToWorkload(obj)
 		if err != nil {
 			return StatusBadRequest(err)
@@ -154,6 +155,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 			return StatusBadRequest(err)
 		}
 		obj.GetObjectKind().SetGroupVersionKind(*kind)
+		legacyscheme.Scheme.Default(obj)
 		w, err := h.convertToWorkload(obj)
 		if err != nil {
 			return StatusBadRequest(err)
@@ -164,6 +166,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 			return StatusBadRequest(err)
 		}
 		oldObj.GetObjectKind().SetGroupVersionKind(*kind)
+		legacyscheme.Scheme.Default(oldObj)
 		ow, err := h.convertToWorkload(oldObj)
 		if err != nil {
 			return StatusBadRequest(err)
@@ -205,59 +208,51 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 func (h *WorkloadWebhook) convertToWorkload(obj runtime.Object) (*workload.Workload, error) {
 	switch t := obj.(type) {
 	case *core.Pod:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec), nil
 		// ReplicationController
 	case *core.ReplicationController:
 		if t.Spec.Template == nil {
 			t.Spec.Template = &core.PodTemplateSpec{}
 		}
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// Deployment
 	case *extensions.Deployment:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1beta1.Deployment:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1beta2.Deployment:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1.Deployment:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// DaemonSet
 	case *extensions.DaemonSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1beta2.DaemonSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1.DaemonSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// ReplicaSet
 	case *extensions.ReplicaSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1beta2.ReplicaSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1.ReplicaSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// StatefulSet
 	case *appsv1beta1.StatefulSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1beta2.StatefulSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 	case *appsv1.StatefulSet:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// Job
 	case *batchv1.Job:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.Template.Spec), nil
 		// CronJob
 	case *batchv1beta1.CronJob:
-		return newWorkload(t.TypeMeta, t.ObjectMeta, t.Spec.JobTemplate.Spec.Template.Spec), nil
+		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec.JobTemplate.Spec.Template.Spec), nil
 	default:
 		return nil, fmt.Errorf("the object is not a pod or does not have a pod template")
-	}
-}
-
-func newWorkload(t metav1.TypeMeta, o metav1.ObjectMeta, spec core.PodSpec) *workload.Workload {
-	return &workload.Workload{
-		TypeMeta:   t,
-		ObjectMeta: o,
-		Spec:       spec,
 	}
 }
 
