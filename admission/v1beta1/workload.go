@@ -122,9 +122,13 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		if err != nil {
 			return StatusForbidden(err)
 		} else if mod != nil {
-			err = workload.ApplyWorkload(obj, mod.(*workload.Workload))
-			if err != nil {
-				return StatusForbidden(err)
+			if w := mod.(*workload.Workload); w.Object == nil {
+				err = workload.ApplyWorkload(obj, w)
+				if err != nil {
+					return StatusForbidden(err)
+				}
+			} else {
+				obj = w.Object
 			}
 
 			var buf bytes.Buffer
@@ -171,9 +175,13 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		if err != nil {
 			return StatusForbidden(err)
 		} else if mod != nil {
-			err = workload.ApplyWorkload(obj, mod.(*workload.Workload))
-			if err != nil {
-				return StatusForbidden(err)
+			if w := mod.(*workload.Workload); w.Object == nil {
+				err = workload.ApplyWorkload(obj, w)
+				if err != nil {
+					return StatusForbidden(err)
+				}
+			} else {
+				obj = w.Object
 			}
 
 			var buf bytes.Buffer
