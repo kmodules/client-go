@@ -118,7 +118,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		}
 		obj.GetObjectKind().SetGroupVersionKind(*kind)
 		legacyscheme.Scheme.Default(obj)
-		w, err := h.convertToWorkload(obj)
+		w, err := ConvertToWorkload(obj)
 		if err != nil {
 			return StatusBadRequest(err)
 		}
@@ -127,7 +127,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		if err != nil {
 			return StatusForbidden(err)
 		} else if mod != nil {
-			err = h.applyWorkload(obj, mod.(*workload.Workload))
+			err = ApplyWorkload(obj, mod.(*workload.Workload))
 			if err != nil {
 				return StatusForbidden(err)
 			}
@@ -156,7 +156,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		}
 		obj.GetObjectKind().SetGroupVersionKind(*kind)
 		legacyscheme.Scheme.Default(obj)
-		w, err := h.convertToWorkload(obj)
+		w, err := ConvertToWorkload(obj)
 		if err != nil {
 			return StatusBadRequest(err)
 		}
@@ -167,7 +167,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		}
 		oldObj.GetObjectKind().SetGroupVersionKind(*kind)
 		legacyscheme.Scheme.Default(oldObj)
-		ow, err := h.convertToWorkload(oldObj)
+		ow, err := ConvertToWorkload(oldObj)
 		if err != nil {
 			return StatusBadRequest(err)
 		}
@@ -176,7 +176,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 		if err != nil {
 			return StatusForbidden(err)
 		} else if mod != nil {
-			err = h.applyWorkload(obj, mod.(*workload.Workload))
+			err = ApplyWorkload(obj, mod.(*workload.Workload))
 			if err != nil {
 				return StatusForbidden(err)
 			}
@@ -205,7 +205,7 @@ func (h *WorkloadWebhook) Admit(req *v1beta1.AdmissionRequest) *v1beta1.Admissio
 }
 
 // ref: https://github.com/kubernetes/kubernetes/blob/4f083dee54539b0ca24ddc55d53921f5c2efc0b9/pkg/kubectl/cmd/util/factory_client_access.go#L221
-func (h *WorkloadWebhook) convertToWorkload(obj runtime.Object) (*workload.Workload, error) {
+func ConvertToWorkload(obj runtime.Object) (*workload.Workload, error) {
 	switch t := obj.(type) {
 	case *core.Pod:
 		return workload.New(t.TypeMeta, t.ObjectMeta, t.Spec), nil
@@ -256,7 +256,7 @@ func (h *WorkloadWebhook) convertToWorkload(obj runtime.Object) (*workload.Workl
 	}
 }
 
-func (h *WorkloadWebhook) applyWorkload(obj runtime.Object, w *workload.Workload) error {
+func ApplyWorkload(obj runtime.Object, w *workload.Workload) error {
 	switch t := obj.(type) {
 	case *core.Pod:
 		t.ObjectMeta = w.ObjectMeta
