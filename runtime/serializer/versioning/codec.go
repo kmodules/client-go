@@ -68,11 +68,13 @@ func (c codec) Decode(data []byte, gvk *schema.GroupVersionKind, _ runtime.Objec
 	if err != nil {
 		return nil, gvk, err
 	}
-	c.scheme.Default(in)
-
 	if gvk.GroupVersion() != c.encodeVersion {
 		return nil, gvk, fmt.Errorf("data expected to be of version %s, found %s", c.encodeVersion, gvk)
 	}
+
+	c.scheme.Default(in)
+	in.GetObjectKind().SetGroupVersionKind(*gvk)
+
 	if c.encodeVersion == c.decodeVersion {
 		return in, gvk, err
 	}
