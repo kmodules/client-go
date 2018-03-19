@@ -15,7 +15,7 @@ import (
 	_ "k8s.io/kubernetes/pkg/apis/extensions/install"
 )
 
-var serializer = func() runtime.Codec {
+var Serializer = func() runtime.Codec {
 	mediaType := "application/json"
 	info, ok := runtime.SerializerInfoForMediaType(legacyscheme.Codecs.SupportedMediaTypes(), mediaType)
 	if !ok {
@@ -60,11 +60,11 @@ func (c codec) Encode(obj runtime.Object, w io.Writer) error {
 	}
 	c.scheme.Default(out)
 
-	return serializer.Encode(out, w)
+	return Serializer.Encode(out, w)
 }
 
 func (c codec) Decode(data []byte, gvk *schema.GroupVersionKind, _ runtime.Object) (runtime.Object, *schema.GroupVersionKind, error) {
-	in, gvk, err := serializer.Decode(data, gvk, nil)
+	in, gvk, err := Serializer.Decode(data, gvk, nil)
 	if err != nil {
 		return nil, gvk, err
 	}
