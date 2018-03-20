@@ -32,12 +32,16 @@ func CreateOrPatchStorageClass(c kubernetes.Interface, meta metav1.ObjectMeta, t
 }
 
 func PatchStorageClass(c kubernetes.Interface, cur *storage.StorageClass, transform func(*storage.StorageClass) *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
+	return PatchStorageClassObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchStorageClassObject(c kubernetes.Interface, cur, mod *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}

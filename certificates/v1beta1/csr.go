@@ -32,12 +32,16 @@ func CreateOrPatchCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 }
 
 func PatchCSR(c kubernetes.Interface, cur *certificates.CertificateSigningRequest, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
+	return PatchCSRObject(c, cur, transform(cur.DeepCopy()))
+}
+
+func PatchCSRObject(c kubernetes.Interface, cur, mod *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	modJson, err := json.Marshal(transform(cur.DeepCopy()))
+	modJson, err := json.Marshal(mod)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
