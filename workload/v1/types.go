@@ -15,10 +15,12 @@ type Workload struct {
 	// +optional
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	// Specification of the desired behavior of the pod.
-	// More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
-	// +optional
-	Spec core.PodSpec `json:"spec,omitempty"`
+	// An object that describes the pod that will be created.
+	// The DaemonSet will create exactly one copy of this pod on every node
+	// that matches the template's node selector (or on every node if no node
+	// selector is specified).
+	// More info: https://kubernetes.io/docs/concepts/workloads/controllers/replicationcontroller#pod-template
+	Template core.PodTemplateSpec `json:"template" protobuf:"bytes,2,opt,name=template"`
 
 	Object runtime.Object `json:"-"`
 }
