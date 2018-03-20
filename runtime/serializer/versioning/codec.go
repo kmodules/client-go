@@ -26,6 +26,7 @@ var Serializer = func() runtime.Codec {
 
 type codec struct {
 	scheme        *runtime.Scheme
+	defaulter     runtime.ObjectDefaulter
 	encodeVersion schema.GroupVersion
 	decodeVersion schema.GroupVersion
 }
@@ -33,11 +34,13 @@ type codec struct {
 // NewDefaultingCodecForScheme is a convenience method for callers that are using a scheme.
 func NewDefaultingCodecForScheme(
 	scheme *runtime.Scheme,
+	defaulter runtime.ObjectDefaulter,
 	encodeVersion schema.GroupVersion,
 	decodeVersion schema.GroupVersion,
 ) runtime.Codec {
 	return codec{
 		scheme:        scheme,
+		defaulter:     defaulter,
 		encodeVersion: encodeVersion,
 		decodeVersion: decodeVersion,
 	}
@@ -58,7 +61,9 @@ func (c codec) Encode(obj runtime.Object, w io.Writer) error {
 			return err
 		}
 	}
-	c.scheme.Default(out)
+	if c.defaulter != nil {
+		c.defaulter.Default(out)
+	}
 
 	return Serializer.Encode(out, w)
 }
@@ -72,7 +77,9 @@ func (c codec) Decode(data []byte, gvk *schema.GroupVersionKind, _ runtime.Objec
 		return nil, gvk, fmt.Errorf("data expected to be of version %s, found %s", c.encodeVersion, gvk)
 	}
 
-	c.scheme.Default(in)
+	if c.defaulter != nil {
+		c.defaulter.Default(in)
+	}
 	in.GetObjectKind().SetGroupVersionKind(*gvk)
 
 	if c.encodeVersion == c.decodeVersion {
