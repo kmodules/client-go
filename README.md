@@ -9,5 +9,5 @@
 Kubernetes client-go utils
 
 ## Related Libraries
-- [Kubernetes webhook utils](appscode/kubernetes-webhook-util)
+- [Kubernetes webhook utils](https://github.com/appscode/kubernetes-webhook-util)
 - [OpenShift client-go utils](https://github.com/appscode/ocutil)
