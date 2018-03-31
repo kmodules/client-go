@@ -17,7 +17,7 @@ package v1beta1
 import (
 	"encoding/json"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -112,21 +112,21 @@ func NewCustomResourceDefinition(config Config) *extensionsobj.CustomResourceDef
 	return crd
 }
 
-func MarshallCrd(crd *extensionsobj.CustomResourceDefinition, outputFormat string) {
+func MarshallCrd(w io.Writer, crd *extensionsobj.CustomResourceDefinition, outputFormat string) {
 	jsonBytes, err := json.MarshalIndent(crd, "", "    ")
 	if err != nil {
 		fmt.Println("error:", err)
 	}
 
 	if outputFormat == "json" {
-		os.Stdout.Write(jsonBytes)
+		w.Write(jsonBytes)
 	} else {
 		yamlBytes, err := yaml.JSONToYAML(jsonBytes)
 		if err != nil {
 			fmt.Println("error:", err)
 		}
-		os.Stdout.Write([]byte("---\n"))
-		os.Stdout.Write(yamlBytes)
+		w.Write([]byte("---\n"))
+		w.Write(yamlBytes)
 	}
 }
 
