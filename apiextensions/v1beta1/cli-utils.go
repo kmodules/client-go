@@ -40,6 +40,7 @@ type Config struct {
 	Plural                string
 	Singular              string
 	ShortNames            []string
+	ListKind              string
 	GetOpenAPIDefinitions GetAPIDefinitions
 }
 
@@ -101,6 +102,7 @@ func NewCustomResourceDefinition(config Config) *extensionsobj.CustomResourceDef
 				Singular:   config.Singular,
 				Kind:       config.Kind,
 				ShortNames: config.ShortNames,
+				ListKind:   config.ListKind,
 			},
 		},
 	}
@@ -144,5 +146,6 @@ func InitFlags(cfg *Config, fs *pflag.FlagSet) *pflag.FlagSet {
 	fs.StringVar(&cfg.Plural, "plural", "", "CRD plural name")
 	fs.StringVar(&cfg.Singular, "singular", "", "CRD singular name")
 	fs.StringSliceVar(&cfg.ShortNames, "short-names", nil, "CRD short names")
+	fs.StringVar(&cfg.ListKind, "list-kind", "", "CRD list kind")
 	return fs
 }
