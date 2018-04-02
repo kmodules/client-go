@@ -109,14 +109,14 @@ func MergeServicePorts(cur, desired []core.ServicePort) []core.ServicePort {
 }
 
 func WaitUntilServiceDeletedBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
-	r, err := metav1.LabelSelectorAsSelector(selector)
+	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err
 	}
 
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
 		svcList, err := kubeClient.CoreV1().Services(namespace).List(metav1.ListOptions{
-			LabelSelector: r.String(),
+			LabelSelector: sel.String(),
 		})
 		if err != nil {
 			return false, nil
