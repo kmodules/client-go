@@ -3,6 +3,7 @@ package certstore
 import (
 	"crypto/rsa"
 	"crypto/x509"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ type CertStore struct {
 	dir          string
 	organization []string
 
+	ca     string
 	caKey  *rsa.PrivateKey
 	caCert *x509.Certificate
 }
@@ -31,24 +33,42 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 	return &CertStore{fs: fs, dir: dir, organization: append([]string(nil), organization...)}, nil
 }
 
-func (cs *CertStore) InitCA() error {
-	err := cs.LoadCA()
+func (cs *CertStore) InitCA(ca ...string) error {
+	err := cs.LoadCA(ca...)
 	if err == nil {
 		return nil
 	}
-	return cs.NewCA()
+	return cs.NewCA(ca...)
 }
 
-func (cs *CertStore) LoadCA() error {
-	if cs.PairExists("ca") {
+func (cs *CertStore) LoadCA(ca ...string) error {
+	switch len(ca) {
+	case 0:
+		cs.ca = "ca"
+	case 1:
+		cs.ca = ca[0]
+	default:
+		return fmt.Errorf("multiple ca given: %v", ca)
+	}
+
+	if cs.PairExists(cs.ca) {
 		var err error
-		cs.caCert, cs.caKey, err = cs.Read("ca")
+		cs.caCert, cs.caKey, err = cs.Read(cs.ca)
 		return err
 	}
 	return os.ErrNotExist
 }
 
-func (cs *CertStore) NewCA() error {
+func (cs *CertStore) NewCA(ca ...string) error {
+	switch len(ca) {
+	case 0:
+		cs.ca = "ca"
+	case 1:
+		cs.ca = ca[0]
+	default:
+		return fmt.Errorf("multiple ca given: %v", ca)
+	}
+
 	var err error
 
 	key, err := cert.NewPrivateKey()
@@ -56,7 +76,7 @@ func (cs *CertStore) NewCA() error {
 		return errors.Wrap(err, "failed to generate private key")
 	}
 	cfg := cert.Config{
-		CommonName:   "ca",
+		CommonName:   cs.ca,
 		Organization: cs.organization,
 		AltNames: cert.AltNames{
 			IPs: []net.IP{net.ParseIP("127.0.0.1")},
@@ -66,7 +86,7 @@ func (cs *CertStore) NewCA() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to generate self-signed certificate")
 	}
-	err = cs.Write("ca", crt, key)
+	err = cs.Write(cs.ca, crt, key)
 	if err != nil {
 		return err
 	}
@@ -78,6 +98,10 @@ func (cs *CertStore) NewCA() error {
 
 func (cs *CertStore) Location() string {
 	return cs.dir
+}
+
+func (cs *CertStore) CAName() string {
+	return cs.ca
 }
 
 func (cs *CertStore) CACert() []byte {
