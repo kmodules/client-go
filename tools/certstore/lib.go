@@ -56,6 +56,24 @@ func (s *CertStore) LoadCA(ca ...string) error {
 		s.caCert, s.caKey, err = s.Read(s.ca)
 		return err
 	}
+
+	// only ca key found, extract ca cert from it.
+	if _, err := s.fs.Stat(s.KeyFile(s.ca)); err == nil {
+		keyBytes, err := afero.ReadFile(s.fs, s.KeyFile(s.ca))
+		if err != nil {
+			return errors.Wrapf(err, "failed to read private key `%s`", s.KeyFile(s.ca))
+		}
+		key, err := cert.ParsePrivateKeyPEM(keyBytes)
+		if err != nil {
+			return errors.Wrapf(err, "failed to parse private key `%s`", s.KeyFile(s.ca))
+		}
+		rsaKey, ok := key.(*rsa.PrivateKey)
+		if !ok {
+			return errors.Errorf("private key `%s` is not a rsa private key", s.KeyFile(s.ca))
+		}
+		return s.createCAFromKey(rsaKey)
+	}
+
 	return os.ErrNotExist
 }
 
@@ -69,12 +87,16 @@ func (s *CertStore) NewCA(ca ...string) error {
 		return fmt.Errorf("multiple ca given: %v", ca)
 	}
 
-	var err error
-
 	key, err := cert.NewPrivateKey()
 	if err != nil {
 		return errors.Wrap(err, "failed to generate private key")
 	}
+	return s.createCAFromKey(key)
+}
+
+func (s *CertStore) createCAFromKey(key *rsa.PrivateKey) error {
+	var err error
+
 	cfg := cert.Config{
 		CommonName:   s.ca,
 		Organization: s.organization,
