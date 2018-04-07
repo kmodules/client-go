@@ -166,6 +166,26 @@ func (s *CertStore) NewServerCertPair(cn string, sans cert.AltNames) ([]byte, []
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
 
+// NewPeerCertPair is used to create cert pair that can serve as both server and client.
+// This is used to issue peer certificates for etcd.
+func (s *CertStore) NewPeerCertPair(cn string, sans cert.AltNames) ([]byte, []byte, error) {
+	cfg := cert.Config{
+		CommonName:   cn,
+		Organization: s.organization,
+		AltNames:     sans,
+		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+	}
+	key, err := cert.NewPrivateKey()
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to generate private key")
+	}
+	crt, err := cert.NewSignedCert(cfg, key, s.caCert, s.caKey)
+	if err != nil {
+		return nil, nil, errors.Wrap(err, "failed to generate peer certificate")
+	}
+	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
+}
+
 func (s *CertStore) NewClientCertPair(cn string, organization ...string) ([]byte, []byte, error) {
 	cfg := cert.Config{
 		CommonName:   cn,
