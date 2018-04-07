@@ -19,7 +19,8 @@ import (
 	_ "k8s.io/kubernetes/pkg/credentialprovider/aws"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/azure"
 	_ "k8s.io/kubernetes/pkg/credentialprovider/gcp"
-	// _ "k8s.io/kubernetes/pkg/credentialprovider/rancher" // enable in Kube 1.10
+	_ "k8s.io/kubernetes/pkg/credentialprovider/rancher"
+	"k8s.io/kubernetes/pkg/credentialprovider/secrets"
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
@@ -28,7 +29,7 @@ var (
 )
 
 func MakeDockerKeyring(pullSecrets []v1.Secret) (credentialprovider.DockerKeyring, error) {
-	return credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
+	return secrets.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 }
 
 type ImageRef struct {
