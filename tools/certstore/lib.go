@@ -176,7 +176,7 @@ func (s *CertStore) NewClientCertPair(cn string, organization ...string) ([]byte
 	}
 	crt, err := cert.NewSignedCert(cfg, key, s.caCert, s.caKey)
 	if err != nil {
-		return nil, nil, errors.Wrap(err, "failed to generate server certificate")
+		return nil, nil, errors.Wrap(err, "failed to generate client certificate")
 	}
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
