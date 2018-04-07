@@ -19,10 +19,10 @@ type CertStore struct {
 	fs           afero.Fs
 	dir          string
 	organization []string
-
-	ca     string
-	caKey  *rsa.PrivateKey
-	caCert *x509.Certificate
+	seed         string
+	ca           string
+	caKey        *rsa.PrivateKey
+	caCert       *x509.Certificate
 }
 
 func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, error) {
@@ -33,22 +33,17 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 	return &CertStore{fs: fs, dir: dir, organization: append([]string(nil), organization...)}, nil
 }
 
-func (s *CertStore) InitCA(ca ...string) error {
-	err := s.LoadCA(ca...)
+func (s *CertStore) InitCA(seed ...string) error {
+	err := s.LoadCA(seed...)
 	if err == nil {
 		return nil
 	}
-	return s.NewCA(ca...)
+	return s.NewCA(seed...)
 }
 
-func (s *CertStore) LoadCA(ca ...string) error {
-	switch len(ca) {
-	case 0:
-		s.ca = "ca"
-	case 1:
-		s.ca = ca[0]
-	default:
-		return fmt.Errorf("multiple ca given: %v", ca)
+func (s *CertStore) LoadCA(seed ...string) error {
+	if err := s.prep(seed...); err != nil {
+		return err
 	}
 
 	if s.PairExists(s.ca) {
@@ -77,14 +72,9 @@ func (s *CertStore) LoadCA(ca ...string) error {
 	return os.ErrNotExist
 }
 
-func (s *CertStore) NewCA(ca ...string) error {
-	switch len(ca) {
-	case 0:
-		s.ca = "ca"
-	case 1:
-		s.ca = ca[0]
-	default:
-		return fmt.Errorf("multiple ca given: %v", ca)
+func (s *CertStore) NewCA(seed ...string) error {
+	if err := s.prep(seed...); err != nil {
+		return err
 	}
 
 	key, err := cert.NewPrivateKey()
@@ -92,6 +82,20 @@ func (s *CertStore) NewCA(ca ...string) error {
 		return errors.Wrap(err, "failed to generate private key")
 	}
 	return s.createCAFromKey(key)
+}
+
+func (s *CertStore) prep(seed ...string) error {
+	switch len(seed) {
+	case 0:
+		s.seed = ""
+		s.ca = "ca"
+	case 1:
+		s.seed = strings.ToLower(strings.Trim(strings.TrimSpace(seed[0]), "-"))
+		s.ca = s.seed + "ca"
+	default:
+		return fmt.Errorf("multiple ca seed given: %v", seed)
+	}
+	return nil
 }
 
 func (s *CertStore) createCAFromKey(key *rsa.PrivateKey) error {
@@ -201,11 +205,19 @@ func (s *CertStore) PairExists(name string) bool {
 }
 
 func (s *CertStore) CertFile(name string) string {
-	return filepath.Join(s.dir, strings.ToLower(name)+".crt")
+	filename := strings.ToLower(name) + ".crt"
+	if s.seed != "" {
+		filename = s.seed + filename
+	}
+	return filepath.Join(s.dir, filename)
 }
 
 func (s *CertStore) KeyFile(name string) string {
-	return filepath.Join(s.dir, strings.ToLower(name)+".key")
+	filename := strings.ToLower(name) + ".key"
+	if s.seed != "" {
+		filename = s.seed + filename
+	}
+	return filepath.Join(s.dir, filename)
 }
 
 func (s *CertStore) Write(name string, crt *x509.Certificate, key *rsa.PrivateKey) error {
