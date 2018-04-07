@@ -90,7 +90,7 @@ func (s *CertStore) prep(seed ...string) error {
 		s.seed = ""
 		s.ca = "ca"
 	case 1:
-		s.seed = strings.ToLower(strings.Trim(strings.TrimSpace(seed[0]), "-"))
+		s.seed = strings.ToLower(strings.Trim(strings.TrimSpace(seed[0]), "-")) + "-"
 		s.ca = s.seed + "ca"
 	default:
 		return fmt.Errorf("multiple ca seed given: %v", seed)
