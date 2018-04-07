@@ -19,7 +19,7 @@ type CertStore struct {
 	fs           afero.Fs
 	dir          string
 	organization []string
-	seed         string
+	prefix       string
 	ca           string
 	caKey        *rsa.PrivateKey
 	caCert       *x509.Certificate
@@ -33,16 +33,16 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 	return &CertStore{fs: fs, dir: dir, organization: append([]string(nil), organization...)}, nil
 }
 
-func (s *CertStore) InitCA(seed ...string) error {
-	err := s.LoadCA(seed...)
+func (s *CertStore) InitCA(prefix ...string) error {
+	err := s.LoadCA(prefix...)
 	if err == nil {
 		return nil
 	}
-	return s.NewCA(seed...)
+	return s.NewCA(prefix...)
 }
 
-func (s *CertStore) LoadCA(seed ...string) error {
-	if err := s.prep(seed...); err != nil {
+func (s *CertStore) LoadCA(prefix ...string) error {
+	if err := s.prep(prefix...); err != nil {
 		return err
 	}
 
@@ -72,8 +72,8 @@ func (s *CertStore) LoadCA(seed ...string) error {
 	return os.ErrNotExist
 }
 
-func (s *CertStore) NewCA(seed ...string) error {
-	if err := s.prep(seed...); err != nil {
+func (s *CertStore) NewCA(prefix ...string) error {
+	if err := s.prep(prefix...); err != nil {
 		return err
 	}
 
@@ -84,16 +84,16 @@ func (s *CertStore) NewCA(seed ...string) error {
 	return s.createCAFromKey(key)
 }
 
-func (s *CertStore) prep(seed ...string) error {
-	switch len(seed) {
+func (s *CertStore) prep(prefix ...string) error {
+	switch len(prefix) {
 	case 0:
-		s.seed = ""
+		s.prefix = ""
 		s.ca = "ca"
 	case 1:
-		s.seed = strings.ToLower(strings.Trim(strings.TrimSpace(seed[0]), "-")) + "-"
-		s.ca = s.seed + "ca"
+		s.prefix = strings.ToLower(strings.Trim(strings.TrimSpace(prefix[0]), "-")) + "-"
+		s.ca = s.prefix + "ca"
 	default:
-		return fmt.Errorf("multiple ca seed given: %v", seed)
+		return fmt.Errorf("multiple ca prefix given: %v", prefix)
 	}
 	return nil
 }
@@ -206,16 +206,16 @@ func (s *CertStore) PairExists(name string) bool {
 
 func (s *CertStore) CertFile(name string) string {
 	filename := strings.ToLower(name) + ".crt"
-	if s.seed != "" {
-		filename = s.seed + filename
+	if s.prefix != "" {
+		filename = s.prefix + filename
 	}
 	return filepath.Join(s.dir, filename)
 }
 
 func (s *CertStore) KeyFile(name string) string {
 	filename := strings.ToLower(name) + ".key"
-	if s.seed != "" {
-		filename = s.seed + filename
+	if s.prefix != "" {
+		filename = s.prefix + filename
 	}
 	return filepath.Join(s.dir, filename)
 }
