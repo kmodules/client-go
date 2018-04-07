@@ -30,7 +30,7 @@ func NewCertStore(fs afero.Fs, dir string, organization ...string) (*CertStore, 
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to create dir `%s`", dir)
 	}
-	return &CertStore{fs: fs, dir: dir, organization: append([]string(nil), organization...)}, nil
+	return &CertStore{fs: fs, dir: dir, ca: "ca", organization: append([]string(nil), organization...)}, nil
 }
 
 func (s *CertStore) InitCA(prefix ...string) error {
@@ -88,10 +88,8 @@ func (s *CertStore) prep(prefix ...string) error {
 	switch len(prefix) {
 	case 0:
 		s.prefix = ""
-		s.ca = "ca"
 	case 1:
 		s.prefix = strings.ToLower(strings.Trim(strings.TrimSpace(prefix[0]), "-")) + "-"
-		s.ca = s.prefix + "ca"
 	default:
 		return fmt.Errorf("multiple ca prefix given: %v", prefix)
 	}
