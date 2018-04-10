@@ -45,6 +45,7 @@ func GetCustomResourceValidation(name string, fn func(ref common.ReferenceCallba
 	}
 }
 
+// ref: https://github.com/kubernetes/kubernetes/issues/62329
 func fixKnownTypes(openapiSpec map[string]common.OpenAPIDefinition) {
 	openapiSpec["k8s.io/apimachinery/pkg/util/intstr.IntOrString"] = common.OpenAPIDefinition{
 		Schema: spec.Schema{
