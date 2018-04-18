@@ -146,9 +146,9 @@ func GetDuration(m map[string]string, key string) (interface{}, error) {
 	return time.ParseDuration(d)
 }
 
-func GetDurationValue(m map[string]string, key string) (float64, error) {
+func GetDurationValue(m map[string]string, key string) (time.Duration, error) {
 	v, err := GetDuration(m, key)
-	return v.(float64), err
+	return v.(time.Duration), err
 }
 
 type GetFunc func(map[string]string) (interface{}, error)
