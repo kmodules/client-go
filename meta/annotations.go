@@ -138,12 +138,12 @@ func GetDuration(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
 		return map[string]string{}, kutil.ErrNotFound
 	}
-	f, ok := m[key]
+	d, ok := m[key]
 	if !ok {
 		return map[string]string{}, kutil.ErrNotFound
 	}
 
-	return time.ParseDuration(f)
+	return time.ParseDuration(d)
 }
 
 func GetDurationValue(m map[string]string, key string) (float64, error) {
