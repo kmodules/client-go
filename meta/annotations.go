@@ -119,11 +119,11 @@ func GetMapValue(m map[string]string, key string) (map[string]string, error) {
 
 func GetFloat(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
-		return map[string]string{}, kutil.ErrNotFound
+		return 0.0, kutil.ErrNotFound
 	}
 	f, ok := m[key]
 	if !ok {
-		return map[string]string{}, kutil.ErrNotFound
+		return 0.0, kutil.ErrNotFound
 	}
 
 	return strconv.ParseFloat(f, 64)
@@ -136,11 +136,11 @@ func GetFloatValue(m map[string]string, key string) (float64, error) {
 
 func GetDuration(m map[string]string, key string) (interface{}, error) {
 	if m == nil {
-		return map[string]string{}, kutil.ErrNotFound
+		return time.Duration(0), kutil.ErrNotFound
 	}
 	d, ok := m[key]
 	if !ok {
-		return map[string]string{}, kutil.ErrNotFound
+		return time.Duration(0), kutil.ErrNotFound
 	}
 
 	return time.ParseDuration(d)
