@@ -80,7 +80,7 @@ func TryUpdateServiceAccount(c kubernetes.Interface, meta metav1.ObjectMeta, tra
 }
 
 func WaitUntillServiceAccountDeleted(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
-	return wait.PollImmediate(kutil.RetryInterval, kutil.PodTerminationTimeout, func() (bool, error) {
+	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
 		_, err := kubeClient.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 		if err != nil && kerr.IsNotFound(err) {
 			return true, nil
