@@ -30,37 +30,62 @@ func MakeDockerKeyring(pullSecrets []v1.Secret) (credentialprovider.DockerKeyrin
 	return credentialprovider.MakeDockerKeyring(pullSecrets, defaultKeyring)
 }
 
+type ImageRef struct {
+	RepoToPull  string
+	Tag         string
+	Digest      string
+	RegistryURL string
+	Repository  string
+}
+
+func (i ImageRef) Ref() string {
+	if i.Digest != "" {
+		return i.Digest
+	}
+	return i.Tag
+}
+
+func (i ImageRef) String() string {
+	if i.Digest != "" {
+		return i.RepoToPull + "@" + i.Digest
+	}
+	return i.RepoToPull + ":" + i.Tag
+}
+
+func ParseImageName(image string) (ref ImageRef, err error) {
+	ref.RepoToPull, ref.Tag, ref.Digest, err = parsers.ParseImageName(image)
+	if err != nil {
+		return
+	}
+
+	parts := strings.SplitN(ref.RepoToPull, "/", 2)
+
+	registryURL := parts[0]
+	if strings.HasPrefix(registryURL, "docker.io") || strings.HasPrefix(registryURL, "index.docker.io") {
+		registryURL = "registry-1.docker.io"
+	}
+	if !strings.HasPrefix(registryURL, "https://") && !strings.HasPrefix(registryURL, "http://") {
+		registryURL = "https://" + registryURL
+	}
+	ref.RegistryURL = registryURL
+	ref.Repository = parts[1]
+
+	return
+}
+
 // PullManifest pulls an image manifest (v2 or v1) from remote registry using the supplied secrets if necessary.
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
-func PullManifest(img string, keyring credentialprovider.DockerKeyring) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
-	repoToPull, tag, digest, err := parsers.ParseImageName(img)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-	parts := strings.SplitN(repoToPull, "/", 2)
-	registry := parts[0]
-	repo := parts[1]
-	ref := tag
-	if ref == "" {
-		ref = digest
-	}
-
-	if strings.HasPrefix(registry, "docker.io") || strings.HasPrefix(registry, "index.docker.io") {
-		registry = "registry-1.docker.io"
-	}
-	if !strings.HasPrefix(registry, "https://") && !strings.HasPrefix(registry, "http://") {
-		registry = "https://" + registry
-	}
-	_, err = url.Parse(registry)
+func PullManifest(ref ImageRef, keyring credentialprovider.DockerKeyring) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
+	_, err := url.Parse(ref.RegistryURL)
 	if err != nil {
 		return nil, nil, nil, err
 	}
 
-	creds, withCredentials := keyring.Lookup(repoToPull)
+	creds, withCredentials := keyring.Lookup(ref.RepoToPull)
 	if !withCredentials {
-		glog.V(3).Infof("Pulling image %q without credentials", img)
-		auth := &dockertypes.AuthConfig{ServerAddress: registry}
-		hub, mf, err := pullManifest(repo, ref, auth)
+		glog.V(3).Infof("Pulling image %q without credentials", ref)
+		auth := &dockertypes.AuthConfig{ServerAddress: ref.RegistryURL}
+		hub, mf, err := pullManifest(ref, auth)
 		return hub, auth, mf, err
 	}
 
@@ -74,10 +99,10 @@ func PullManifest(img string, keyring credentialprovider.DockerKeyring) (*reg.Re
 			ServerAddress: authConfig.ServerAddress,
 		}
 		if auth.ServerAddress == "" {
-			auth.ServerAddress = registry
+			auth.ServerAddress = ref.RegistryURL
 		}
 
-		hub, mf, err := pullManifest(repo, ref, auth)
+		hub, mf, err := pullManifest(ref, auth)
 		// If there was no error, return success
 		if err == nil {
 			return hub, auth, mf, nil
@@ -87,7 +112,7 @@ func PullManifest(img string, keyring credentialprovider.DockerKeyring) (*reg.Re
 	return nil, nil, nil, utilerrors.NewAggregate(pullErrs)
 }
 
-func pullManifest(repo, ref string, auth *dockertypes.AuthConfig) (*reg.Registry, interface{}, error) {
+func pullManifest(ref ImageRef, auth *dockertypes.AuthConfig) (*reg.Registry, interface{}, error) {
 	hub := &reg.Registry{
 		URL: auth.ServerAddress,
 		Client: &http.Client{
@@ -95,23 +120,16 @@ func pullManifest(repo, ref string, auth *dockertypes.AuthConfig) (*reg.Registry
 		},
 		Logf: reg.Log,
 	}
-	mf, err := hub.ManifestVx(repo, ref)
+	mf, err := hub.ManifestVx(ref.Repository, ref.Ref())
 	return hub, mf, err
 }
 
 // GetLabels returns the labels of docker image. The image name should how it is presented to a Kubernetes container.
 // If image is found it returns tuple {labels, err=nil}, otherwise it returns tuple {label=nil, err}
-func GetLabels(hub *reg.Registry, img string, mf interface{}) (map[string]string, error) {
-	repoToPull, _, _, err := parsers.ParseImageName(img)
-	if err != nil {
-		return nil, err
-	}
-	parts := strings.SplitN(repoToPull, "/", 2)
-	repo := parts[1]
-
+func GetLabels(hub *reg.Registry, ref ImageRef, mf interface{}) (map[string]string, error) {
 	switch manifest := mf.(type) {
 	case *manifestV2.DeserializedManifest:
-		resp, err := hub.DownloadLayer(repo, manifest.Config.Digest)
+		resp, err := hub.DownloadLayer(ref.Repository, manifest.Config.Digest)
 		if err != nil {
 			return nil, err
 		}
