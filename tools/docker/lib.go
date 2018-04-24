@@ -28,10 +28,10 @@ var (
 
 // PullManifest pulls an image manifest (v2 or v1) from remote registry using the supplied secrets if necessary.
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
-func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, interface{}, error) {
+func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
 	repoToPull, tag, digest, err := parsers.ParseImageName(img)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	parts := strings.SplitN(repoToPull, "/", 2)
 	registry := parts[0]
@@ -49,19 +49,20 @@ func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, interface
 	}
 	_, err = url.Parse(registry)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, defaultKeyring)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	creds, withCredentials := keyring.Lookup(repoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", img)
 		auth := &dockertypes.AuthConfig{ServerAddress: registry}
-		return pullManifest(repo, ref, auth)
+		hub, mf, err := pullManifest(repo, ref, auth)
+		return hub, auth, mf, err
 	}
 
 	var pullErrs []error
@@ -80,11 +81,11 @@ func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, interface
 		hub, mf, err := pullManifest(repo, ref, auth)
 		// If there was no error, return success
 		if err == nil {
-			return hub, mf, nil
+			return hub, auth, mf, nil
 		}
 		pullErrs = append(pullErrs, err)
 	}
-	return nil, nil, utilerrors.NewAggregate(pullErrs)
+	return nil, nil, nil, utilerrors.NewAggregate(pullErrs)
 }
 
 func pullManifest(repo, ref string, auth *dockertypes.AuthConfig) (*reg.Registry, interface{}, error) {
