@@ -14,6 +14,19 @@
   version = "v0.19.0"
 
 [[projects]]
+  name = "github.com/Azure/azure-sdk-for-go"
+  packages = [
+    "arm/compute",
+    "arm/containerregistry",
+    "arm/disk",
+    "arm/network",
+    "arm/storage",
+    "storage"
+  ]
+  revision = "509eea43b93cec2f3f17acbe2578ef58703923f8"
+  version = "v11.1.1-beta"
+
+[[projects]]
   branch = "master"
   name = "github.com/Azure/go-ansiterm"
   packages = [
@@ -28,7 +41,9 @@
     "autorest",
     "autorest/adal",
     "autorest/azure",
-    "autorest/date"
+    "autorest/date",
+    "autorest/to",
+    "autorest/validation"
   ]
   revision = "fc3b03a2d2d1f43fad3007038bd16f044f870722"
   version = "v9.10.0"
@@ -177,8 +192,14 @@
 [[projects]]
   name = "github.com/docker/distribution"
   packages = [
+    ".",
+    "context",
     "digestset",
-    "reference"
+    "manifest",
+    "manifest/schema1",
+    "manifest/schema2",
+    "reference",
+    "uuid"
   ]
   revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
 
@@ -211,6 +232,11 @@
   name = "github.com/docker/go-units"
   packages = ["."]
   revision = "9e638d38cf6977a37a8ea0078f3ee75a7cdb2dd1"
+
+[[projects]]
+  name = "github.com/docker/libtrust"
+  packages = ["."]
+  revision = "9cbd2a1374f46905c68a4eb3694a130610adc62a"
 
 [[projects]]
   branch = "master"
@@ -397,6 +423,18 @@
   revision = "35000af2a7c3e47bd4fa48897dbb38444ac44e70"
 
 [[projects]]
+  name = "github.com/gorilla/context"
+  packages = ["."]
+  revision = "1ea25387ff6f684839d82767c1733ff4d4d15d0a"
+  version = "v1.1"
+
+[[projects]]
+  name = "github.com/gorilla/mux"
+  packages = ["."]
+  revision = "53c1911da2b537f792e7cafcb446b05ffe33b996"
+  version = "v1.6.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/gregjones/httpcache"
   packages = [
@@ -420,6 +458,13 @@
     "simplelru"
   ]
   revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/heroku/docker-registry-client"
+  packages = ["registry"]
+  revision = "beae3d84d191791090f0a3a43de05f3aef00121f"
+  source = "github.com/appscode/docker-registry-client"
 
 [[projects]]
   branch = "master"
@@ -581,9 +626,21 @@
   revision = "54d17b57dd7d4a3aa092476596b3f8a933bde349"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/rubiojr/go-vhd"
+  packages = ["vhd"]
+  revision = "0bfd3b39853cdde5762efda92289f14b0ac0491b"
+
+[[projects]]
   name = "github.com/russross/blackfriday"
   packages = ["."]
   revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
+
+[[projects]]
+  name = "github.com/satori/uuid"
+  packages = ["."]
+  revision = "f58768cc1a7a7e77a3bd49e98cdd21419399b6a3"
+  version = "v1.2.0"
 
 [[projects]]
   name = "github.com/sergi/go-diff"
@@ -654,7 +711,11 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
-  packages = ["ssh/terminal"]
+  packages = [
+    "pkcs12",
+    "pkcs12/internal/rc2",
+    "ssh/terminal"
+  ]
   revision = "c3a3ad6d03f7a915c0f7e194b7152974bb73d287"
 
 [[projects]]
@@ -1165,6 +1226,7 @@
   revision = "50ae88d24ede7b8bad68e23c805b5d3da5c8abaf"
 
 [[projects]]
+  branch = "v1.9.0-ac"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/api/events",
@@ -1267,6 +1329,7 @@
     "pkg/client/unversioned",
     "pkg/cloudprovider",
     "pkg/cloudprovider/providers/aws",
+    "pkg/cloudprovider/providers/azure",
     "pkg/controller",
     "pkg/controller/daemon",
     "pkg/controller/daemon/util",
@@ -1277,6 +1340,8 @@
     "pkg/controller/volume/persistentvolume",
     "pkg/credentialprovider",
     "pkg/credentialprovider/aws",
+    "pkg/credentialprovider/azure",
+    "pkg/credentialprovider/gcp",
     "pkg/features",
     "pkg/fieldpath",
     "pkg/kubectl",
@@ -1329,8 +1394,8 @@
     "plugin/pkg/scheduler/util",
     "plugin/pkg/scheduler/volumebinder"
   ]
-  revision = "925c127ec6b946659ad0fd596fa959be43f0cc05"
-  version = "v1.9.0"
+  revision = "e2f08b833aa10ad8f90688d64c8683859f1c9628"
+  source = "github.com/appscode/kubernetes"
 
 [[projects]]
   branch = "master"
@@ -1347,6 +1412,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3c147ce4f552a7ce029b2dafb6860ac6528e59445be25e9aaf46f9113535d42f"
+  inputs-digest = "55fb1f4f23a97cf0b987f312b03584db7ee7506192cbf90c66a22f442bdd448c"
   solver-name = "gps-cdcl"
   solver-version = 1
