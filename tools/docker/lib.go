@@ -26,9 +26,13 @@ var (
 	defaultKeyring = credentialprovider.NewDockerKeyring()
 )
 
+func MakeDockerKeyring(pullSecrets []v1.Secret) (credentialprovider.DockerKeyring, error) {
+	return credentialprovider.MakeDockerKeyring(pullSecrets, defaultKeyring)
+}
+
 // PullManifest pulls an image manifest (v2 or v1) from remote registry using the supplied secrets if necessary.
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
-func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
+func PullManifest(img string, keyring credentialprovider.DockerKeyring) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
 	repoToPull, tag, digest, err := parsers.ParseImageName(img)
 	if err != nil {
 		return nil, nil, nil, err
@@ -48,11 +52,6 @@ func PullManifest(img string, pullSecrets []v1.Secret) (*reg.Registry, *dockerty
 		registry = "https://" + registry
 	}
 	_, err = url.Parse(registry)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
-	keyring, err := credentialprovider.MakeDockerKeyring(pullSecrets, defaultKeyring)
 	if err != nil {
 		return nil, nil, nil, err
 	}
