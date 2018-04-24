@@ -84,7 +84,13 @@
 
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "=v1.9.0"
+  source = "github.com/appscode/kubernetes"
+  branch = "v1.9.0-ac"
+
+[[override]]
+  name = "github.com/heroku/docker-registry-client"
+  source = "github.com/appscode/docker-registry-client"
+  branch = "master"
 
 [[override]]
   branch = "release-branch.go1.9"
