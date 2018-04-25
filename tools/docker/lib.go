@@ -22,12 +22,8 @@ import (
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
-var (
-	defaultKeyring = credentialprovider.NewDockerKeyring()
-)
-
 func MakeDockerKeyring(pullSecrets []v1.Secret) (credentialprovider.DockerKeyring, error) {
-	return credentialprovider.MakeDockerKeyring(pullSecrets, defaultKeyring)
+	return credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 }
 
 type ImageRef struct {
@@ -70,17 +66,13 @@ func ParseImageName(image string) (ref ImageRef, err error) {
 	ref.RegistryURL = registryURL
 	ref.Repository = parts[1]
 
+	_, err = url.Parse(ref.RegistryURL)
 	return
 }
 
 // PullManifest pulls an image manifest (v2 or v1) from remote registry using the supplied secrets if necessary.
 // ref: https://github.com/kubernetes/kubernetes/blob/release-1.9/pkg/kubelet/kuberuntime/kuberuntime_image.go#L29
 func PullManifest(ref ImageRef, keyring credentialprovider.DockerKeyring) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
-	_, err := url.Parse(ref.RegistryURL)
-	if err != nil {
-		return nil, nil, nil, err
-	}
-
 	creds, withCredentials := keyring.Lookup(ref.RepoToPull)
 	if !withCredentials {
 		glog.V(3).Infof("Pulling image %q without credentials", ref)
@@ -140,7 +132,12 @@ func GetLabels(hub *reg.Registry, ref ImageRef, mf interface{}) (map[string]stri
 		if err != nil {
 			return nil, err
 		}
-		return cfg.Config.Labels, nil
+
+		result := map[string]string{}
+		for k, v := range cfg.Config.Labels {
+			result[k] = v
+		}
+		return result, nil
 	}
 	return nil, errors.New("image manifest must of v2 format")
 }
