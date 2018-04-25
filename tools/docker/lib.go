@@ -22,6 +22,10 @@ import (
 	"k8s.io/kubernetes/pkg/util/parsers"
 )
 
+var (
+	ErrManifestV2Required = errors.New("image manifest must of v2 format")
+)
+
 func MakeDockerKeyring(pullSecrets []v1.Secret) (credentialprovider.DockerKeyring, error) {
 	return credentialprovider.MakeDockerKeyring(pullSecrets, credentialprovider.NewDockerKeyring())
 }
@@ -139,5 +143,5 @@ func GetLabels(hub *reg.Registry, ref ImageRef, mf interface{}) (map[string]stri
 		}
 		return result, nil
 	}
-	return nil, errors.New("image manifest must of v2 format")
+	return nil, ErrManifestV2Required
 }
