@@ -89,10 +89,11 @@
     "ioutil",
     "log",
     "net",
+    "net/http",
     "sets",
     "types"
   ]
-  revision = "f8f2e1c7d2d10789cdd0540468b487d14421dbf9"
+  revision = "230e0e4622c682b5d117db8c28a66404ed874ed5"
 
 [[projects]]
   branch = "master"
@@ -540,6 +541,12 @@
   packages = ["."]
   revision = "1df9eeb2bb81f327b96228865c5687bc2194af3f"
   version = "1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/moul/http2curl"
+  packages = ["."]
+  revision = "9ac6cf4d929b2fa8fd2d2e6dec5bb0feb4f4911d"
 
 [[projects]]
   branch = "master"
@@ -1412,6 +1419,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "138a24d4d511739e33071b08025069a8ae91506851ca0496ec68a7f963aa1527"
+  inputs-digest = "50a3163327ef7bd1eb3184d012cd3360d28dc9a7426ba92dc3f9a0a3987383c2"
   solver-name = "gps-cdcl"
   solver-version = 1

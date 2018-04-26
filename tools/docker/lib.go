@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	reg "github.com/appscode/docker-registry-client/registry"
+	httpz "github.com/appscode/go/net/http"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	dockertypes "github.com/docker/docker/api/types"
 	"github.com/golang/glog"
@@ -108,11 +109,13 @@ func PullManifest(ref ImageRef, keyring credentialprovider.DockerKeyring) (*reg.
 	return nil, nil, nil, utilerrors.NewAggregate(pullErrs)
 }
 
+var transport = httpz.LogTransport(http.DefaultTransport)
+
 func pullManifest(ref ImageRef, auth *dockertypes.AuthConfig) (*reg.Registry, interface{}, error) {
 	hub := &reg.Registry{
 		URL: auth.ServerAddress,
 		Client: &http.Client{
-			Transport: reg.WrapTransport(http.DefaultTransport, auth.ServerAddress, auth.Username, auth.Password),
+			Transport: reg.WrapTransport(transport, auth.ServerAddress, auth.Username, auth.Password),
 		},
 		Logf: reg.Log,
 	}
