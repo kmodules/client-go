@@ -6,10 +6,10 @@ import (
 	"net/url"
 	"strings"
 
+	reg "github.com/appscode/docker-registry-client/registry"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	dockertypes "github.com/docker/docker/api/types"
 	"github.com/golang/glog"
-	reg "github.com/heroku/docker-registry-client/registry"
 	"github.com/pkg/errors"
 	"k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"

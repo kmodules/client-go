@@ -74,6 +74,13 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/appscode/docker-registry-client"
+  packages = ["registry"]
+  revision = "1bb02bb202b07d1600ed46d7a63f8d79dd6dc980"
+  source = "github.com/appscode/docker-registry-client"
+
+[[projects]]
+  branch = "master"
   name = "github.com/appscode/go"
   packages = [
     "analytics",
@@ -458,13 +465,6 @@
     "simplelru"
   ]
   revision = "0fb14efe8c47ae851c0034ed7a448854d3d34cf3"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/heroku/docker-registry-client"
-  packages = ["registry"]
-  revision = "beae3d84d191791090f0a3a43de05f3aef00121f"
-  source = "github.com/appscode/docker-registry-client"
 
 [[projects]]
   branch = "master"
@@ -1412,6 +1412,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "55fb1f4f23a97cf0b987f312b03584db7ee7506192cbf90c66a22f442bdd448c"
+  inputs-digest = "138a24d4d511739e33071b08025069a8ae91506851ca0496ec68a7f963aa1527"
   solver-name = "gps-cdcl"
   solver-version = 1
