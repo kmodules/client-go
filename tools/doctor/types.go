@@ -31,11 +31,12 @@ type RestConfig struct {
 }
 
 type Capabilities struct {
-	AggregateAPIServer         bool
-	MutatingAdmissionWebhook   bool
-	ValidatingAdmissionWebhook bool
-	PodSecurityPolicy          bool
-	Initializers               bool
+	APIVersion                 string `json:"apiVersion"`
+	AggregateAPIServer         bool   `json:"aggregateAPIServer"`
+	MutatingAdmissionWebhook   bool   `json:"mutatingAdmissionWebhook"`
+	ValidatingAdmissionWebhook bool   `json:"validatingAdmissionWebhook"`
+	PodSecurityPolicy          bool   `json:"podSecurityPolicy"`
+	Initializers               bool   `json:"initializers"`
 }
 
 type APIServerConfig struct {
