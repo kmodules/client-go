@@ -87,5 +87,21 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 			}
 		}
 	}
+
+	if v, ok := args["feature-gates"]; ok && v != "" {
+		features := strings.Split(v, ",")
+		for _, f := range features {
+			parts := strings.SplitN(f, "=", 2)
+			if len(parts) == 2 {
+				if e, _ := strconv.ParseBool(parts[1]); e {
+					config.FeatureGates.Enabled = append(config.FeatureGates.Enabled, parts[0])
+				} else {
+					config.FeatureGates.Disabled = append(config.FeatureGates.Disabled, parts[0])
+				}
+			} else {
+				config.FeatureGates.Enabled = append(config.FeatureGates.Enabled, parts[0])
+			}
+		}
+	}
 	return &config, nil
 }

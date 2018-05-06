@@ -80,6 +80,13 @@ func (d *Doctor) GetClusterInfo() (*ClusterInfo, error) {
 		info.Capabilities.Initializers = !info.ClientConfig.Insecure && enabled
 
 	}
+	{
+		status, err := info.APIServers.FeatureGate("CustomResourceSubresources")
+		if err != nil {
+			return nil, err
+		}
+		info.Capabilities.CustomResourceSubresources = status
+	}
 
 	return &info, nil
 }
