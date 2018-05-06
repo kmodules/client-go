@@ -5,14 +5,22 @@ import (
 	"github.com/pkg/errors"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/apimachinery/pkg/version"
 )
 
 type ClusterInfo struct {
-	Version      version.Info                     `json:"version"`
+	Version      *VersionInfo                     `json:"version"`
 	ClientConfig RestConfig                       `json:"clientConfig"`
 	APIServers   []APIServerConfig                `json:"apiServers"`
 	AuthConfig   ExtensionApiserverAuthentication `json:"extension-apiserver-authentication"`
+}
+
+type VersionInfo struct {
+	Minor      string `json:"minor"`
+	Patch      string `json:"patch"`
+	GitVersion string `json:"gitVersion"`
+	GitCommit  string `json:"gitCommit"`
+	BuildDate  string `json:"buildDate"`
+	Platform   string `json:"platform"`
 }
 
 type RestConfig struct {
