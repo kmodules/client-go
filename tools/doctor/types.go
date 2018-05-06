@@ -1,6 +1,8 @@
 package doctor
 
 import (
+	"strings"
+
 	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -123,7 +125,7 @@ func (c ClusterInfo) Validate() error {
 		}
 	}
 	{
-		if len(c.APIServers) == 0 {
+		if len(c.APIServers) == 0 && !strings.Contains(c.Version.GitVersion, "-gke.") {
 			errs = append(errs, errors.New(`failed to detect kube apiservers. Please file a bug at: https://github.com/appscode/kutil/issues/new .`))
 		}
 	}
