@@ -71,5 +71,21 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	if v, ok := args["authorization-mode"]; ok && v != "" {
 		config.AuthorizationMode = strings.Split(v, ",")
 	}
+
+	if v, ok := args["runtime-config"]; ok && v != "" {
+		apis := strings.Split(v, ",")
+		for _, api := range apis {
+			parts := strings.SplitN(api, "=", 2)
+			if len(parts) == 2 {
+				if e, _ := strconv.ParseBool(parts[1]); e {
+					config.RuntimeConfig.Enabled = append(config.RuntimeConfig.Enabled, parts[0])
+				} else {
+					config.RuntimeConfig.Disabled = append(config.RuntimeConfig.Disabled, parts[0])
+				}
+			} else {
+				config.RuntimeConfig.Enabled = append(config.RuntimeConfig.Enabled, parts[0])
+			}
+		}
+	}
 	return &config, nil
 }

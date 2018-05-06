@@ -10,7 +10,8 @@ import (
 type ClusterInfo struct {
 	Version      *VersionInfo                     `json:"version"`
 	ClientConfig RestConfig                       `json:"clientConfig"`
-	APIServers   []APIServerConfig                `json:"apiServers"`
+	Capabilities Capabilities                     `json:"capabilities"`
+	APIServers   APIServers                       `json:"apiServers"`
 	AuthConfig   ExtensionApiserverAuthentication `json:"extension-apiserver-authentication"`
 }
 
@@ -29,6 +30,14 @@ type RestConfig struct {
 	Insecure bool   `json:"insecure"`
 }
 
+type Capabilities struct {
+	AggregateAPIServer         bool
+	MutatingAdmissionWebhook   bool
+	ValidatingAdmissionWebhook bool
+	PodSecurityPolicy          bool
+	Initializers               bool
+}
+
 type APIServerConfig struct {
 	PodName                   string
 	NodeName                  string
@@ -39,7 +48,15 @@ type APIServerConfig struct {
 	RequestheaderClientCAData string
 	AllowPrivileged           bool
 	AuthorizationMode         []string
+	RuntimeConfig             RuntimeConfig
 }
+
+type RuntimeConfig struct {
+	Enabled  []string
+	Disabled []string
+}
+
+type APIServers []APIServerConfig
 
 type ExtensionApiserverAuthentication struct {
 	ClientCA      string
@@ -123,4 +140,23 @@ func (c ClusterInfo) Validate() error {
 		}
 	}
 	return utilerrors.NewAggregate(errs)
+}
+
+func (servers APIServers) UsesAdmissionControl(name string) (bool, error) {
+	e := 0
+	for _, s := range servers {
+		adms := sets.NewString(s.AdmissionControl...)
+		if adms.Has(name) {
+			e++
+		}
+	}
+
+	switch {
+	case e == 0:
+		return false, nil
+	case e == len(servers):
+		return true, nil
+	default:
+		return false, errors.Errorf("admission control %s is enabled in %s api server, expected %d", name, e, len(servers))
+	}
 }
