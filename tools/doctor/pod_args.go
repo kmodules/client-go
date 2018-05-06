@@ -60,7 +60,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 		if err != nil {
 			return nil, err
 		}
-		config.RequestheaderClientCAData = strings.TrimSpace(data)
+		config.RequestHeaderCAData = strings.TrimSpace(data)
 	}
 
 	config.AllowPrivileged, err = strconv.ParseBool(args["allow-privileged"])

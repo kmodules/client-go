@@ -24,7 +24,7 @@ func (d *Doctor) extractExtendedAPIServerInfo(info *ClusterInfo) error {
 
 	clientCA, ok := authConfigMap.Data["client-ca-file"]
 	if ok {
-		info.AuthConfig.ClientCA = strings.TrimSpace(clientCA)
+		info.ExtensionServerConfig.ClientCAData = strings.TrimSpace(clientCA)
 	}
 
 	requestHeaderCA, ok := authConfigMap.Data["requestheader-client-ca-file"]
@@ -49,11 +49,11 @@ func (d *Doctor) extractExtendedAPIServerInfo(info *ClusterInfo) error {
 		return err
 	}
 
-	info.AuthConfig.RequestHeader = &RequestHeaderConfig{
+	info.ExtensionServerConfig.RequestHeader = &RequestHeaderConfig{
 		UsernameHeaders:     usernameHeaders,
 		GroupHeaders:        groupHeaders,
 		ExtraHeaderPrefixes: extraHeaderPrefixes,
-		ClientCA:            strings.TrimSpace(requestHeaderCA),
+		CAData:              strings.TrimSpace(requestHeaderCA),
 		AllowedClientNames:  allowedNames,
 	}
 

@@ -10,50 +10,50 @@ import (
 )
 
 type ClusterInfo struct {
-	Version      *VersionInfo                     `json:"version"`
-	ClientConfig RestConfig                       `json:"clientConfig"`
-	Capabilities Capabilities                     `json:"capabilities"`
-	APIServers   APIServers                       `json:"apiServers"`
-	AuthConfig   ExtensionApiserverAuthentication `json:"extension-apiserver-authentication"`
+	Version               *VersionInfo          `json:"version,omitempty"`
+	ClientConfig          RestConfig            `json:"clientConfig,omitempty"`
+	Capabilities          Capabilities          `json:"capabilities,omitempty"`
+	APIServers            APIServers            `json:"apiServers,omitempty"`
+	ExtensionServerConfig ExtensionServerConfig `json:"extensionServerConfig,omitempty"`
 }
 
 type VersionInfo struct {
-	Minor      string `json:"minor"`
-	Patch      string `json:"patch"`
-	GitVersion string `json:"gitVersion"`
-	GitCommit  string `json:"gitCommit"`
-	BuildDate  string `json:"buildDate"`
-	Platform   string `json:"platform"`
+	Minor      string `json:"minor,omitempty"`
+	Patch      string `json:"patch,omitempty"`
+	GitVersion string `json:"gitVersion,omitempty"`
+	GitCommit  string `json:"gitCommit,omitempty"`
+	BuildDate  string `json:"buildDate,omitempty"`
+	Platform   string `json:"platform,omitempty"`
 }
 
 type RestConfig struct {
 	Host     string
-	CABundle string `json:"caBundle"`
-	Insecure bool   `json:"insecure"`
+	CAData   string `json:"caData,omitempty"`
+	Insecure bool   `json:"insecure,omitempty"`
 }
 
 type Capabilities struct {
-	APIVersion                 string `json:"apiVersion"`
-	AggregateAPIServer         bool   `json:"aggregateAPIServer"`
-	MutatingAdmissionWebhook   bool   `json:"mutatingAdmissionWebhook"`
-	ValidatingAdmissionWebhook bool   `json:"validatingAdmissionWebhook"`
-	PodSecurityPolicy          bool   `json:"podSecurityPolicy"`
-	Initializers               bool   `json:"initializers"`
-	CustomResourceSubresources string `json:"customResourceSubresources"`
+	APIVersion                 string `json:"apiVersion,omitempty"`
+	AggregateAPIServer         bool   `json:"aggregateAPIServer,omitempty"`
+	MutatingAdmissionWebhook   string `json:"mutatingAdmissionWebhook,omitempty"`
+	ValidatingAdmissionWebhook string `json:"validatingAdmissionWebhook,omitempty"`
+	PodSecurityPolicy          string `json:"podSecurityPolicy,omitempty"`
+	Initializers               string `json:"initializers,omitempty"`
+	CustomResourceSubresources string `json:"customResourceSubresources,omitempty"`
 }
 
 type APIServerConfig struct {
-	PodName                   string
-	NodeName                  string
-	PodIP                     string
-	HostIP                    string
-	AdmissionControl          []string
-	ClientCAData              string
-	RequestheaderClientCAData string
-	AllowPrivileged           bool
-	AuthorizationMode         []string
-	RuntimeConfig             FeatureList
-	FeatureGates              FeatureList
+	PodName             string      `json:"podName,omitempty"`
+	NodeName            string      `json:"nodeName,omitempty"`
+	PodIP               string      `json:"podIP,omitempty"`
+	HostIP              string      `json:"hostIP,omitempty"`
+	AdmissionControl    []string    `json:"admissionControl,omitempty"`
+	ClientCAData        string      `json:"clientCAData,omitempty"`
+	RequestHeaderCAData string      `json:"requestHeaderCAData,omitempty"`
+	AllowPrivileged     bool        `json:"allowPrivileged,omitempty"`
+	AuthorizationMode   []string    `json:"authorizationMode,omitempty"`
+	RuntimeConfig       FeatureList `json:"runtimeConfig,omitempty"`
+	FeatureGates        FeatureList `json:"featureGates,omitempty"`
 }
 
 var (
@@ -61,8 +61,8 @@ var (
 )
 
 type FeatureList struct {
-	Enabled  []string
-	Disabled []string
+	Enabled  []string `json:"enabled,omitempty"`
+	Disabled []string `json:"disabled,omitempty"`
 }
 
 func (f FeatureList) Status(name string) (bool, error) {
@@ -77,23 +77,23 @@ func (f FeatureList) Status(name string) (bool, error) {
 
 type APIServers []APIServerConfig
 
-type ExtensionApiserverAuthentication struct {
-	ClientCA      string
-	RequestHeader *RequestHeaderConfig `json:"requestHeaderConfig"`
+type ExtensionServerConfig struct {
+	ClientCAData  string               `json:"clientCAData,omitempty"`
+	RequestHeader *RequestHeaderConfig `json:"requestHeaderConfig,omitempty"`
 }
 
 type RequestHeaderConfig struct {
 	// UsernameHeaders are the headers to check (in order, case-insensitively) for an identity. The first header with a value wins.
-	UsernameHeaders []string
+	UsernameHeaders []string `json:"usernameHeaders,omitempty"`
 	// GroupHeaders are the headers to check (case-insensitively) for a group names.  All values will be used.
-	GroupHeaders []string
+	GroupHeaders []string `json:"groupHeaders,omitempty"`
 	// ExtraHeaderPrefixes are the head prefixes to check (case-insentively) for filling in
 	// the user.Info.Extra.  All values of all matching headers will be added.
-	ExtraHeaderPrefixes []string
-	// ClientCA points to CA bundle file which is used verify the identity of the front proxy
-	ClientCA string
+	ExtraHeaderPrefixes []string `json:"extraHeaderPrefixes,omitempty"`
+	// CAData points to CA bundle file which is used verify the identity of the front proxy
+	CAData string `json:"caData"`
 	// AllowedClientNames is a list of common names that may be presented by the authenticating front proxy.  Empty means: accept any.
-	AllowedClientNames []string
+	AllowedClientNames []string `json:"allowedClientNames,omitempty"`
 }
 
 func (c ClusterInfo) String() string {
@@ -111,14 +111,14 @@ func (c ClusterInfo) Validate() error {
 		if c.ClientConfig.Insecure {
 			errs = append(errs, errors.New("Admission webhooks can't be used when kube apiserver is accesible without verifying its TLS certificate (insecure-skip-tls-verify : true)."))
 		} else {
-			if c.AuthConfig.ClientCA == "" {
+			if c.ExtensionServerConfig.ClientCAData == "" {
 				errs = append(errs, errors.Errorf(`"%s/%s" configmap is missing "client-ca-file" key.`, authenticationConfigMapNamespace, authenticationConfigMapName))
-			} else if c.ClientConfig.CABundle != c.AuthConfig.ClientCA {
+			} else if c.ClientConfig.CAData != c.ExtensionServerConfig.ClientCAData {
 				errs = append(errs, errors.Errorf(`"%s/%s" configmap has mismatched "client-ca-file" key.`, authenticationConfigMapNamespace, authenticationConfigMapName))
 			}
 
 			for _, pod := range c.APIServers {
-				if pod.ClientCAData != c.ClientConfig.CABundle {
+				if pod.ClientCAData != c.ClientConfig.CAData {
 					errs = append(errs, errors.Errorf(`pod "%s"" has mismatched "client-ca-file".`, pod.PodName))
 				}
 			}
@@ -130,11 +130,11 @@ func (c ClusterInfo) Validate() error {
 		}
 	}
 	{
-		if c.AuthConfig.RequestHeader == nil {
+		if c.ExtensionServerConfig.RequestHeader == nil {
 			errs = append(errs, errors.Errorf(`"%s/%s" configmap is missing "requestheader-client-ca-file" key.`, authenticationConfigMapNamespace, authenticationConfigMapName))
 		}
 		for _, pod := range c.APIServers {
-			if pod.RequestheaderClientCAData != c.AuthConfig.RequestHeader.ClientCA {
+			if pod.RequestHeaderCAData != c.ExtensionServerConfig.RequestHeader.CAData {
 				errs = append(errs, errors.Errorf(`pod "%s"" has mismatched "requestheader-client-ca-file".`, pod.PodName))
 			}
 		}
@@ -161,7 +161,11 @@ func (c ClusterInfo) Validate() error {
 	return utilerrors.NewAggregate(errs)
 }
 
-func (servers APIServers) UsesAdmissionControl(name string) (bool, error) {
+func (servers APIServers) AdmissionControl(name string) (string, error) {
+	if len(servers) == 0 {
+		return ErrUnknown.Error(), nil
+	}
+
 	n := 0
 	for _, s := range servers {
 		adms := sets.NewString(s.AdmissionControl...)
@@ -172,11 +176,11 @@ func (servers APIServers) UsesAdmissionControl(name string) (bool, error) {
 
 	switch {
 	case n == 0:
-		return false, nil
+		return "false", nil
 	case n == len(servers):
-		return true, nil
+		return "true", nil
 	default:
-		return false, errors.Errorf("admission control %s is enabled in %d api server, expected %d", name, n, len(servers))
+		return "", errors.Errorf("admission control %s is enabled in %d api server, expected %d", name, n, len(servers))
 	}
 }
 
