@@ -47,38 +47,44 @@ func (d *Doctor) GetClusterInfo() (*ClusterInfo, error) {
 		info.Capabilities.APIVersion = info.Version.Minor
 	}
 	{
-		info.Capabilities.AggregateAPIServer = info.AuthConfig.RequestHeader != nil
+		info.Capabilities.AggregateAPIServer = info.ExtensionServerConfig.RequestHeader != nil
 	}
 	{
-		enabled, err := info.APIServers.UsesAdmissionControl("MutatingAdmissionWebhook")
+		status, err := info.APIServers.AdmissionControl("MutatingAdmissionWebhook")
 		if err != nil {
 			return nil, err
 		}
-		info.Capabilities.MutatingAdmissionWebhook = !info.ClientConfig.Insecure && enabled
+		if info.ClientConfig.Insecure {
+			info.Capabilities.MutatingAdmissionWebhook = "false"
+		} else {
+			info.Capabilities.MutatingAdmissionWebhook = status
+		}
 	}
 	{
-		enabled, err := info.APIServers.UsesAdmissionControl("ValidatingAdmissionWebhook")
+		status, err := info.APIServers.AdmissionControl("ValidatingAdmissionWebhook")
 		if err != nil {
 			return nil, err
 		}
-		info.Capabilities.ValidatingAdmissionWebhook = !info.ClientConfig.Insecure && enabled
+		if info.ClientConfig.Insecure {
+			info.Capabilities.ValidatingAdmissionWebhook = "false"
+		} else {
+			info.Capabilities.ValidatingAdmissionWebhook = status
+		}
+	}
+	{
+		status, err := info.APIServers.AdmissionControl("PodSecurityPolicy")
+		if err != nil {
+			return nil, err
+		}
+		info.Capabilities.PodSecurityPolicy = status
 
 	}
 	{
-		enabled, err := info.APIServers.UsesAdmissionControl("PodSecurityPolicy")
+		status, err := info.APIServers.AdmissionControl("Initializers")
 		if err != nil {
 			return nil, err
 		}
-		info.Capabilities.PodSecurityPolicy = !info.ClientConfig.Insecure && enabled
-
-	}
-	{
-		enabled, err := info.APIServers.UsesAdmissionControl("Initializers")
-		if err != nil {
-			return nil, err
-		}
-		info.Capabilities.Initializers = !info.ClientConfig.Insecure && enabled
-
+		info.Capabilities.Initializers = status
 	}
 	{
 		status, err := info.APIServers.FeatureGate("CustomResourceSubresources")
