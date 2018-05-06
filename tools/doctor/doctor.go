@@ -44,6 +44,9 @@ func (d *Doctor) GetClusterInfo() (*ClusterInfo, error) {
 	}
 
 	{
+		info.Capabilities.APIVersion = info.Version.Minor
+	}
+	{
 		info.Capabilities.AggregateAPIServer = info.AuthConfig.RequestHeader != nil
 	}
 	{
@@ -58,7 +61,7 @@ func (d *Doctor) GetClusterInfo() (*ClusterInfo, error) {
 		if err != nil {
 			return nil, err
 		}
-		info.Capabilities.MutatingAdmissionWebhook = !info.ClientConfig.Insecure && enabled
+		info.Capabilities.ValidatingAdmissionWebhook = !info.ClientConfig.Insecure && enabled
 
 	}
 	{
