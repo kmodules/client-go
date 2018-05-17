@@ -6,6 +6,7 @@ import (
 
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/meta"
+	"github.com/appscode/kutil/tools/exec"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 )
@@ -48,7 +49,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["client-ca-file"]; ok && v != "" {
-		data, err := core_util.ExecIntoPod(d.config, &pod, "cat", v)
+		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
 		if err != nil {
 			return nil, err
 		}
@@ -56,7 +57,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["requestheader-client-ca-file"]; ok && v != "" {
-		data, err := core_util.ExecIntoPod(d.config, &pod, "cat", v)
+		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
 		if err != nil {
 			return nil, err
 		}
