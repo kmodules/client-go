@@ -54,7 +54,7 @@ func PatchPodSecurityPolicyObject(c kubernetes.Interface, cur, mod *policy.PodSe
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching PodSecurityPolicy %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.PolicyV1beta1().PodSecurityPolicies(.Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.PolicyV1beta1().PodSecurityPolicies().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
 
@@ -66,7 +66,7 @@ func TryUpdatePodSecurityPolicy(c kubernetes.Interface, meta metav1.ObjectMeta, 
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.PolicyV1beta1().PodSecurityPolicies(.Update(transform(cur.DeepCopy()))
+			result, e2 = c.PolicyV1beta1().PodSecurityPolicies().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update PodSecurityPolicy %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
