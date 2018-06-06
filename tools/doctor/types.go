@@ -7,6 +7,7 @@ import (
 	"github.com/pkg/errors"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/util/cert"
 )
 
 type ClusterInfo struct {
@@ -119,7 +120,7 @@ func (c ClusterInfo) Validate() error {
 
 			for _, pod := range c.APIServers {
 				if pod.ClientCAData != c.ClientConfig.CAData {
-					errs = append(errs, errors.Errorf(`pod "%s"" has mismatched "client-ca-file".`, pod.PodName))
+					errs = append(errs, errors.Errorf(`pod "%s" has mismatched "client-ca-file".`, pod.PodName))
 				}
 			}
 		}
@@ -130,12 +131,32 @@ func (c ClusterInfo) Validate() error {
 		}
 	}
 	{
+		for _, pod := range c.APIServers {
+			certs, err := cert.ParseCertsPEM([]byte(pod.ClientCAData))
+			if err != nil {
+				errs = append(errs, errors.Wrapf(err, `pod "%s" has bad "client-ca-file".`, pod.PodName))
+			} else {
+				names := append(certs[0].DNSNames, certs[0].Subject.CommonName)
+				var foundLoopbackClientServerName bool
+				for _, name := range names {
+					if name == "localhost" {
+						foundLoopbackClientServerName = true
+						break
+					}
+				}
+				if !foundLoopbackClientServerName {
+					errs = append(errs, errors.Errorf(`sans of "client-ca-file" of pod "%s" is missing localhost used for apiserver-loopback-client.`, pod.PodName))
+				}
+			}
+		}
+	}
+	{
 		if c.ExtensionServerConfig.RequestHeader == nil {
 			errs = append(errs, errors.Errorf(`"%s/%s" configmap is missing "requestheader-client-ca-file" key.`, authenticationConfigMapNamespace, authenticationConfigMapName))
 		}
 		for _, pod := range c.APIServers {
 			if pod.RequestHeaderCAData != c.ExtensionServerConfig.RequestHeader.CAData {
-				errs = append(errs, errors.Errorf(`pod "%s"" has mismatched "requestheader-client-ca-file".`, pod.PodName))
+				errs = append(errs, errors.Errorf(`pod "%s" has mismatched "requestheader-client-ca-file".`, pod.PodName))
 			}
 		}
 	}
@@ -143,7 +164,7 @@ func (c ClusterInfo) Validate() error {
 		for _, pod := range c.APIServers {
 			modes := sets.NewString(pod.AuthorizationMode...)
 			if !modes.Has("RBAC") {
-				errs = append(errs, errors.Errorf(`pod "%s"" does not enable RBAC authorization mode.`, pod.PodName))
+				errs = append(errs, errors.Errorf(`pod "%s" does not enable RBAC authorization mode.`, pod.PodName))
 			}
 		}
 	}
@@ -151,10 +172,10 @@ func (c ClusterInfo) Validate() error {
 		for _, pod := range c.APIServers {
 			adms := sets.NewString(pod.AdmissionControl...)
 			if !adms.Has("MutatingAdmissionWebhook") {
-				errs = append(errs, errors.Errorf(`pod "%s"" does not enable MutatingAdmissionWebhook admission controller.`, pod.PodName))
+				errs = append(errs, errors.Errorf(`pod "%s" does not enable MutatingAdmissionWebhook admission controller.`, pod.PodName))
 			}
 			if !adms.Has("ValidatingAdmissionWebhook") {
-				errs = append(errs, errors.Errorf(`pod "%s"" does not enable ValidatingAdmissionWebhook admission controller.`, pod.PodName))
+				errs = append(errs, errors.Errorf(`pod "%s" does not enable ValidatingAdmissionWebhook admission controller.`, pod.PodName))
 			}
 		}
 	}
