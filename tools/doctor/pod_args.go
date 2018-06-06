@@ -74,6 +74,14 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 		config.ClientCAData = strings.TrimSpace(data)
 	}
 
+	if v, ok := args["tls-cert-file"]; ok && v != "" {
+		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
+		if err != nil {
+			return nil, err
+		}
+		config.TLSCertData = strings.TrimSpace(data)
+	}
+
 	if v, ok := args["requestheader-client-ca-file"]; ok && v != "" {
 		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
 		if err != nil {
