@@ -50,6 +50,7 @@ type APIServerConfig struct {
 	HostIP              string      `json:"hostIP,omitempty"`
 	AdmissionControl    []string    `json:"admissionControl,omitempty"`
 	ClientCAData        string      `json:"clientCAData,omitempty"`
+	TLSCertData         string      `json:"tlsCertData,omitempty"`
 	RequestHeaderCAData string      `json:"requestHeaderCAData,omitempty"`
 	AllowPrivileged     bool        `json:"allowPrivileged,omitempty"`
 	AuthorizationMode   []string    `json:"authorizationMode,omitempty"`
@@ -134,7 +135,7 @@ func (c ClusterInfo) Validate() error {
 	}
 	{
 		for _, pod := range c.APIServers {
-			certs, err := cert.ParseCertsPEM([]byte(pod.ClientCAData))
+			certs, err := cert.ParseCertsPEM([]byte(pod.TLSCertData))
 			if err != nil {
 				errs = append(errs, errors.Wrapf(err, `pod "%s" has bad "client-ca-file".`, pod.PodName))
 			} else {
