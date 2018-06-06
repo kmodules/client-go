@@ -3,6 +3,7 @@ package doctor
 import (
 	"context"
 
+	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -20,14 +21,29 @@ func (d *Doctor) extractMasterArgs(info *ClusterInfo) error {
 		return err
 	}
 
+	proxyPods, err := d.findKubeProxyPods()
+	if err != nil {
+		return err
+	}
+
 	var errs []error
 	for _, pod := range pods {
 		if c, err := d.processPod(pod); err != nil {
 			errs = append(errs, err)
 		} else {
+			for _, proxyPod := range proxyPods {
+				if proxyPod.Spec.NodeName == c.NodeName {
+					c.KubeProxyFound = true
+					c.KubeProxyRunning, err = core_util.PodRunningAndReady(proxyPod)
+					if err != nil {
+						return err
+					}
+				}
+			}
 			info.APIServers = append(info.APIServers, *c)
 		}
 	}
+
 	return utilerrors.NewAggregate(errs)
 }
 
