@@ -55,6 +55,8 @@ type APIServerConfig struct {
 	AuthorizationMode   []string    `json:"authorizationMode,omitempty"`
 	RuntimeConfig       FeatureList `json:"runtimeConfig,omitempty"`
 	FeatureGates        FeatureList `json:"featureGates,omitempty"`
+	KubeProxyFound      bool        `json:"kubeProxyFound,omitempty"`
+	KubeProxyRunning    bool        `json:"kubeProxyRunning,omitempty"`
 }
 
 var (
@@ -176,6 +178,13 @@ func (c ClusterInfo) Validate() error {
 			}
 			if !adms.Has("ValidatingAdmissionWebhook") {
 				errs = append(errs, errors.Errorf(`pod "%s" does not enable ValidatingAdmissionWebhook admission controller.`, pod.PodName))
+			}
+		}
+	}
+	{
+		for _, pod := range c.APIServers {
+			if !pod.KubeProxyFound {
+				errs = append(errs, errors.Errorf(`pod "%s" is not running kube-proxy.`, pod.PodName))
 			}
 		}
 	}
