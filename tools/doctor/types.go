@@ -1,6 +1,7 @@
 package doctor
 
 import (
+	"crypto/x509"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -137,18 +138,31 @@ func (c ClusterInfo) Validate() error {
 		for _, pod := range c.APIServers {
 			certs, err := cert.ParseCertsPEM([]byte(pod.TLSCertData))
 			if err != nil {
-				errs = append(errs, errors.Wrapf(err, `pod "%s" has bad "client-ca-file".`, pod.PodName))
+				errs = append(errs, errors.Wrapf(err, `pod "%s" has bad "tls-cert-file".`, pod.PodName))
 			} else {
-				names := append(certs[0].DNSNames, certs[0].Subject.CommonName)
-				var foundLoopbackClientServerName bool
-				for _, name := range names {
-					if name == "localhost" {
-						foundLoopbackClientServerName = true
-						break
+				cert := certs[0]
+
+				var intermediates *x509.CertPool
+				if len(certs) > 1 {
+					intermediates = x509.NewCertPool()
+					for _, ic := range certs[1:] {
+						intermediates.AddCert(ic)
 					}
 				}
-				if !foundLoopbackClientServerName {
-					errs = append(errs, errors.Errorf(`sans of "client-ca-file" of pod "%s" is missing localhost used for apiserver-loopback-client.`, pod.PodName))
+
+				roots := x509.NewCertPool()
+				ok := roots.AppendCertsFromPEM([]byte(pod.ClientCAData))
+				if !ok {
+					errs = append(errs, errors.Errorf(`pod "%s" has bad "client-ca-file".`, pod.PodName))
+					continue
+				}
+
+				opts := x509.VerifyOptions{
+					Roots:         roots,
+					Intermediates: intermediates,
+				}
+				if _, err := cert.Verify(opts); err != nil {
+					errs = append(errs, errors.Wrapf(err, `failed to verify tls-cert-file of pod "%s".`, pod.PodName))
 				}
 			}
 		}
