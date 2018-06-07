@@ -59,6 +59,20 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	config.PodIP = pod.Status.PodIP
 	config.HostIP = pod.Status.HostIP
 
+	{
+		// ref: https://github.com/golang/go/blob/e5f0c1f6c9dc382bdc6a0ec1a0d5e1fc6f833485/src/net/http/transport.go#L35
+		config.ProxySettings = map[string]string{}
+		for _, e := range container.Env {
+			switch e.Name {
+			case "no_proxy":
+			case "NO_PROXY":
+			case "http_proxy":
+			case "HTTP_PROXY":
+				config.ProxySettings[e.Name] = e.Value
+			}
+		}
+	}
+
 	if v, ok := args["admission-control"]; ok && v != "" {
 		config.AdmissionControl = strings.Split(v, ",")
 	}

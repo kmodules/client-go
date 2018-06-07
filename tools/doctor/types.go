@@ -45,20 +45,21 @@ type Capabilities struct {
 }
 
 type APIServerConfig struct {
-	PodName             string      `json:"podName,omitempty"`
-	NodeName            string      `json:"nodeName,omitempty"`
-	PodIP               string      `json:"podIP,omitempty"`
-	HostIP              string      `json:"hostIP,omitempty"`
-	AdmissionControl    []string    `json:"admissionControl,omitempty"`
-	ClientCAData        string      `json:"clientCAData,omitempty"`
-	TLSCertData         string      `json:"tlsCertData,omitempty"`
-	RequestHeaderCAData string      `json:"requestHeaderCAData,omitempty"`
-	AllowPrivileged     bool        `json:"allowPrivileged,omitempty"`
-	AuthorizationMode   []string    `json:"authorizationMode,omitempty"`
-	RuntimeConfig       FeatureList `json:"runtimeConfig,omitempty"`
-	FeatureGates        FeatureList `json:"featureGates,omitempty"`
-	KubeProxyFound      bool        `json:"kubeProxyFound,omitempty"`
-	KubeProxyRunning    bool        `json:"kubeProxyRunning,omitempty"`
+	PodName             string            `json:"podName,omitempty"`
+	NodeName            string            `json:"nodeName,omitempty"`
+	PodIP               string            `json:"podIP,omitempty"`
+	HostIP              string            `json:"hostIP,omitempty"`
+	AdmissionControl    []string          `json:"admissionControl,omitempty"`
+	ClientCAData        string            `json:"clientCAData,omitempty"`
+	TLSCertData         string            `json:"tlsCertData,omitempty"`
+	RequestHeaderCAData string            `json:"requestHeaderCAData,omitempty"`
+	AllowPrivileged     bool              `json:"allowPrivileged,omitempty"`
+	AuthorizationMode   []string          `json:"authorizationMode,omitempty"`
+	RuntimeConfig       FeatureList       `json:"runtimeConfig,omitempty"`
+	FeatureGates        FeatureList       `json:"featureGates,omitempty"`
+	KubeProxyFound      bool              `json:"kubeProxyFound,omitempty"`
+	KubeProxyRunning    bool              `json:"kubeProxyRunning,omitempty"`
+	ProxySettings       map[string]string `json:"proxySettings,omitempty"`
 }
 
 var (
