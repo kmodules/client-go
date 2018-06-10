@@ -19,18 +19,16 @@ package controllerref
 import (
 	"fmt"
 
+	"github.com/appscode/go/types"
+	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
 	"github.com/golang/glog"
-
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-
-	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
 	k8s "k8s.io/kubernetes/pkg/controller"
-	"github.com/appscode/go/types"
 )
 
 type UnstructuredManager struct {

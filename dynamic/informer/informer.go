@@ -21,13 +21,12 @@ import (
 	"sync"
 	"time"
 
+	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
+	dynamiclister "github.com/appscode/kutil/dynamic/lister"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
-
-	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
-	dynamiclister "github.com/appscode/kutil/dynamic/lister"
 )
 
 // SharedIndexInformer is an extension of the standard interface of the same

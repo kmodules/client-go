@@ -17,9 +17,8 @@ limitations under the License.
 package apply
 
 import (
-	"testing"
-
 	"reflect"
+	"testing"
 
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/apimachinery/pkg/util/json"

@@ -17,9 +17,10 @@ limitations under the License.
 package object
 
 import (
-	k8s "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"fmt"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 type StatusCondition struct {
@@ -85,7 +86,7 @@ func SetCondition(status map[string]interface{}, condition *StatusCondition) {
 	}
 	// The condition wasn't found. Append it.
 	conditions = append(conditions, condition.Object())
-	k8s.SetNestedField(status, conditions, "conditions")
+	unstructured.SetNestedField(status, conditions, "conditions")
 }
 
 func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) {
@@ -94,11 +95,11 @@ func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) 
 		status = make(map[string]interface{})
 	}
 	SetCondition(status, condition)
-	k8s.SetNestedField(obj, status, "status")
+	unstructured.SetNestedField(obj, status, "status")
 }
 
 func GetObservedGeneration(obj map[string]interface{}) int64 {
-	v, ok, _ := k8s.NestedInt64(obj, "status", "observedGeneration")
+	v, ok, _ := unstructured.NestedInt64(obj, "status", "observedGeneration")
 	if ok {
 		return v
 	}
@@ -126,15 +127,25 @@ func jsonPath(fields []string) string {
 }
 
 func NestedArray(obj map[string]interface{}, fields ...string) []interface{} {
-	if arr, ok, _ := nestedFieldNoCopy(obj, fields...).([]interface{}); ok {
-		return arr
+	val, ok, _ := nestedFieldNoCopy(obj, fields...)
+	if !ok {
+		return nil
 	}
-	return nil
+	m, ok := val.([]interface{})
+	if !ok {
+		return nil
+	}
+	return m
 }
 
 func NestedObject(obj map[string]interface{}, fields ...string) map[string]interface{} {
-	if obj, ok, _ := nestedFieldNoCopy(obj, fields...).(map[string]interface{}); ok {
-		return obj
+	val, ok, _ := nestedFieldNoCopy(obj, fields...)
+	if !ok {
+		return nil
 	}
-	return nil
+	m, ok := val.(map[string]interface{})
+	if !ok {
+		return nil
+	}
+	return m
 }
