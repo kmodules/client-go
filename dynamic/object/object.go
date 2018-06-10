@@ -17,7 +17,9 @@ limitations under the License.
 package object
 
 import (
-	k8s "k8s.io/metacontroller/third_party/kubernetes"
+	k8s "k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"fmt"
+	"strings"
 )
 
 type StatusCondition struct {
@@ -59,7 +61,7 @@ func NewStatusCondition(obj map[string]interface{}) *StatusCondition {
 }
 
 func GetStatusCondition(obj map[string]interface{}, conditionType string) *StatusCondition {
-	conditions := k8s.GetNestedArray(obj, "status", "conditions")
+	conditions := NestedArray(obj, "status", "conditions")
 	for _, item := range conditions {
 		if obj, ok := item.(map[string]interface{}); ok {
 			if ctype, ok := obj["type"].(string); ok && ctype == conditionType {
@@ -71,7 +73,7 @@ func GetStatusCondition(obj map[string]interface{}, conditionType string) *Statu
 }
 
 func SetCondition(status map[string]interface{}, condition *StatusCondition) {
-	conditions := k8s.GetNestedArray(status, "conditions")
+	conditions := NestedArray(status, "conditions")
 	// If the condition is already there, update it.
 	for i, item := range conditions {
 		if cobj, ok := item.(map[string]interface{}); ok {
@@ -87,7 +89,7 @@ func SetCondition(status map[string]interface{}, condition *StatusCondition) {
 }
 
 func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) {
-	status := k8s.GetNestedObject(obj, "status")
+	status := NestedObject(obj, "status")
 	if status == nil {
 		status = make(map[string]interface{})
 	}
@@ -96,5 +98,43 @@ func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) 
 }
 
 func GetObservedGeneration(obj map[string]interface{}) int64 {
-	return k8s.GetNestedInt64(obj, "status", "observedGeneration")
+	v, ok, _ := k8s.NestedInt64(obj, "status", "observedGeneration")
+	if ok {
+		return v
+	}
+	return 0
+}
+
+func nestedFieldNoCopy(obj map[string]interface{}, fields ...string) (interface{}, bool, error) {
+	var val interface{} = obj
+
+	for i, field := range fields {
+		if m, ok := val.(map[string]interface{}); ok {
+			val, ok = m[field]
+			if !ok {
+				return nil, false, nil
+			}
+		} else {
+			return nil, false, fmt.Errorf("%v accessor error: %v is of the type %T, expected map[string]interface{}", jsonPath(fields[:i+1]), val, val)
+		}
+	}
+	return val, true, nil
+}
+
+func jsonPath(fields []string) string {
+	return "." + strings.Join(fields, ".")
+}
+
+func NestedArray(obj map[string]interface{}, fields ...string) []interface{} {
+	if arr, ok, _ := nestedFieldNoCopy(obj, fields...).([]interface{}); ok {
+		return arr
+	}
+	return nil
+}
+
+func NestedObject(obj map[string]interface{}, fields ...string) map[string]interface{} {
+	if obj, ok, _ := nestedFieldNoCopy(obj, fields...).(map[string]interface{}); ok {
+		return obj
+	}
+	return nil
 }
