@@ -28,6 +28,8 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	if len(container.Command) > 1 {
 		if container.Command[0] == "kube-apiserver" {
 			args = meta.ParseArgumentListToMap(container.Command)
+		} else if strings.HasSuffix(container.Command[0], "hyperkube") && container.Command[1] == "apiserver" {
+			args = meta.ParseArgumentListToMap(container.Command[1:])
 		} else {
 			var cmd string
 			for _, c := range container.Command {
