@@ -21,7 +21,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if len(pod.Spec.Containers) != 1 {
-		return nil, errors.Errorf("pod %s has %d containers, expected 1 container", len(pod.Spec.Containers))
+		return nil, errors.Errorf("pod %s has %d containers, expected 1 container", pod.Name, len(pod.Spec.Containers))
 	}
 	container := pod.Spec.Containers[0]
 	args := map[string]string{}
