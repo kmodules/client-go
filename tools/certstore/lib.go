@@ -42,7 +42,7 @@ func (s *CertStore) InitCA(prefix ...string) error {
 }
 
 func (s *CertStore) LoadCA(prefix ...string) error {
-	if err := s.Prepare(prefix...); err != nil {
+	if err := s.prep(prefix...); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (s *CertStore) LoadCA(prefix ...string) error {
 }
 
 func (s *CertStore) NewCA(prefix ...string) error {
-	if err := s.Prepare(prefix...); err != nil {
+	if err := s.prep(prefix...); err != nil {
 		return err
 	}
 
@@ -84,7 +84,7 @@ func (s *CertStore) NewCA(prefix ...string) error {
 	return s.createCAFromKey(key)
 }
 
-func (s *CertStore) Prepare(prefix ...string) error {
+func (s *CertStore) prep(prefix ...string) error {
 	switch len(prefix) {
 	case 0:
 		s.prefix = ""
@@ -203,7 +203,11 @@ func (s *CertStore) NewClientCertPair(cn string, organization ...string) ([]byte
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
 
-func (s *CertStore) IsExists(name string) bool {
+func (s *CertStore) IsExists(name string, prefix ...string) bool {
+	if err := s.prep(prefix...); err != nil {
+		panic(err)
+	}
+
 	if _, err := s.fs.Stat(s.CertFile(name)); err == nil {
 		return true
 	}
@@ -213,7 +217,11 @@ func (s *CertStore) IsExists(name string) bool {
 	return false
 }
 
-func (s *CertStore) PairExists(name string) bool {
+func (s *CertStore) PairExists(name string, prefix ...string) bool {
+	if err := s.prep(prefix...); err != nil {
+		panic(err)
+	}
+
 	if _, err := s.fs.Stat(s.CertFile(name)); err == nil {
 		if _, err := s.fs.Stat(s.KeyFile(name)); err == nil {
 			return true
