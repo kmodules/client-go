@@ -42,7 +42,7 @@ func (s *CertStore) InitCA(prefix ...string) error {
 }
 
 func (s *CertStore) LoadCA(prefix ...string) error {
-	if err := s.prep(prefix...); err != nil {
+	if err := s.Prepare(prefix...); err != nil {
 		return err
 	}
 
@@ -73,7 +73,7 @@ func (s *CertStore) LoadCA(prefix ...string) error {
 }
 
 func (s *CertStore) NewCA(prefix ...string) error {
-	if err := s.prep(prefix...); err != nil {
+	if err := s.Prepare(prefix...); err != nil {
 		return err
 	}
 
@@ -84,7 +84,7 @@ func (s *CertStore) NewCA(prefix ...string) error {
 	return s.createCAFromKey(key)
 }
 
-func (s *CertStore) prep(prefix ...string) error {
+func (s *CertStore) Prepare(prefix ...string) error {
 	switch len(prefix) {
 	case 0:
 		s.prefix = ""
