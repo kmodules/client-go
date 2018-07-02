@@ -16,7 +16,7 @@ package v1beta1
 
 import (
 	"encoding/json"
-	"os"
+	"io"
 	"strings"
 
 	"github.com/appscode/go/types"
@@ -127,7 +127,7 @@ func NewCustomResourceDefinition(config Config, options ...func(map[string]commo
 	return crd
 }
 
-func MarshallCrd(crd *extensionsobj.CustomResourceDefinition, outputFormat string) error {
+func MarshallCrd(w io.Writer, crd *extensionsobj.CustomResourceDefinition, outputFormat string) error {
 	jsonBytes, err := json.Marshal(crd)
 	if err != nil {
 		return err
@@ -146,7 +146,7 @@ func MarshallCrd(crd *extensionsobj.CustomResourceDefinition, outputFormat strin
 	}
 
 	if outputFormat == "json" {
-		_, err = os.Stdout.Write(jsonBytes)
+		_, err = w.Write(jsonBytes)
 		if err != nil {
 			return err
 		}
@@ -156,12 +156,12 @@ func MarshallCrd(crd *extensionsobj.CustomResourceDefinition, outputFormat strin
 			return err
 		}
 
-		_, err = os.Stdout.Write([]byte("---\n"))
+		_, err = w.Write([]byte("---\n"))
 		if err != nil {
 			return err
 		}
 
-		_, err = os.Stdout.Write(yamlBytes)
+		_, err = w.Write(yamlBytes)
 		if err != nil {
 			return err
 		}
