@@ -1,11 +1,12 @@
 package openapi
 
 import (
+	"context"
+
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 )
 
@@ -30,7 +31,7 @@ func (r *ListerStorage) New() runtime.Object {
 	return r.cfg.obj
 }
 
-func (r *ListerStorage) Get(ctx apirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
+func (r *ListerStorage) Get(ctx context.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return r.New(), nil
 }
 
@@ -39,6 +40,6 @@ func (r *ListerStorage) NewList() runtime.Object {
 	return r.cfg.list
 }
 
-func (r *ListerStorage) List(ctx apirequest.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
+func (r *ListerStorage) List(ctx context.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
 	return r.NewList(), nil
 }

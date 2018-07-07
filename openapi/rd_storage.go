@@ -1,11 +1,12 @@
 package openapi
 
 import (
+	"context"
+
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	apirequest "k8s.io/apiserver/pkg/endpoints/request"
 	"k8s.io/apiserver/pkg/registry/rest"
 )
 
@@ -31,7 +32,7 @@ func (r *RDStorage) New() runtime.Object {
 	return r.cfg.obj
 }
 
-func (r *RDStorage) Get(ctx apirequest.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
+func (r *RDStorage) Get(ctx context.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return r.New(), nil
 }
 
@@ -40,11 +41,11 @@ func (r *RDStorage) NewList() runtime.Object {
 	return r.cfg.list
 }
 
-func (r *RDStorage) List(ctx apirequest.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
+func (r *RDStorage) List(ctx context.Context, options *metainternalversion.ListOptions) (runtime.Object, error) {
 	return r.NewList(), nil
 }
 
 // Deleter
-func (r *RDStorage) Delete(ctx apirequest.Context, name string, options *metav1.DeleteOptions) (runtime.Object, bool, error) {
+func (r *RDStorage) Delete(ctx context.Context, name string, options *metav1.DeleteOptions) (runtime.Object, bool, error) {
 	return r.New(), true, nil
 }

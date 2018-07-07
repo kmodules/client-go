@@ -24,7 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/client-go/dynamic"
+	dynamic "k8s.io/client-go/deprecated-dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
 )
@@ -71,7 +71,7 @@ func (cs *Clientset) resource(apiResource *dynamicdiscovery.APIResource, namespa
 	if gv.Group != "" {
 		config.APIPath = "/apis"
 	}
-	dc, err := dynamic.NewClient(&config)
+	dc, err := dynamic.NewClient(&config, gv)
 	if err != nil {
 		return nil, fmt.Errorf("can't create dynamic client for resource %v in apiVersion %v: %v", apiResource.Name, apiResource.APIVersion, err)
 	}
