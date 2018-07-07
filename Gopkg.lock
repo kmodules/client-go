@@ -89,6 +89,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/appscode/go-version"
+  packages = ["."]
+  revision = "0dcf3ac121c7c30e035b41ba9f652d1ce5994242"
+
+[[projects]]
+  branch = "master"
   name = "github.com/appscode/jsonpatch"
   packages = ["."]
   revision = "1359b374de83fa14fd58ab10aa8ea4935f84d249"
@@ -436,13 +442,6 @@
     "diskcache"
   ]
   revision = "9cad4c3443a7200dd6400aef47183728de563a38"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/hashicorp/go-version"
-  packages = ["."]
-  revision = "53932f80ddea12bea96be074f9fb2dc545806aba"
-  source = "https://github.com/appscode/go-version.git"
 
 [[projects]]
   branch = "master"
@@ -1402,6 +1401,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1fb4e83163502bea98abd9aa972a6ca0513a1ab7118643065480d8b1aa56f7af"
+  inputs-digest = "b3946577c8864b7484ce44bbe618f744d2725c39423ab653a08ac547e6e6f830"
   solver-name = "gps-cdcl"
   solver-version = 1

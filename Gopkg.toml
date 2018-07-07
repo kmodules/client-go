@@ -47,8 +47,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/hashicorp/go-version"
-  source = "https://github.com/appscode/go-version.git"
+  name = "github.com/appscode/go-version"
 
 [[override]]
   name = "github.com/russross/blackfriday"
