@@ -16,6 +16,7 @@ type StandardStorage struct {
 }
 
 var _ rest.GroupVersionKindProvider = &StandardStorage{}
+var _ rest.Scoper = &StandardStorage{}
 var _ rest.StandardStorage = &StandardStorage{}
 
 func NewStandardStorage(cfg ResourceInfo) *StandardStorage {
@@ -24,6 +25,10 @@ func NewStandardStorage(cfg ResourceInfo) *StandardStorage {
 
 func (r *StandardStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *StandardStorage) NamespaceScoped() bool {
+	return r.cfg.namespaceScoped
 }
 
 // Getter

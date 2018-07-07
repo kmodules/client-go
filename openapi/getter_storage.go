@@ -14,6 +14,7 @@ type GetterStorage struct {
 }
 
 var _ rest.GroupVersionKindProvider = &GetterStorage{}
+var _ rest.Scoper = &GetterStorage{}
 var _ rest.Getter = &GetterStorage{}
 
 func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
@@ -22,6 +23,10 @@ func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
 
 func (r *GetterStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *GetterStorage) NamespaceScoped() bool {
+	return r.cfg.namespaceScoped
 }
 
 // Getter
