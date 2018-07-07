@@ -21,9 +21,10 @@ import (
 )
 
 type TypeInfo struct {
-	GroupVersion schema.GroupVersion
-	Resource     string
-	Kind         string
+	GroupVersion    schema.GroupVersion
+	Resource        string
+	Kind            string
+	NamespaceScoped bool
 }
 
 type Config struct {
@@ -111,9 +112,10 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			}
 
 			resmap[ti.Resource] = NewStandardStorage(ResourceInfo{
-				gvk:  gvk,
-				obj:  obj,
-				list: list,
+				gvk:             gvk,
+				obj:             obj,
+				list:            list,
+				namespaceScoped: ti.NamespaceScoped,
 			})
 		}
 	}
@@ -134,8 +136,9 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			}
 
 			resmap[ti.Resource] = NewGetterStorage(ResourceInfo{
-				gvk: gvk,
-				obj: obj,
+				gvk:             gvk,
+				obj:             obj,
+				namespaceScoped: ti.NamespaceScoped,
 			})
 		}
 	}
@@ -160,9 +163,10 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			}
 
 			resmap[ti.Resource] = NewListerStorage(ResourceInfo{
-				gvk:  gvk,
-				obj:  obj,
-				list: list,
+				gvk:             gvk,
+				obj:             obj,
+				list:            list,
+				namespaceScoped: ti.NamespaceScoped,
 			})
 		}
 	}
@@ -183,8 +187,9 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			}
 
 			resmap[ti.Resource] = NewCDStorage(ResourceInfo{
-				gvk: gvk,
-				obj: obj,
+				gvk:             gvk,
+				obj:             obj,
+				namespaceScoped: ti.NamespaceScoped,
 			})
 		}
 	}
@@ -209,9 +214,10 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			}
 
 			resmap[ti.Resource] = NewRDStorage(ResourceInfo{
-				gvk:  gvk,
-				obj:  obj,
-				list: list,
+				gvk:             gvk,
+				obj:             obj,
+				list:            list,
+				namespaceScoped: ti.NamespaceScoped,
 			})
 		}
 	}

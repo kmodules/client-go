@@ -15,6 +15,7 @@ type RDStorage struct {
 }
 
 var _ rest.GroupVersionKindProvider = &RDStorage{}
+var _ rest.Scoper = &RDStorage{}
 var _ rest.Lister = &RDStorage{}
 var _ rest.Getter = &RDStorage{}
 var _ rest.GracefulDeleter = &RDStorage{}
@@ -25,6 +26,10 @@ func NewRDStorage(cfg ResourceInfo) *RDStorage {
 
 func (r *RDStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *RDStorage) NamespaceScoped() bool {
+	return r.cfg.namespaceScoped
 }
 
 // Getter

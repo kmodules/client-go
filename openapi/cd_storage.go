@@ -14,6 +14,7 @@ type CDStorage struct {
 }
 
 var _ rest.GroupVersionKindProvider = &CDStorage{}
+var _ rest.Scoper = &CDStorage{}
 var _ rest.Creater = &CDStorage{}
 var _ rest.GracefulDeleter = &CDStorage{}
 
@@ -23,6 +24,10 @@ func NewCDStorage(cfg ResourceInfo) *CDStorage {
 
 func (r *CDStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *CDStorage) NamespaceScoped() bool {
+	return r.cfg.namespaceScoped
 }
 
 // Getter

@@ -15,6 +15,7 @@ type ListerStorage struct {
 }
 
 var _ rest.GroupVersionKindProvider = &ListerStorage{}
+var _ rest.Scoper = &ListerStorage{}
 var _ rest.Lister = &ListerStorage{}
 var _ rest.Getter = &ListerStorage{}
 
@@ -24,6 +25,10 @@ func NewListerStorage(cfg ResourceInfo) *ListerStorage {
 
 func (r *ListerStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *ListerStorage) NamespaceScoped() bool {
+	return r.cfg.namespaceScoped
 }
 
 // Getter
