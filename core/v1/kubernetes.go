@@ -79,14 +79,22 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 	return append(containers, upsert)
 }
 
-func UpsertVolume(volumes []core.Volume, nv core.Volume) []core.Volume {
-	for i, vol := range volumes {
-		if vol.Name == nv.Name {
-			volumes[i] = nv
-			return volumes
+func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
+	upsert := func(volume core.Volume) {
+		for i, vol := range volumes {
+			if vol.Name == volume.Name {
+				volumes[i] = volume
+				return
+			}
 		}
+		volumes = append(volumes, volume)
 	}
-	return append(volumes, nv)
+
+	for _, volume := range nv {
+		upsert(volume)
+	}
+	return volumes
+
 }
 
 func UpsertVolumeClaim(volumeClaims []core.PersistentVolumeClaim, upsert core.PersistentVolumeClaim) []core.PersistentVolumeClaim {
@@ -108,14 +116,21 @@ func EnsureVolumeDeleted(volumes []core.Volume, name string) []core.Volume {
 	return volumes
 }
 
-func UpsertVolumeMount(mounts []core.VolumeMount, nv core.VolumeMount) []core.VolumeMount {
-	for i, vol := range mounts {
-		if vol.Name == nv.Name {
-			mounts[i] = nv
-			return mounts
+func UpsertVolumeMount(mounts []core.VolumeMount, nv ...core.VolumeMount) []core.VolumeMount {
+	upsert := func(mount core.VolumeMount) {
+		for i, vol := range mounts {
+			if vol.Name == mount.Name {
+				mounts[i] = mount
+				return
+			}
 		}
+		mounts = append(mounts, mount)
 	}
-	return append(mounts, nv)
+
+	for _, mount := range nv {
+		upsert(mount)
+	}
+	return mounts
 }
 
 func EnsureVolumeMountDeleted(mounts []core.VolumeMount, name string) []core.VolumeMount {
