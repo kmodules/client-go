@@ -80,14 +80,14 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 }
 
 func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
-	upsert := func(volume core.Volume) {
+	upsert := func(v core.Volume) {
 		for i, vol := range volumes {
-			if vol.Name == volume.Name {
-				volumes[i] = volume
+			if vol.Name == v.Name {
+				volumes[i] = v
 				return
 			}
 		}
-		volumes = append(volumes, volume)
+		volumes = append(volumes, v)
 	}
 
 	for _, volume := range nv {
@@ -117,14 +117,14 @@ func EnsureVolumeDeleted(volumes []core.Volume, name string) []core.Volume {
 }
 
 func UpsertVolumeMount(mounts []core.VolumeMount, nv ...core.VolumeMount) []core.VolumeMount {
-	upsert := func(mount core.VolumeMount) {
+	upsert := func(m core.VolumeMount) {
 		for i, vol := range mounts {
-			if vol.Name == mount.Name {
-				mounts[i] = mount
+			if vol.Name == m.Name {
+				mounts[i] = m
 				return
 			}
 		}
-		mounts = append(mounts, mount)
+		mounts = append(mounts, m)
 	}
 
 	for _, mount := range nv {
