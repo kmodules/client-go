@@ -30,7 +30,7 @@ var (
 )
 
 func RequestRetryable(err error) bool {
-	if kerr.IsTimeout(err) || kerr.IsServerTimeout(err) || kerr.IsTooManyRequests(err) {
+	if kerr.IsServiceUnavailable(err) || kerr.IsTimeout(err) || kerr.IsServerTimeout(err) || kerr.IsTooManyRequests(err) {
 		return true
 	}
 	return false
