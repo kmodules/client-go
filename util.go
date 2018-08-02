@@ -3,6 +3,8 @@ package kutil
 import (
 	"errors"
 	"time"
+
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 )
 
 const (
@@ -26,3 +28,10 @@ var (
 	ErrNotFound = errors.New("not found")
 	ErrUnknown  = errors.New("unknown")
 )
+
+func RequestRetryable(err error) bool {
+	if kerr.IsTimeout(err) || kerr.IsServerTimeout(err) || kerr.IsTooManyRequests(err) {
+		return true
+	}
+	return false
+}
