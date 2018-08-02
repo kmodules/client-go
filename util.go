@@ -29,9 +29,9 @@ var (
 	ErrUnknown  = errors.New("unknown")
 )
 
-func RequestRetryable(err error) bool {
-	if kerr.IsServiceUnavailable(err) || kerr.IsTimeout(err) || kerr.IsServerTimeout(err) || kerr.IsTooManyRequests(err) {
-		return true
-	}
-	return false
+func IsRequestRetryable(err error) bool {
+	return kerr.IsServiceUnavailable(err) ||
+		kerr.IsTimeout(err) ||
+		kerr.IsServerTimeout(err) ||
+		kerr.IsTooManyRequests(err)
 }
