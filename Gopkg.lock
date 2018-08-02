@@ -895,7 +895,6 @@
   version = "kubernetes-1.11.0"
 
 [[projects]]
-  branch = "release-1.11"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -954,6 +953,7 @@
     "third_party/forked/golang/reflect"
   ]
   revision = "103fd098999dc9c0c88536f5c9ad2e5da39373ae"
+  version = "kubernetes-1.11.0"
 
 [[projects]]
   name = "k8s.io/apiserver"
@@ -1384,6 +1384,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c78df98112661b42549c914936deec91bd2a8f9174c3a20663049a36fadbd866"
+  inputs-digest = "aeff60883151f20e6ac3f5bd5f617b3e4adb0f5e7def876bb568d5bf16671ff9"
   solver-name = "gps-cdcl"
   solver-version = 1
