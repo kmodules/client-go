@@ -8,7 +8,6 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
 	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
-
 	// "k8s.io/apimachinery/pkg/apimachinery/registered"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
