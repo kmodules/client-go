@@ -41,6 +41,7 @@ type Config struct {
 	Plural                   string
 	Singular                 string
 	ShortNames               []string
+	Categories               []string
 	GetOpenAPIDefinitions    GetAPIDefinitions
 	EnableStatusSubresource  bool
 	EnableScaleSubresource   bool
