@@ -25,7 +25,7 @@ import (
 	"github.com/golang/glog"
 )
 
-func UpsertArgumentList(baseArgs []string, overrideArgs []string) []string {
+func UpsertArgumentList(baseArgs []string, overrideArgs []string, protectedFlags ...string) []string {
 	out := make([]string, 0, len(baseArgs)+len(overrideArgs))
 
 	baseMap := make(map[string]int, len(baseArgs))
@@ -42,6 +42,11 @@ func UpsertArgumentList(baseArgs []string, overrideArgs []string) []string {
 		baseMap[arg[:idx]] = i
 	}
 
+	protectedSet := make(map[string]string, len(protectedFlags))
+	for _, flag := range protectedFlags {
+		protectedSet[flag] = ""
+	}
+
 	var idx int
 	for _, arg := range overrideArgs {
 		if !strings.HasPrefix(arg, "--") {
@@ -51,6 +56,11 @@ func UpsertArgumentList(baseArgs []string, overrideArgs []string) []string {
 		if idx < 0 {
 			goto Append
 		}
+
+		if _, found := protectedSet[arg[:idx]]; found {
+			continue
+		}
+
 		if idx, found := baseMap[arg[:idx]]; found {
 			out[idx] = arg // overwrite
 			continue
