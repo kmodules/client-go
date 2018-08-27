@@ -1,8 +1,14 @@
 package queue
 
 import (
+	"reflect"
+
+	"github.com/appscode/go/log"
+	meta_util "github.com/appscode/kutil/meta"
+	"github.com/fatih/structs"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -13,7 +19,7 @@ import (
 // QueueingEventHandler queues the key for the object on add and update events
 type QueueingEventHandler struct {
 	queue         workqueue.RateLimitingInterface
-	enqueueAdd    bool
+	enqueueAdd    func(obj interface{}) bool
 	enqueueUpdate func(oldObj, newObj interface{}) bool
 	enqueueDelete bool
 }
@@ -23,7 +29,7 @@ var _ cache.ResourceEventHandler = &QueueingEventHandler{}
 func DefaultEventHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
-		enqueueAdd:    true,
+		enqueueAdd:    nil,
 		enqueueUpdate: nil,
 		enqueueDelete: true,
 	}
@@ -32,7 +38,7 @@ func DefaultEventHandler(queue workqueue.RateLimitingInterface) *QueueingEventHa
 func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
-		enqueueAdd:    true,
+		enqueueAdd:    nil,
 		enqueueUpdate: enqueueUpdate,
 		enqueueDelete: true,
 	}
@@ -41,7 +47,7 @@ func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(o
 func NewUpsertHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
-		enqueueAdd:    true,
+		enqueueAdd:    nil,
 		enqueueUpdate: nil,
 		enqueueDelete: false,
 	}
@@ -50,8 +56,62 @@ func NewUpsertHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandl
 func NewDeleteHandler(queue workqueue.RateLimitingInterface) *QueueingEventHandler {
 	return &QueueingEventHandler{
 		queue:         queue,
-		enqueueAdd:    false,
-		enqueueUpdate: func(oldObj, newObj interface{}) bool { return false },
+		enqueueAdd:    func(_ interface{}) bool { return false },
+		enqueueUpdate: func(_, _ interface{}) bool { return false },
+		enqueueDelete: true,
+	}
+}
+
+func NewObservableHandler(queue workqueue.RateLimitingInterface, enableStatusSubresource bool) *QueueingEventHandler {
+	return &QueueingEventHandler{
+		queue: queue,
+		enqueueAdd: func(o interface{}) bool {
+			if !enableStatusSubresource {
+				return true
+			}
+
+			obj := o.(metav1.Object)
+			st := structs.New(o)
+
+			if st.Field("Status").Field("ObservedGeneration").Value().(int64) < obj.GetGeneration() {
+				return true
+			}
+			return meta_util.GenerationHash(obj) != st.Field("Status").Field("ObservedGenerationHash").Value().(string)
+		},
+		enqueueUpdate: func(old, nu interface{}) bool {
+			oldObj := old.(metav1.Object)
+			nuObj := nu.(metav1.Object)
+
+			if nuObj.GetDeletionTimestamp() != nil {
+				return true
+			}
+
+			oldStruct := structs.New(old)
+			nuStruct := structs.New(nu)
+
+			var match bool
+
+			if enableStatusSubresource {
+				match = nuStruct.Field("Status").Field("ObservedGeneration").Value().(int64) >= nuObj.GetGeneration()
+				if match {
+					match = meta_util.GenerationHash(nuObj) != nuStruct.Field("Status").Field("ObservedGenerationHash").Value().(string)
+				}
+			} else {
+				match = meta_util.Equal(oldStruct.Field("Spec").Value(), nuStruct.Field("Spec").Value())
+				if match {
+					match = reflect.DeepEqual(oldObj.GetLabels(), nuObj.GetLabels())
+				}
+				if match {
+					match = meta_util.EqualAnnotation(oldObj.GetAnnotations(), nuObj.GetAnnotations())
+				}
+			}
+
+			if !match && bool(glog.V(log.LevelDebug)) {
+				diff := meta_util.Diff(nu, old)
+				glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", meta_util.GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
+			}
+			return !match
+		},
 		enqueueDelete: true,
 	}
 }
@@ -67,7 +127,7 @@ func Enqueue(queue workqueue.RateLimitingInterface, obj interface{}) {
 
 func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 	glog.V(6).Infof("Add event for %+v\n", obj)
-	if h.enqueueAdd {
+	if h.enqueueAdd == nil || h.enqueueAdd(obj) {
 		Enqueue(h.queue, obj)
 	}
 }
