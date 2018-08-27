@@ -9,24 +9,30 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GenerationHash(m metav1.ObjectMeta) string {
-	data := make(map[string]interface{}, 3)
-	data["generation"] = m.Generation
-	if len(m.Labels) > 0 {
-		data["labels"] = m.Labels
+func GenerationHash(in metav1.ObjectMeta) string {
+	obj := make(map[string]interface{}, 3)
+	obj["generation"] = in.Generation
+	if len(in.Labels) > 0 {
+		obj["labels"] = in.Labels
 	}
-	if len(m.Annotations) > 0 {
-		data["annotations"] = m.Annotations
+	if len(in.Annotations) > 0 {
+		data := make(map[string]string, len(in.Annotations))
+		for k, v := range in.Annotations {
+			if k != lastAppliedConfiguration {
+				data[k] = v
+			}
+		}
+		obj["annotations"] = data
 	}
 	h := fnv.New64a()
-	deepHashObject(h, data)
+	DeepHashObject(h, obj)
 	return strconv.FormatUint(h.Sum64(), 10)
 }
 
 // deepHashObject writes specified object to hash using the spew library
 // which follows pointers and prints actual values of the nested objects
 // ensuring the hash does not change when a pointer changes.
-func deepHashObject(hasher hash.Hash, objectToWrite interface{}) {
+func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	hasher.Reset()
 	printer := spew.ConfigState{
 		Indent:         " ",
