@@ -3,9 +3,13 @@ package meta
 import (
 	"hash"
 	"hash/fnv"
+	"reflect"
 	"strconv"
 
+	"github.com/appscode/go/log"
 	"github.com/davecgh/go-spew/spew"
+	"github.com/fatih/structs"
+	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -41,4 +45,59 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 		SpewKeys:       true,
 	}
 	printer.Fprintf(hasher, "%#v", objectToWrite)
+}
+
+func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
+	if !enableStatusSubresource {
+		return false
+	}
+
+	obj := o.(metav1.Object)
+	st := structs.New(o)
+
+	if st.Field("Status").Field("ObservedGeneration").Value().(int64) < obj.GetGeneration() {
+		return false
+	}
+	return GenerationHash(obj) == st.Field("Status").Field("ObservedGenerationHash").Value().(string)
+}
+
+func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
+	if old == nil {
+		return nu == nil
+	}
+	if nu == nil { // && old != nil
+		return false
+	}
+	if old == nu {
+		return true
+	}
+
+	oldObj := old.(metav1.Object)
+	nuObj := nu.(metav1.Object)
+
+	oldStruct := structs.New(old)
+	nuStruct := structs.New(nu)
+
+	var match bool
+
+	if enableStatusSubresource {
+		match = nuStruct.Field("Status").Field("ObservedGeneration").Value().(int64) >= nuObj.GetGeneration()
+		if match {
+			match = GenerationHash(nuObj) == nuStruct.Field("Status").Field("ObservedGenerationHash").Value().(string)
+		}
+	} else {
+		match = Equal(oldStruct.Field("Spec").Value(), nuStruct.Field("Spec").Value())
+		if match {
+			match = reflect.DeepEqual(oldObj.GetLabels(), nuObj.GetLabels())
+		}
+		if match {
+			match = EqualAnnotation(oldObj.GetAnnotations(), nuObj.GetAnnotations())
+		}
+	}
+
+	if !match && bool(glog.V(log.LevelDebug)) {
+		diff := Diff(nu, old)
+		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
+	}
+	return match
 }
