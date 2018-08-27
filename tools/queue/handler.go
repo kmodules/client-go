@@ -1,11 +1,7 @@
 package queue
 
 import (
-	"reflect"
-
-	"github.com/appscode/go/log"
 	meta_util "github.com/appscode/kutil/meta"
-	"github.com/fatih/structs"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -66,51 +62,11 @@ func NewObservableHandler(queue workqueue.RateLimitingInterface, enableStatusSub
 	return &QueueingEventHandler{
 		queue: queue,
 		enqueueAdd: func(o interface{}) bool {
-			if !enableStatusSubresource {
-				return true
-			}
-
-			obj := o.(metav1.Object)
-			st := structs.New(o)
-
-			if st.Field("Status").Field("ObservedGeneration").Value().(int64) < obj.GetGeneration() {
-				return true
-			}
-			return meta_util.GenerationHash(obj) != st.Field("Status").Field("ObservedGenerationHash").Value().(string)
+			return !meta_util.AlreadyObserved(o, enableStatusSubresource)
 		},
 		enqueueUpdate: func(old, nu interface{}) bool {
-			oldObj := old.(metav1.Object)
-			nuObj := nu.(metav1.Object)
-
-			if nuObj.GetDeletionTimestamp() != nil {
-				return true
-			}
-
-			oldStruct := structs.New(old)
-			nuStruct := structs.New(nu)
-
-			var match bool
-
-			if enableStatusSubresource {
-				match = nuStruct.Field("Status").Field("ObservedGeneration").Value().(int64) >= nuObj.GetGeneration()
-				if match {
-					match = meta_util.GenerationHash(nuObj) != nuStruct.Field("Status").Field("ObservedGenerationHash").Value().(string)
-				}
-			} else {
-				match = meta_util.Equal(oldStruct.Field("Spec").Value(), nuStruct.Field("Spec").Value())
-				if match {
-					match = reflect.DeepEqual(oldObj.GetLabels(), nuObj.GetLabels())
-				}
-				if match {
-					match = meta_util.EqualAnnotation(oldObj.GetAnnotations(), nuObj.GetAnnotations())
-				}
-			}
-
-			if !match && bool(glog.V(log.LevelDebug)) {
-				diff := meta_util.Diff(nu, old)
-				glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", meta_util.GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
-			}
-			return !match
+			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil ||
+				!meta_util.AlreadyObserved2(old, nu, enableStatusSubresource)
 		},
 		enqueueDelete: true,
 	}
