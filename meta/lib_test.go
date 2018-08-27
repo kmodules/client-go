@@ -109,7 +109,7 @@ func TestFilterKeys(t *testing.T) {
 			"IndexRune > n - matching_subdomain",
 			map[string]string{
 				"xyz." + domainKey + "/w1": "v1",
-				"w2": "v2",
+				"w2":                       "v2",
 			},
 			map[string]string{
 				"w2": "v2",
@@ -119,7 +119,7 @@ func TestFilterKeys(t *testing.T) {
 			"IndexRune > n - matching_subdomain-2",
 			map[string]string{
 				"." + domainKey + "/w1": "v1",
-				"w2": "v2",
+				"w2":                    "v2",
 			},
 			map[string]string{
 				"w2": "v2",
