@@ -14,6 +14,39 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// ObjectHash includes all top label fields (like data, spec) except TypeMeta, ObjectMeta and Status
+// also includes Generation, Annotation and Labels form ObjectMeta
+func ObjectHash(in metav1.Object) string {
+	obj := make(map[string]interface{})
+
+	obj["generation"] = in.GetGeneration()
+	if len(in.GetLabels()) > 0 {
+		obj["labels"] = in.GetLabels()
+	}
+
+	if len(in.GetAnnotations()) > 0 {
+		data := make(map[string]string, len(in.GetAnnotations()))
+		for k, v := range in.GetAnnotations() {
+			if k != LastAppliedConfigAnnotation {
+				data[k] = v
+			}
+		}
+		obj["annotations"] = data
+	}
+
+	st := structs.New(in)
+	for _, field := range st.Fields() {
+		fieldName := field.Name()
+		if fieldName != "ObjectMeta" && fieldName != "TypeMeta" && fieldName != "Status" {
+			obj[fieldName] = field.Value()
+		}
+	}
+
+	h := fnv.New64a()
+	DeepHashObject(h, obj)
+	return strconv.FormatUint(h.Sum64(), 10)
+}
+
 func GenerationHash(in metav1.Object) string {
 	obj := make(map[string]interface{}, 3)
 	obj["generation"] = in.GetGeneration()
