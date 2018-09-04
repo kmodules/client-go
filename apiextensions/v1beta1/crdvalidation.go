@@ -71,4 +71,26 @@ func fixKnownTypes(openapiSpec map[string]common.OpenAPIDefinition) {
 			},
 		},
 	}
+
+	// anyOf is not defined in v2 spec so can't be be returned from IntHash.OpenAPIDefinition()
+	openapiSpec["github.com/appscode/go/encoding/json/types.IntHash"] = common.OpenAPIDefinition{
+		Schema: spec.Schema{
+			SchemaProps: spec.SchemaProps{
+				OneOf: []spec.Schema{
+					{
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
+					{
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"integer"},
+							Format: "int64",
+						},
+					},
+				},
+			},
+		},
+	}
 }
