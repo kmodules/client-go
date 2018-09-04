@@ -56,7 +56,7 @@ func fixKnownTypes(openapiSpec map[string]common.OpenAPIDefinition) {
 	openapiSpec["k8s.io/apimachinery/pkg/util/intstr.IntOrString"] = common.OpenAPIDefinition{
 		Schema: spec.Schema{
 			SchemaProps: spec.SchemaProps{
-				AnyOf: []spec.Schema{
+				OneOf: []spec.Schema{
 					{
 						SchemaProps: spec.SchemaProps{
 							Type: []string{"string"},
