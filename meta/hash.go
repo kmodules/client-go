@@ -91,7 +91,7 @@ func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
 
 	cur := types.NewIntHash(obj.GetGeneration(), GenerationHash(obj))
 	observed, err := types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
-	if err == nil {
+	if err != nil {
 		panic(err)
 	}
 	return observed.Equal(cur)
@@ -118,11 +118,11 @@ func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
 
 	if enableStatusSubresource {
 		oldObserved, err := types.ParseIntHash(oldStruct.Field("Status").Field("ObservedGeneration").Value())
-		if err == nil {
+		if err != nil {
 			panic(err)
 		}
 		nuObserved, err := types.ParseIntHash(nuStruct.Field("Status").Field("ObservedGeneration").Value())
-		if err == nil {
+		if err != nil {
 			panic(err)
 		}
 		match = nuObserved.Equal(oldObserved)
