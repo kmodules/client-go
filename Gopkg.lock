@@ -10,8 +10,8 @@
 [[projects]]
   name = "cloud.google.com/go"
   packages = ["compute/metadata"]
-  revision = "64a2037ec6be8a4b0c1d1f706ed35b428b989239"
-  version = "v0.26.0"
+  revision = "c728a003b238b26cef9ab6753a5dc424b331c3ad"
+  version = "v0.27.0"
 
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
@@ -145,8 +145,8 @@
     "service/ecr",
     "service/sts"
   ]
-  revision = "04abd557eeaab3cfdded45467eea00fc03db9cb9"
-  version = "v1.15.26"
+  revision = "80ad2657c5ff975b642b1febb11c3fcfd747c057"
+  version = "v1.15.28"
 
 [[projects]]
   branch = "master"
@@ -428,7 +428,7 @@
     "openstack/utils",
     "pagination"
   ]
-  revision = "07d15af37699505fb5535c0962f49a10379d12ff"
+  revision = "13af1c2a38cfbc60a7a13062338838301035d91d"
 
 [[projects]]
   name = "github.com/gorilla/context"
@@ -700,7 +700,7 @@
     "pkcs12/internal/rc2",
     "ssh/terminal"
   ]
-  revision = "182538f80094b6a8efaade63a8fd8e0d9d5843dd"
+  revision = "0709b304e793a5edb4a2c0145f281ecdc20838a4"
 
 [[projects]]
   branch = "release-branch.go1.9"
@@ -737,7 +737,7 @@
     "unix",
     "windows"
   ]
-  revision = "fa5fdf94c78965f1aa8423f0cc50b8b8d728b05a"
+  revision = "8cf3aee429924738c56c34bb819c4ea8273fc434"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -948,6 +948,7 @@
     "pkg/util/httpstream/spdy",
     "pkg/util/intstr",
     "pkg/util/json",
+    "pkg/util/jsonmergepatch",
     "pkg/util/mergepatch",
     "pkg/util/net",
     "pkg/util/rand",
@@ -1399,6 +1400,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "5edb467e00563b69da2e3a25d2e395a6f6cc3830069483a865f6aac3303f53ff"
+  inputs-digest = "58398e37b8e9be815928ce668df40db1b6128a53904ce1430a01dc4b3caf9aa5"
   solver-name = "gps-cdcl"
   solver-version = 1
