@@ -119,7 +119,8 @@ func (s *CertStore) createCAFromKey(key *rsa.PrivateKey) error {
 		CommonName:   s.ca,
 		Organization: s.organization,
 		AltNames: cert.AltNames{
-			IPs: []net.IP{net.ParseIP("127.0.0.1")},
+			DNSNames: []string{s.ca},
+			IPs:      []net.IP{net.ParseIP("127.0.0.1")},
 		},
 	}
 	crt, err := cert.NewSelfSignedCACert(cfg, key)
@@ -188,8 +189,11 @@ func (s *CertStore) NewServerCertPair(cn string, sans cert.AltNames) (*x509.Cert
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: s.organization,
-		AltNames:     sans,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		AltNames: cert.AltNames{
+			DNSNames: merge(cn, sans.DNSNames),
+			IPs:      sans.IPs,
+		},
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 	}
 	key, err := cert.NewPrivateKey()
 	if err != nil {
@@ -216,8 +220,11 @@ func (s *CertStore) NewPeerCertPair(cn string, sans cert.AltNames) (*x509.Certif
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: s.organization,
-		AltNames:     sans,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
+		AltNames: cert.AltNames{
+			DNSNames: merge(cn, sans.DNSNames),
+			IPs:      sans.IPs,
+		},
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 	}
 	key, err := cert.NewPrivateKey()
 	if err != nil {
@@ -242,8 +249,11 @@ func (s *CertStore) NewClientCertPair(cn string, sans cert.AltNames, organizatio
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: organization,
-		AltNames:     sans,
-		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		AltNames: cert.AltNames{
+			DNSNames: merge(cn, sans.DNSNames),
+			IPs:      sans.IPs,
+		},
+		Usages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 	key, err := cert.NewPrivateKey()
 	if err != nil {
@@ -359,4 +369,26 @@ func (s *CertStore) ReadBytes(name string) ([]byte, []byte, error) {
 		return nil, nil, errors.Wrapf(err, "failed to read private key `%s`", s.KeyFile(name))
 	}
 	return crtBytes, keyBytes, nil
+}
+
+// RFC 5280
+// When the subjectAltName extension contains a domain name system
+// label, the domain name MUST be stored in the dNSName (an IA5String).
+// The name MUST be in the "preferred name syntax", as specified by
+// Section 3.5 of RFC1034 and as modified by Section 2.1 of
+// RFC1123. Note that while uppercase and lowercase letters are
+// allowed in domain names, no significance is attached to the case.
+// ref: https://security.stackexchange.com/a/150776/27304
+func merge(cn string, sans []string) []string {
+	var found bool
+	for _, name := range sans {
+		if strings.EqualFold(name, cn) {
+			found = true
+			break
+		}
+	}
+	if !found {
+		return append(sans, cn)
+	}
+	return sans
 }
