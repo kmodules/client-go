@@ -15,6 +15,25 @@ import (
 	"k8s.io/client-go/util/cert"
 )
 
+func SANsForNames(s string, names ...string) cert.AltNames {
+	return cert.AltNames{
+		DNSNames: append([]string{s}, names...),
+	}
+}
+
+func SANsForIPs(s string, ips ...string) cert.AltNames {
+	addrs := make([]net.IP, 0, len(ips))
+	for _, ip := range ips {
+		if v := net.ParseIP(ip); v != nil {
+			addrs = append(addrs, v)
+		}
+	}
+	return cert.AltNames{
+		DNSNames: []string{s},
+		IPs:      addrs,
+	}
+}
+
 type CertStore struct {
 	fs           afero.Fs
 	dir          string
