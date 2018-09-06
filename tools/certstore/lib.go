@@ -41,6 +41,22 @@ func (s *CertStore) InitCA(prefix ...string) error {
 	return s.NewCA(prefix...)
 }
 
+func (s *CertStore) SetCA(crtBytes, keyBytes []byte) error {
+	crt, err := cert.ParseCertsPEM(crtBytes)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse ca certificate")
+	}
+
+	key, err := cert.ParsePrivateKeyPEM(keyBytes)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse ca private key")
+	}
+
+	s.caCert = crt[0]
+	s.caKey = key.(*rsa.PrivateKey)
+	return s.Write(s.ca, s.caCert, s.caKey)
+}
+
 func (s *CertStore) LoadCA(prefix ...string) error {
 	if err := s.prep(prefix...); err != nil {
 		return err
