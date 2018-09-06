@@ -69,9 +69,9 @@ func TestRemoveOwnerReference(t *testing.T) {
 
 	for _, c := range cases {
 		t.Run(c.testName, func(t *testing.T) {
-			meta := RemoveOwnerReference(c.objMeta, &c.owner)
-			if !reflect.DeepEqual(meta, c.newMeta) {
-				t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", c.newMeta, meta)
+			RemoveOwnerReference(&c.objMeta, &c.owner)
+			if !reflect.DeepEqual(c.objMeta, c.newMeta) {
+				t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", c.newMeta, c.objMeta)
 			}
 		})
 	}
