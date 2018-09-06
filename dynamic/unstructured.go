@@ -16,7 +16,12 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-func CreateOrPatch(c dynamic.Interface, gvr schema.GroupVersionResource, meta metav1.ObjectMeta, transform func(*unstructured.Unstructured) *unstructured.Unstructured) (*unstructured.Unstructured, kutil.VerbType, error) {
+func CreateOrPatch(
+	c dynamic.Interface,
+	gvr schema.GroupVersionResource,
+	meta metav1.ObjectMeta,
+	transform func(*unstructured.Unstructured) *unstructured.Unstructured,
+) (*unstructured.Unstructured, kutil.VerbType, error) {
 	var ri dynamic.ResourceInterface
 	if meta.Namespace == "" {
 		ri = c.Resource(gvr)
@@ -38,11 +43,20 @@ func CreateOrPatch(c dynamic.Interface, gvr schema.GroupVersionResource, meta me
 	return Patch(c, gvr, cur, transform)
 }
 
-func Patch(c dynamic.Interface, gvr schema.GroupVersionResource, cur *unstructured.Unstructured, transform func(*unstructured.Unstructured) *unstructured.Unstructured) (*unstructured.Unstructured, kutil.VerbType, error) {
+func Patch(
+	c dynamic.Interface,
+	gvr schema.GroupVersionResource,
+	cur *unstructured.Unstructured,
+	transform func(*unstructured.Unstructured) *unstructured.Unstructured,
+) (*unstructured.Unstructured, kutil.VerbType, error) {
 	return PatchObject(c, gvr, cur, transform(cur.DeepCopy()))
 }
 
-func PatchObject(c dynamic.Interface, gvr schema.GroupVersionResource, cur, mod *unstructured.Unstructured) (*unstructured.Unstructured, kutil.VerbType, error) {
+func PatchObject(
+	c dynamic.Interface,
+	gvr schema.GroupVersionResource,
+	cur, mod *unstructured.Unstructured,
+) (*unstructured.Unstructured, kutil.VerbType, error) {
 	var ri dynamic.ResourceInterface
 	if cur.GetNamespace() == "" {
 		ri = c.Resource(gvr)
@@ -72,7 +86,12 @@ func PatchObject(c dynamic.Interface, gvr schema.GroupVersionResource, cur, mod 
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdate(c dynamic.Interface, gvr schema.GroupVersionResource, meta metav1.ObjectMeta, transform func(*unstructured.Unstructured) *unstructured.Unstructured) (result *unstructured.Unstructured, err error) {
+func TryUpdate(
+	c dynamic.Interface,
+	gvr schema.GroupVersionResource,
+	meta metav1.ObjectMeta,
+	transform func(*unstructured.Unstructured) *unstructured.Unstructured) (result *unstructured.Unstructured, err error,
+) {
 	var ri dynamic.ResourceInterface
 	if meta.Namespace == "" {
 		ri = c.Resource(gvr)
