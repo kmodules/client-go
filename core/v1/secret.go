@@ -7,6 +7,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -102,4 +103,54 @@ func ObfuscateSecret(in core.Secret) *core.Secret {
 	}
 	in.Data = data
 	return &in
+}
+
+func RemoveOwnerReferenceFromSecrets(
+	client kubernetes.Interface,
+	meta metav1.ObjectMeta,
+	labelSelector labels.Selector,
+	ref *core.ObjectReference,
+) error {
+	secretList, err := client.CoreV1().Secrets(meta.Namespace).List(
+		metav1.ListOptions{
+			LabelSelector: labelSelector.String(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	for _, sc := range secretList.Items {
+		if _, _, err := PatchSecret(client, &sc, func(in *core.Secret) *core.Secret {
+			in.ObjectMeta = EnsureOwnerReference(in.ObjectMeta, ref)
+			return in
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func SetOwnerReferenceToSecrets(
+	client kubernetes.Interface,
+	meta metav1.ObjectMeta,
+	labelSelector labels.Selector,
+	ref *core.ObjectReference,
+) error {
+	secretList, err := client.CoreV1().Secrets(meta.Namespace).List(
+		metav1.ListOptions{
+			LabelSelector: labelSelector.String(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	for _, secret := range secretList.Items {
+		if _, _, err := PatchSecret(client, &secret, func(in *core.Secret) *core.Secret {
+			in.ObjectMeta = EnsureOwnerReference(in.ObjectMeta, ref)
+			return in
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -77,4 +78,54 @@ func TryUpdatePVC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 		err = errors.Errorf("failed to update PersistentVolumeClaim %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
 	}
 	return
+}
+
+func RemoveOwnerReferenceFromPVCs(
+	client kubernetes.Interface,
+	meta metav1.ObjectMeta,
+	labelSelector labels.Selector,
+	ref *core.ObjectReference,
+) error {
+	pvcList, err := client.CoreV1().PersistentVolumeClaims(meta.Namespace).List(
+		metav1.ListOptions{
+			LabelSelector: labelSelector.String(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	for _, pvc := range pvcList.Items {
+		if _, _, err := PatchPVC(client, &pvc, func(in *core.PersistentVolumeClaim) *core.PersistentVolumeClaim {
+			in.ObjectMeta = RemoveOwnerReference(in.ObjectMeta, ref)
+			return in
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func SetOwnerReferenceToPVCs(
+	client kubernetes.Interface,
+	meta metav1.ObjectMeta,
+	labelSelector labels.Selector,
+	ref *core.ObjectReference,
+) error {
+	pvcList, err := client.CoreV1().PersistentVolumeClaims(meta.Namespace).List(
+		metav1.ListOptions{
+			LabelSelector: labelSelector.String(),
+		},
+	)
+	if err != nil {
+		return err
+	}
+	for _, pvc := range pvcList.Items {
+		if _, _, err := PatchPVC(client, &pvc, func(in *core.PersistentVolumeClaim) *core.PersistentVolumeClaim {
+			in.ObjectMeta = EnsureOwnerReference(in.ObjectMeta, ref)
+			return in
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
