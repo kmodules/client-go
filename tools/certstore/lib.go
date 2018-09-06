@@ -238,10 +238,11 @@ func (s *CertStore) NewPeerCertPairBytes(cn string, sans cert.AltNames) ([]byte,
 	return cert.EncodeCertPEM(crt), cert.EncodePrivateKeyPEM(key), nil
 }
 
-func (s *CertStore) NewClientCertPair(cn string, organization ...string) (*x509.Certificate, *rsa.PrivateKey, error) {
+func (s *CertStore) NewClientCertPair(cn string, sans cert.AltNames, organization ...string) (*x509.Certificate, *rsa.PrivateKey, error) {
 	cfg := cert.Config{
 		CommonName:   cn,
 		Organization: organization,
+		AltNames:     sans,
 		Usages:       []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 	key, err := cert.NewPrivateKey()
@@ -255,8 +256,8 @@ func (s *CertStore) NewClientCertPair(cn string, organization ...string) (*x509.
 	return crt, key, nil
 }
 
-func (s *CertStore) NewClientCertPairBytes(cn string, organization ...string) ([]byte, []byte, error) {
-	crt, key, err := s.NewClientCertPair(cn, organization...)
+func (s *CertStore) NewClientCertPairBytes(cn string, sans cert.AltNames, organization ...string) ([]byte, []byte, error) {
+	crt, key, err := s.NewClientCertPair(cn, sans, organization...)
 	if err != nil {
 		return nil, nil, err
 	}
