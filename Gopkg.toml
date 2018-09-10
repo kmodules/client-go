@@ -26,8 +26,8 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/appscode/mergo"
+  version = "v0.3.6"
 
 [[constraint]]
   branch = "master"
@@ -43,7 +43,7 @@
 
 [[constraint]]
   name = "github.com/json-iterator/go"
-  version = "v1.1.4"
+  version = "v1.1.5"
 
 [[constraint]]
   branch = "master"
@@ -63,27 +63,29 @@
 
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.11.3"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.11.0"
+  version = "kubernetes-1.11.3"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  version = "kubernetes-1.11.0"
+  branch = "release-1.11.3"
+  source = "github.com/pharmer/apimachinery"
 
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.11.0"
+  branch = "release-1.11.3"
+  source = "github.com/pharmer/apiserver"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "=v8.0.0"
+  version = "kubernetes-1.11.3"
 
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "=v1.11.0"
+  version = "=v1.11.3"
 
 [[override]]
   name = "k8s.io/kube-openapi"
