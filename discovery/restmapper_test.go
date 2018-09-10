@@ -102,7 +102,7 @@ func testRestMapper(t *testing.T) {
 	}
 }
 
-func testResourceForGVK(t *testing.T) {
+func TestResourceForGVK(t *testing.T) {
 	masterURL := ""
 	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
 
@@ -110,11 +110,10 @@ func testResourceForGVK(t *testing.T) {
 	if err != nil {
 		log.Fatalf("Could not get Kubernetes config: %s", err)
 	}
-
 	kc := kubernetes.NewForConfigOrDie(config)
-	appsGV := apps.SchemeGroupVersion
 
-	data := []struct {
+	appsGV := apps.SchemeGroupVersion
+	appsData := []struct {
 		in  schema.GroupVersionKind
 		out schema.GroupVersionResource
 	}{
@@ -122,8 +121,26 @@ func testResourceForGVK(t *testing.T) {
 		{appsGV.WithKind("ReplicaSet"), appsGV.WithResource("replicasets")},
 		{appsGV.WithKind("StatefulSet"), appsGV.WithResource("statefulsets")},
 	}
+	for _, tt := range appsData {
+		gvr, err := discovery.ResourceForGVK(kc.Discovery(), tt.in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if gvr != tt.out {
+			t.Errorf("Failed to DetectResource: expected %+v, got %+v", tt.out, gvr)
+		}
+	}
 
-	for _, tt := range data {
+	coreGV := core.SchemeGroupVersion
+	coreData := []struct {
+		in  schema.GroupVersionKind
+		out schema.GroupVersionResource
+	}{
+		{coreGV.WithKind("Pod"), coreGV.WithResource("pods")},
+		{coreGV.WithKind("ConfigMap"), coreGV.WithResource("configmaps")},
+		{coreGV.WithKind("Secret"), coreGV.WithResource("secrets")},
+	}
+	for _, tt := range coreData {
 		gvr, err := discovery.ResourceForGVK(kc.Discovery(), tt.in)
 		if err != nil {
 			t.Fatal(err)

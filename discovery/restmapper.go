@@ -47,17 +47,17 @@ func ResourceForGVK(client discovery.DiscoveryInterface, input schema.GroupVersi
 			resources = append(resources, input.GroupVersion().WithResource(resource.Name))
 		}
 	}
-	resources = FilterStatusResources(resources) // ignore status resources
+	resources = FilterSubResources(resources) // ignore sub-resources
 	if len(resources) == 1 {
 		return resources[0], nil
 	}
 	return schema.GroupVersionResource{}, &AmbiguousResourceError{PartialResource: input, MatchingResources: resources}
 }
 
-func FilterStatusResources(resources []schema.GroupVersionResource) []schema.GroupVersionResource {
+func FilterSubResources(resources []schema.GroupVersionResource) []schema.GroupVersionResource {
 	var resFiltered []schema.GroupVersionResource
 	for _, res := range resources {
-		if !strings.HasSuffix(res.Resource, "/status") {
+		if !strings.ContainsRune(res.Resource, '/') {
 			resFiltered = append(resFiltered, res)
 		}
 	}
