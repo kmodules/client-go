@@ -3,13 +3,13 @@ package meta
 import (
 	"testing"
 
-	"k8s.io/api/apps/v1beta2"
-	"k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestObjectHashForDeployment(t *testing.T) {
-	obj := &v1beta2.Deployment{
+	obj := &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1beta2",
 			Kind:       "Deployment",
@@ -25,10 +25,10 @@ func TestObjectHashForDeployment(t *testing.T) {
 				"you": "me",
 			},
 		},
-		Spec: v1beta2.DeploymentSpec{
+		Spec: appsv1.DeploymentSpec{
 			Paused: false,
 		},
-		Status: v1beta2.DeploymentStatus{
+		Status: appsv1.DeploymentStatus{
 			ObservedGeneration: 2,
 		},
 	}
@@ -77,7 +77,7 @@ func TestObjectHashForDeployment(t *testing.T) {
 }
 
 func TestObjectHashForConfigmap(t *testing.T) {
-	obj := &v1.ConfigMap{
+	obj := &corev1.ConfigMap{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",
 			Kind:       "ConfigMap",
