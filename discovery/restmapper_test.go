@@ -101,3 +101,35 @@ func testRestMapper(t *testing.T) {
 		}
 	}
 }
+
+func testResourceForGVK(t *testing.T) {
+	masterURL := ""
+	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
+
+	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
+	if err != nil {
+		log.Fatalf("Could not get Kubernetes config: %s", err)
+	}
+
+	kc := kubernetes.NewForConfigOrDie(config)
+	appsGV := apps.SchemeGroupVersion
+
+	data := []struct {
+		in  schema.GroupVersionKind
+		out schema.GroupVersionResource
+	}{
+		{appsGV.WithKind("Deployment"), appsGV.WithResource("deployments")},
+		{appsGV.WithKind("ReplicaSet"), appsGV.WithResource("replicasets")},
+		{appsGV.WithKind("StatefulSet"), appsGV.WithResource("statefulsets")},
+	}
+
+	for _, tt := range data {
+		gvr, err := discovery.ResourceForGVK(kc.Discovery(), tt.in)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if gvr != tt.out {
+			t.Errorf("Failed to DetectResource: expected %+v, got %+v", tt.out, gvr)
+		}
+	}
+}
