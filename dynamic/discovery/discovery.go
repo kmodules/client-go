@@ -85,7 +85,9 @@ func (rm *ResourceMap) refresh() {
 	// We do this before acquiring the lock so we don't block readers.
 	glog.V(7).Info("Refreshing API discovery info")
 	groups, err := rm.discoveryClient.ServerResources()
-	if err != nil {
+	if discovery.IsGroupDiscoveryFailedError(err) {
+		glog.Errorf("Skipping failed API Groups: %v", err)
+	} else if err != nil {
 		glog.Errorf("Failed to fetch discovery info: %v", err)
 		return
 	}
