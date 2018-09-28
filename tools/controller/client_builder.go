@@ -21,7 +21,6 @@ import (
 	"time"
 
 	core_util "github.com/appscode/kutil/core/v1"
-	watchtools "github.com/appscode/kutil/tools/watch"
 	"github.com/golang/glog"
 	v1authenticationapi "k8s.io/api/authentication/v1"
 	"k8s.io/api/core/v1"
@@ -37,6 +36,7 @@ import (
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
+	watchtools "k8s.io/client-go/tools/watch"
 )
 
 // ControllerClientBuilder allows you to get clients and configs for controllers

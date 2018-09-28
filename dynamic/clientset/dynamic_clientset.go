@@ -139,7 +139,7 @@ func (rc *ResourceClient) UpdateWithRetries(orig *unstructured.Unstructured, upd
 			result = current
 			return nil
 		}
-		result, err = rc.Update(current)
+		result, err = rc.Update(current, metav1.UpdateOptions{})
 		return err
 	})
 	return result, err
