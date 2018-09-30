@@ -13,16 +13,18 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CreateOrPatchMutatingWebhookConfiguration(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.MutatingWebhookConfiguration) *apps.MutatingWebhookConfiguration) (*apps.MutatingWebhookConfiguration, kutil.VerbType, error) {
-	cur, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchMutatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*apps.MutatingWebhookConfiguration) *apps.MutatingWebhookConfiguration) (*apps.MutatingWebhookConfiguration, kutil.VerbType, error) {
+	cur, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating MutatingWebhookConfiguration %s/%s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating MutatingWebhookConfiguration %s.", name)
 		out, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(transform(&apps.MutatingWebhookConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "MutatingWebhookConfiguration",
 				APIVersion: apps.SchemeGroupVersion.String(),
 			},
-			ObjectMeta: meta,
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+			},
 		}))
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
@@ -53,28 +55,28 @@ func PatchMutatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod *a
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching MutatingWebhookConfiguration %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	glog.V(3).Infof("Patching MutatingWebhookConfiguration %s with %s.", cur.Name, string(patch))
 	out, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateMutatingWebhookConfiguration(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.MutatingWebhookConfiguration) *apps.MutatingWebhookConfiguration) (result *apps.MutatingWebhookConfiguration, err error) {
+func TryUpdateMutatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*apps.MutatingWebhookConfiguration) *apps.MutatingWebhookConfiguration) (result *apps.MutatingWebhookConfiguration, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
 			result, e2 = c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update MutatingWebhookConfiguration %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		glog.Errorf("Attempt %d failed to update MutatingWebhookConfiguration %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 
 	if err != nil {
-		err = errors.Errorf("failed to update MutatingWebhookConfiguration %s/%s after %d attempts due to %v", meta.Namespace, meta.Name, attempt, err)
+		err = errors.Errorf("failed to update MutatingWebhookConfiguration %s after %d attempts due to %v", name, attempt, err)
 	}
 	return
 }
