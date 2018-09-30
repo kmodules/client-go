@@ -1285,7 +1285,7 @@
   source = "github.com/pharmer/apiserver"
 
 [[projects]]
-  digest = "1:911a4fc1d694fe5d22792c375d1509e8bd046ed87b9849ccd65e26dd8623da5e"
+  digest = "1:faf009273cbefb5e2642e0da84093b7153c54da87424c4fcd218ee09f4d4aa36"
   name = "k8s.io/client-go"
   packages = [
     "deprecated-dynamic",
@@ -1465,6 +1465,7 @@
     "util/integer",
     "util/jsonpath",
     "util/retry",
+    "util/testing",
     "util/workqueue",
   ]
   pruneopts = "UT"
@@ -1486,7 +1487,7 @@
   revision = "91cfa479c814065e420cee7ed227db0f63a5854e"
 
 [[projects]]
-  digest = "1:933c0841e400cca2c2a502e9b6757001e96fda7eb59832ff9469281fbfa14cfc"
+  digest = "1:a00fad8909192ac49bf1781014170509a89885607a8c84ad812428c8eac7c1fd"
   name = "k8s.io/kubernetes"
   packages = [
     "pkg/api/events",
@@ -1495,7 +1496,11 @@
     "pkg/api/ref",
     "pkg/api/resource",
     "pkg/api/service",
+    "pkg/api/testapi",
     "pkg/api/v1/pod",
+    "pkg/apis/admission",
+    "pkg/apis/admission/install",
+    "pkg/apis/admission/v1beta1",
     "pkg/apis/admissionregistration",
     "pkg/apis/admissionregistration/install",
     "pkg/apis/admissionregistration/v1alpha1",
@@ -1542,6 +1547,9 @@
     "pkg/apis/extensions",
     "pkg/apis/extensions/install",
     "pkg/apis/extensions/v1beta1",
+    "pkg/apis/imagepolicy",
+    "pkg/apis/imagepolicy/install",
+    "pkg/apis/imagepolicy/v1alpha1",
     "pkg/apis/networking",
     "pkg/apis/networking/install",
     "pkg/apis/networking/v1",
@@ -1624,6 +1632,7 @@
     "pkg/scheduler/cache",
     "pkg/scheduler/util",
     "pkg/security/apparmor",
+    "pkg/securitycontext",
     "pkg/serviceaccount",
     "pkg/util/file",
     "pkg/util/hash",
@@ -1694,6 +1703,7 @@
     "k8s.io/api/admissionregistration/v1beta1",
     "k8s.io/api/apps/v1",
     "k8s.io/api/apps/v1beta1",
+    "k8s.io/api/authentication/v1",
     "k8s.io/api/autoscaling/v1",
     "k8s.io/api/batch/v1",
     "k8s.io/api/batch/v1beta1",
@@ -1709,6 +1719,7 @@
     "k8s.io/api/storage/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1",
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset/typed/apiextensions/v1beta1",
+    "k8s.io/apimachinery/pkg/api/equality",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",
@@ -1732,8 +1743,10 @@
     "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/sets",
     "k8s.io/apimachinery/pkg/util/strategicpatch",
+    "k8s.io/apimachinery/pkg/util/uuid",
     "k8s.io/apimachinery/pkg/util/wait",
     "k8s.io/apimachinery/pkg/watch",
+    "k8s.io/apiserver/pkg/authentication/serviceaccount",
     "k8s.io/apiserver/pkg/endpoints/openapi",
     "k8s.io/apiserver/pkg/registry/rest",
     "k8s.io/apiserver/pkg/server",
@@ -1745,6 +1758,8 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/kubernetes/scheme",
+    "k8s.io/client-go/kubernetes/typed/authentication/v1",
+    "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",
@@ -1752,14 +1767,19 @@
     "k8s.io/client-go/tools/clientcmd",
     "k8s.io/client-go/tools/pager",
     "k8s.io/client-go/tools/portforward",
+    "k8s.io/client-go/tools/record",
     "k8s.io/client-go/tools/remotecommand",
     "k8s.io/client-go/transport/spdy",
     "k8s.io/client-go/util/cert",
     "k8s.io/client-go/util/homedir",
     "k8s.io/client-go/util/retry",
+    "k8s.io/client-go/util/testing",
     "k8s.io/client-go/util/workqueue",
     "k8s.io/kube-openapi/pkg/builder",
     "k8s.io/kube-openapi/pkg/common",
+    "k8s.io/kubernetes/pkg/api/testapi",
+    "k8s.io/kubernetes/pkg/apis/core/install",
+    "k8s.io/kubernetes/pkg/apis/core/validation",
     "k8s.io/kubernetes/pkg/controller",
     "k8s.io/kubernetes/pkg/credentialprovider",
     "k8s.io/kubernetes/pkg/credentialprovider/aws",
@@ -1770,6 +1790,7 @@
     "k8s.io/kubernetes/pkg/kubectl/cmd/util",
     "k8s.io/kubernetes/pkg/kubectl/genericclioptions",
     "k8s.io/kubernetes/pkg/kubectl/plugins",
+    "k8s.io/kubernetes/pkg/securitycontext",
     "k8s.io/kubernetes/pkg/util/parsers",
   ]
   solver-name = "gps-cdcl"
