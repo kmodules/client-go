@@ -92,13 +92,14 @@ func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string
 }
 
 func UpdateValidatingWebhookCABundle(config *rest.Config, name string) error {
+	ctx := context.Background()
+
 	err := rest.LoadTLSFiles(config)
 	if err != nil {
 		return err
 	}
 
 	kc := kubernetes.NewForConfigOrDie(config)
-
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
@@ -110,7 +111,6 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, name string) error {
 		},
 	}
 
-	ctx := context.Background()
 	_, err = watchtools.UntilWithSync(ctx,
 		lw,
 		&reg.ValidatingWebhookConfiguration{},
@@ -141,13 +141,15 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, name string) error {
 }
 
 func SyncValidatingWebhookCABundle(config *rest.Config, name string) (cancel context.CancelFunc, err error) {
+	ctx := context.Background()
+	ctx, cancel = context.WithCancel(ctx)
+
 	err = rest.LoadTLSFiles(config)
 	if err != nil {
 		return
 	}
 
 	kc := kubernetes.NewForConfigOrDie(config)
-
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
@@ -159,10 +161,8 @@ func SyncValidatingWebhookCABundle(config *rest.Config, name string) (cancel con
 		},
 	}
 
-	ctx := context.Background()
-	ctx, cancel = context.WithCancel(ctx)
-
-	go watchtools.UntilWithSync(ctx,
+	go watchtools.UntilWithSync(
+		ctx,
 		lw,
 		&reg.ValidatingWebhookConfiguration{},
 		nil,
