@@ -1,26 +1,36 @@
 package v1beta1
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/appscode/kutil"
+	watchtools "github.com/appscode/kutil/tools/watch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	apps "k8s.io/api/admissionregistration/v1beta1"
+	reg "k8s.io/api/admissionregistration/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
 
-func CreateOrPatchValidatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*apps.ValidatingWebhookConfiguration) *apps.ValidatingWebhookConfiguration) (*apps.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+func CreateOrPatchValidatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
 	cur, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ValidatingWebhookConfiguration %s.", name)
-		out, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Create(transform(&apps.ValidatingWebhookConfiguration{
+		out, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Create(transform(&reg.ValidatingWebhookConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ValidatingWebhookConfiguration",
-				APIVersion: apps.SchemeGroupVersion.String(),
+				APIVersion: reg.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -33,11 +43,11 @@ func CreateOrPatchValidatingWebhookConfiguration(c kubernetes.Interface, name st
 	return PatchValidatingWebhookConfiguration(c, cur, transform)
 }
 
-func PatchValidatingWebhookConfiguration(c kubernetes.Interface, cur *apps.ValidatingWebhookConfiguration, transform func(*apps.ValidatingWebhookConfiguration) *apps.ValidatingWebhookConfiguration) (*apps.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+func PatchValidatingWebhookConfiguration(c kubernetes.Interface, cur *reg.ValidatingWebhookConfiguration, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
 	return PatchValidatingWebhookConfigurationObject(c, cur, transform(cur.DeepCopy()))
 }
 
-func PatchValidatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod *apps.ValidatingWebhookConfiguration) (*apps.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+func PatchValidatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -48,7 +58,7 @@ func PatchValidatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod 
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, apps.ValidatingWebhookConfiguration{})
+	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, reg.ValidatingWebhookConfiguration{})
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -60,7 +70,7 @@ func PatchValidatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod 
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*apps.ValidatingWebhookConfiguration) *apps.ValidatingWebhookConfiguration) (result *apps.ValidatingWebhookConfiguration, err error) {
+func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (result *reg.ValidatingWebhookConfiguration, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -78,5 +88,105 @@ func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string
 	if err != nil {
 		err = errors.Errorf("failed to update ValidatingWebhookConfiguration %s after %d attempts due to %v", name, attempt, err)
 	}
+	return
+}
+
+func UpdateValidatingWebhookCABundle(config *rest.Config, name string) error {
+	err := rest.LoadTLSFiles(config)
+	if err != nil {
+		return err
+	}
+
+	kc := kubernetes.NewForConfigOrDie(config)
+
+	lw := &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Watch(options)
+		},
+	}
+
+	ctx := context.Background()
+	_, err = watchtools.UntilWithSync(ctx,
+		lw,
+		&reg.ValidatingWebhookConfiguration{},
+		nil,
+		func(event watch.Event) (bool, error) {
+			a, _ := meta.Accessor(event.Object)
+			fmt.Println(event.Type, a.GetName())
+
+			switch event.Type {
+			case watch.Deleted:
+				return false, nil
+			case watch.Error:
+				return false, errors.Wrap(err, "error watching")
+			case watch.Added, watch.Modified:
+				cur := event.Object.(*reg.ValidatingWebhookConfiguration)
+				_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
+					for i := range in.Webhooks {
+						in.Webhooks[i].ClientConfig.CABundle = config.CAData
+					}
+					return in
+				})
+				return err == nil, err
+			default:
+				return false, fmt.Errorf("unexpected event type: %v", event.Type)
+			}
+		})
+	return err
+}
+
+func SyncValidatingWebhookCABundle(config *rest.Config, name string) (cancel context.CancelFunc, err error) {
+	err = rest.LoadTLSFiles(config)
+	if err != nil {
+		return
+	}
+
+	kc := kubernetes.NewForConfigOrDie(config)
+
+	lw := &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Watch(options)
+		},
+	}
+
+	ctx := context.Background()
+	ctx, cancel = context.WithCancel(ctx)
+
+	go watchtools.UntilWithSync(ctx,
+		lw,
+		&reg.ValidatingWebhookConfiguration{},
+		nil,
+		func(event watch.Event) (bool, error) {
+			a, _ := meta.Accessor(event.Object)
+			fmt.Println(event.Type, a.GetName())
+
+			switch event.Type {
+			case watch.Deleted:
+				return false, nil
+			case watch.Error:
+				return false, errors.Wrap(err, "error watching")
+			case watch.Added, watch.Modified:
+				cur := event.Object.(*reg.ValidatingWebhookConfiguration)
+				_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
+					for i := range in.Webhooks {
+						in.Webhooks[i].ClientConfig.CABundle = config.CAData
+					}
+					return in
+				})
+				return false, err // continue
+			default:
+				return false, fmt.Errorf("unexpected event type: %v", event.Type)
+			}
+		})
 	return
 }
