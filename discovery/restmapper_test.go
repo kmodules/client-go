@@ -1,6 +1,7 @@
 package discovery_test
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -35,9 +36,17 @@ import (
 	storage "k8s.io/api/storage/v1"
 )
 
-func testRestMapper(t *testing.T) {
+func skipIfNoMinikube(t *testing.T) {
+	if _, ok := os.LookupEnv("MINIKUBE"); !ok {
+		t.Skip("minikube not found")
+	}
+}
+
+func TestRestMapper(t *testing.T) {
+	skipIfNoMinikube(t)
+
 	masterURL := ""
-	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
+	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
@@ -103,8 +112,10 @@ func testRestMapper(t *testing.T) {
 }
 
 func TestResourceForGVK(t *testing.T) {
+	skipIfNoMinikube(t)
+
 	masterURL := ""
-	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube/config")
+	kubeconfigPath := filepath.Join(homedir.HomeDir(), ".kube", "config")
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
