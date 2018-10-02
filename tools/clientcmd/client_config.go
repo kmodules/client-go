@@ -7,6 +7,7 @@ import (
 	"github.com/appscode/kutil/meta"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
 	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
@@ -70,10 +71,16 @@ func fix(cfg *rest.Config, err error) (*rest.Config, error) {
 	return Fix(cfg), err
 }
 
+var fixAKS = true
+
+func init() {
+	pflag.BoolVar(&fixAKS, "use-kubeapiserver-fqdn-for-aks", fixAKS, "if true, uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522")
+}
+
 // FixAKS uses kube-apiserver FQDN for AKS cluster to workaround https://github.com/Azure/AKS/issues/522
 func Fix(cfg *rest.Config) *rest.Config {
-	if cfg == nil {
-		return nil
+	if cfg == nil || !fixAKS {
+		return cfg
 	}
 
 	// ref: https://github.com/kubernetes/client-go/blob/kubernetes-1.11.3/rest/config.go#L309
