@@ -1,11 +1,15 @@
 package v1beta1
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/discovery"
 	"github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
+	"github.com/spf13/pflag"
 	"k8s.io/api/admissionregistration/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -19,42 +23,52 @@ import (
 )
 
 type ValidatingWebhookXray struct {
-	config    *rest.Config
-	obj       runtime.Object
-	op        v1beta1.OperationType
-	transform func(_ runtime.Object)
+	config      *rest.Config
+	webhookName string
+	testObj     runtime.Object
+	op          v1beta1.OperationType
+	transform   func(_ runtime.Object)
 }
 
-func NewCreateValidatingWebhookXray(config *rest.Config, obj runtime.Object) *ValidatingWebhookXray {
+func NewCreateValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:    config,
-		obj:       obj,
-		op:        v1beta1.Create,
-		transform: nil,
+		config:      config,
+		webhookName: webhookName,
+		testObj:     testObj,
+		op:          v1beta1.Create,
+		transform:   nil,
 	}
 }
 
-func NewUpdateValidatingWebhookXray(config *rest.Config, obj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewUpdateValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:    config,
-		obj:       obj,
-		op:        v1beta1.Update,
-		transform: transform,
+		config:      config,
+		webhookName: webhookName,
+		testObj:     testObj,
+		op:          v1beta1.Update,
+		transform:   transform,
 	}
 }
 
-func NewDeleteValidatingWebhookXray(config *rest.Config, obj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewDeleteValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:    config,
-		obj:       obj,
-		op:        v1beta1.Delete,
-		transform: transform,
+		config:      config,
+		webhookName: webhookName,
+		testObj:     testObj,
+		op:          v1beta1.Delete,
+		transform:   transform,
 	}
 }
 
 var ErrMissingKind = errors.New("test object missing kind")
 var ErrMissingVersion = errors.New("test object missing version")
 var ErrInactiveWebhook = errors.New("webhook is inactive")
+
+var bypassValidatingWebhookXray = false
+
+func init() {
+	pflag.BoolVar(&bypassValidatingWebhookXray, "bypass-validating-webhook-xray", bypassValidatingWebhookXray, "if true, bypasses validating webhook xray checks")
+}
 
 func (d ValidatingWebhookXray) IsActive() (bool, error) {
 	kc, err := kubernetes.NewForConfig(d.config)
@@ -67,22 +81,22 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 		return false, err
 	}
 
-	gvk := d.obj.GetObjectKind().GroupVersionKind()
+	gvk := d.testObj.GetObjectKind().GroupVersionKind()
 	if gvk.Version == "" {
 		return false, ErrMissingVersion
 	}
 	if gvk.Kind == "" {
 		return false, ErrMissingKind
 	}
-	glog.Infof("testing ValidatingWebhook using an object with GVK = %s", gvk.String())
+	glog.Infof("testing ValidatingWebhook %s using an object with GVK = %s", d.webhookName, gvk.String())
 
 	gvr, err := discovery.ResourceForGVK(kc.Discovery(), gvk)
 	if err != nil {
 		return false, err
 	}
-	glog.Infof("testing ValidatingWebhook using an object with GVR = %s", gvr.String())
+	glog.Infof("testing ValidatingWebhook %s using an object with GVR = %s", d.webhookName, gvr.String())
 
-	accessor, err := meta.Accessor(d.obj)
+	accessor, err := meta.Accessor(d.testObj)
 	if err != nil {
 		return false, err
 	}
@@ -94,7 +108,7 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 		ri = dc.Resource(gvr)
 	}
 
-	objJson, err := json.Marshal(d.obj)
+	objJson, err := json.Marshal(d.testObj)
 	if err != nil {
 		return false, err
 	}
@@ -107,7 +121,8 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u)
-		if kerr.IsForbidden(err) {
+		if kerr.IsForbidden(err) &&
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -127,11 +142,11 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 		_, err := ri.Create(&u)
 		if kutil.IsRequestRetryable(err) {
 			return false, nil
-		} else {
+		} else if err != nil {
 			return false, err
 		}
 
-		mod := d.obj.DeepCopyObject()
+		mod := d.testObj.DeepCopyObject()
 		d.transform(mod)
 		modJson, err := json.Marshal(mod)
 		if err != nil {
@@ -146,7 +161,8 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch)
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
-		if kerr.IsForbidden(err) {
+		if kerr.IsForbidden(err) &&
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -160,15 +176,16 @@ func (d ValidatingWebhookXray) IsActive() (bool, error) {
 		_, err := ri.Create(&u)
 		if kutil.IsRequestRetryable(err) {
 			return false, nil
-		} else {
+		} else if err != nil {
 			return false, err
 		}
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
-		if kerr.IsForbidden(err) {
+		if kerr.IsForbidden(err) &&
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
 			defer func() {
 				// update to make it valid
-				mod := d.obj.DeepCopyObject()
+				mod := d.testObj.DeepCopyObject()
 				d.transform(mod)
 				modJson, err := json.Marshal(mod)
 				if err != nil {

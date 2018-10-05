@@ -1684,6 +1684,7 @@
     "github.com/appscode/go/log",
     "github.com/appscode/go/net",
     "github.com/appscode/go/net/http",
+    "github.com/appscode/go/sets",
     "github.com/appscode/go/types",
     "github.com/appscode/jsonpatch",
     "github.com/appscode/mergo",
