@@ -61,13 +61,13 @@ def version():
 
 
 def fmt():
-    libbuild.ungroup_go_imports('*.go', 'apiextensions', 'apps', 'batch', 'certificates', 'core', 'discovery', 'dynamic', 'extensions', 'meta', 'openapi', 'rbac', 'storage', 'tools')
-    die(call('goimports -w *.go apiextensions apps batch certificates core discovery dynamic extensions meta openapi rbac storage tools'))
-    call('gofmt -s -w *.go apiextensions apps batch certificates core discovery dynamic extensions meta openapi rbac storage tools')
+    libbuild.ungroup_go_imports('*.go', 'admissionregistration', 'apiextensions', 'apps', 'batch', 'certificates', 'core', 'discovery', 'dynamic', 'extensions', 'meta', 'openapi', 'rbac', 'storage', 'tools')
+    die(call('goimports -w *.go admissionregistration apiextensions apps batch certificates core discovery dynamic extensions meta openapi rbac storage tools'))
+    call('gofmt -s -w *.go admissionregistration apiextensions apps batch certificates core discovery dynamic extensions meta openapi rbac storage tools')
 
 
 def vet():
-    call('go vet ./apiextensions/... ./apps/... ./batch/... ./certificates/... ./core/... ./discovery/... ./dynamic/... ./extensions/... ./meta/... ./openapi/... ./rbac/... ./storage/... ./tools/...')
+    call('go vet ./admissionregistration/... ./apiextensions/... ./apps/... ./batch/... ./certificates/... ./core/... ./discovery/... ./dynamic/... ./extensions/... ./meta/... ./openapi/... ./rbac/... ./storage/... ./tools/...')
 
 
 def lint():
