@@ -22,6 +22,16 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+func init() {
+	pflag.BoolVar(&bypassValidatingWebhookXray, "bypass-validating-webhook-xray", bypassValidatingWebhookXray, "if true, bypasses validating webhook xray checks")
+}
+
+var bypassValidatingWebhookXray = false
+
+var ErrMissingKind = errors.New("test object missing kind")
+var ErrMissingVersion = errors.New("test object missing version")
+var ErrInactiveWebhook = errors.New("webhook is inactive")
+
 type ValidatingWebhookXray struct {
 	config      *rest.Config
 	webhookName string
@@ -60,17 +70,11 @@ func NewDeleteValidatingWebhookXray(config *rest.Config, webhookName string, tes
 	}
 }
 
-var ErrMissingKind = errors.New("test object missing kind")
-var ErrMissingVersion = errors.New("test object missing version")
-var ErrInactiveWebhook = errors.New("webhook is inactive")
-
-var bypassValidatingWebhookXray = false
-
-func init() {
-	pflag.BoolVar(&bypassValidatingWebhookXray, "bypass-validating-webhook-xray", bypassValidatingWebhookXray, "if true, bypasses validating webhook xray checks")
-}
-
 func (d ValidatingWebhookXray) IsActive() (bool, error) {
+	if bypassValidatingWebhookXray {
+		return true, nil
+	}
+
 	kc, err := kubernetes.NewForConfig(d.config)
 	if err != nil {
 		return false, err
