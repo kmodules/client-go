@@ -17,6 +17,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -70,7 +71,9 @@ func NewDeleteValidatingWebhookXray(config *rest.Config, webhookName string, tes
 	}
 }
 
-func (d ValidatingWebhookXray) IsActive() (bool, error) {
+var _ watch.ConditionFunc = ValidatingWebhookXray{}.IsActive
+
+func (d ValidatingWebhookXray) IsActive(event watch.Event) (bool, error) {
 	if bypassValidatingWebhookXray {
 		return true, nil
 	}
