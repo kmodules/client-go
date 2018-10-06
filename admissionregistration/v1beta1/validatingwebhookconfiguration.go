@@ -3,7 +3,6 @@ package v1beta1
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/appscode/kutil"
 	watchtools "github.com/appscode/kutil/tools/watch"
@@ -113,8 +112,7 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, name string, extraCond
 		},
 	}
 
-	var conditions = make([]watchtools.ConditionFunc, 0, len(extraConditions)+2)
-	conditions = append(conditions,
+	var conditions = append([]watchtools.ConditionFunc{
 		func(event watch.Event) (bool, error) {
 			switch event.Type {
 			case watch.Deleted:
@@ -133,14 +131,8 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, name string, extraCond
 			default:
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)
 			}
-		})
-	if len(extraConditions) > 0 {
-		conditions = append(conditions, func(event watch.Event) (bool, error) {
-			time.Sleep(kutil.RetryTimeout)
-			return true, nil
-		})
-		conditions = append(conditions, extraConditions...)
-	}
+		},
+	}, extraConditions...)
 
 	_, err = watchtools.UntilWithSync(ctx,
 		lw,
