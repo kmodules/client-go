@@ -1,11 +1,13 @@
 package v1beta1
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/discovery"
+	watchtools "github.com/appscode/kutil/tools/watch"
 	"github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -15,12 +17,15 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
+	"k8s.io/client-go/util/cert"
 )
 
 func init() {
@@ -34,46 +39,100 @@ var ErrMissingVersion = errors.New("test object missing version")
 var ErrInactiveWebhook = errors.New("webhook is inactive")
 
 type ValidatingWebhookXray struct {
-	config      *rest.Config
-	webhookName string
-	testObj     runtime.Object
-	op          v1beta1.OperationType
-	transform   func(_ runtime.Object)
+	config            *rest.Config
+	webhookConfigName string
+	webhookName       string
+	testObj           runtime.Object
+	op                v1beta1.OperationType
+	transform         func(_ runtime.Object)
 }
 
-func NewCreateValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object) *ValidatingWebhookXray {
+func NewCreateValidatingWebhookXray(config *rest.Config, webhookConfigName, webhookName string, testObj runtime.Object) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:      config,
-		webhookName: webhookName,
-		testObj:     testObj,
-		op:          v1beta1.Create,
-		transform:   nil,
+		config:            config,
+		webhookConfigName: webhookConfigName,
+		webhookName:       webhookName,
+		testObj:           testObj,
+		op:                v1beta1.Create,
+		transform:         nil,
 	}
 }
 
-func NewUpdateValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewUpdateValidatingWebhookXray(config *rest.Config, webhookConfigName, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:      config,
-		webhookName: webhookName,
-		testObj:     testObj,
-		op:          v1beta1.Update,
-		transform:   transform,
+		config:            config,
+		webhookConfigName: webhookConfigName,
+		webhookName:       webhookName,
+		testObj:           testObj,
+		op:                v1beta1.Update,
+		transform:         transform,
 	}
 }
 
-func NewDeleteValidatingWebhookXray(config *rest.Config, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
+func NewDeleteValidatingWebhookXray(config *rest.Config, webhookConfigName, webhookName string, testObj runtime.Object, transform func(_ runtime.Object)) *ValidatingWebhookXray {
 	return &ValidatingWebhookXray{
-		config:      config,
-		webhookName: webhookName,
-		testObj:     testObj,
-		op:          v1beta1.Delete,
-		transform:   transform,
+		config:            config,
+		webhookConfigName: webhookConfigName,
+		webhookName:       webhookName,
+		testObj:           testObj,
+		op:                v1beta1.Delete,
+		transform:         transform,
 	}
 }
 
-var _ watch.ConditionFunc = ValidatingWebhookXray{}.IsActive
+func (d ValidatingWebhookXray) IsActive() error {
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, kutil.GCTimeout)
+	defer cancel()
 
-func (d ValidatingWebhookXray) IsActive(event watch.Event) (bool, error) {
+	err := rest.LoadTLSFiles(d.config)
+	if err != nil {
+		return err
+	}
+
+	kc := kubernetes.NewForConfigOrDie(d.config)
+	lw := &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.webhookConfigName).String()
+			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.webhookConfigName).String()
+			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Watch(options)
+		},
+	}
+
+	_, err = watchtools.UntilWithSync(
+		ctx,
+		lw,
+		&v1beta1.MutatingWebhookConfiguration{},
+		nil,
+		func(event watch.Event) (bool, error) {
+			switch event.Type {
+			case watch.Deleted:
+				return false, nil
+			case watch.Error:
+				return false, errors.Wrap(err, "error watching")
+			case watch.Added, watch.Modified:
+				cur := event.Object.(*v1beta1.ValidatingWebhookConfiguration)
+				for _, webhook := range cur.Webhooks {
+					if len(webhook.ClientConfig.CABundle) == 0 {
+						return false, nil
+					}
+					_, err = cert.ParseCertsPEM(webhook.ClientConfig.CABundle)
+					if err != nil {
+						return false, nil
+					}
+				}
+				return d.check()
+			default:
+				return false, fmt.Errorf("unexpected event type: %v", event.Type)
+			}
+		})
+	return err
+}
+
+func (d ValidatingWebhookXray) check() (bool, error) {
 	if bypassValidatingWebhookXray {
 		return true, nil
 	}
