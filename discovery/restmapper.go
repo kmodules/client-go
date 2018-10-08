@@ -9,6 +9,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -44,10 +45,18 @@ func ResourceForGVK(client discovery.DiscoveryInterface, input schema.GroupVersi
 	} else if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
+	return Resource([]*metav1.APIResourceList{resourceList}, input)
+}
+
+func Resource(resourceLists []*metav1.APIResourceList, input schema.GroupVersionKind) (schema.GroupVersionResource, error) {
 	var resources []schema.GroupVersionResource
-	for _, resource := range resourceList.APIResources {
-		if resource.Kind == input.Kind { // match kind
-			resources = append(resources, input.GroupVersion().WithResource(resource.Name))
+	for _, list := range resourceLists {
+		for _, resource := range list.APIResources {
+			if resource.Group == input.Group &&
+				resource.Version == input.Version &&
+				resource.Kind == input.Kind { // match kind
+				resources = append(resources, input.GroupVersion().WithResource(resource.Name))
+			}
 		}
 	}
 	resources = FilterSubResources(resources) // ignore sub-resources
