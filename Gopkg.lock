@@ -1479,6 +1479,22 @@
   version = "kubernetes-1.11.3"
 
 [[projects]]
+  digest = "1:df6dde548cc456cfe160ed5731aeba4c9d829d26aadc5c8f6dac613dd7f96aac"
+  name = "k8s.io/kube-aggregator"
+  packages = [
+    "pkg/apis/apiregistration",
+    "pkg/apis/apiregistration/v1",
+    "pkg/apis/apiregistration/v1beta1",
+    "pkg/client/clientset_generated/clientset",
+    "pkg/client/clientset_generated/clientset/scheme",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1",
+    "pkg/client/clientset_generated/clientset/typed/apiregistration/v1beta1",
+  ]
+  pruneopts = "UT"
+  revision = "07bfdba27d43fe6b7eea965213b3aad555de2457"
+  version = "kubernetes-1.11.3"
+
+[[projects]]
   digest = "1:e12fc3dc23f2420e0dfa28381adc3d98b600131c927a4b6536dee34777da33cc"
   name = "k8s.io/kube-openapi"
   packages = [
@@ -1782,6 +1798,8 @@
     "k8s.io/client-go/util/retry",
     "k8s.io/client-go/util/testing",
     "k8s.io/client-go/util/workqueue",
+    "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1",
+    "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset",
     "k8s.io/kube-openapi/pkg/builder",
     "k8s.io/kube-openapi/pkg/common",
     "k8s.io/kubernetes/pkg/api/testapi",
