@@ -94,11 +94,11 @@ func (d ValidatingWebhookXray) IsActive() error {
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.webhookConfigName).String()
-			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(options)
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, d.webhookConfigName).String()
-			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Watch(options)
+			return kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Watch(options)
 		},
 	}
 
