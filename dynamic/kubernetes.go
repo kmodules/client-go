@@ -3,7 +3,6 @@ package dynamic
 import (
 	"github.com/appscode/kutil/core/v1"
 	discovery_util "github.com/appscode/kutil/discovery"
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -12,7 +11,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -25,21 +23,14 @@ func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, n
 		return nil, err
 	}
 
-	resourceList, err := kc.Discovery().ServerResources()
-	if discovery.IsGroupDiscoveryFailedError(err) {
-		glog.Errorf("Skipping failed API Groups: %v", err)
-	} else if err != nil {
-		return nil, err
-	}
-
 	obj, err := dc.Resource(resource).Namespace(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
-	return findWorkload(kc, dc, resourceList, obj)
+	return findWorkload(kc, dc, obj)
 }
 
-func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resourceList []*metav1.APIResourceList, obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
 	m, err := meta.Accessor(obj)
 	if err != nil {
 		return nil, err
@@ -47,7 +38,7 @@ func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resourceList []
 	for _, ref := range m.GetOwnerReferences() {
 		if ref.Controller != nil && *ref.Controller {
 			gvk := schema.FromAPIVersionAndKind(ref.APIVersion, ref.Kind)
-			gvr, err := discovery_util.Resource(resourceList, gvk)
+			gvr, err := discovery_util.ResourceForGVK(kc.Discovery(), gvk)
 			if err != nil {
 				return nil, err
 			}
@@ -55,7 +46,7 @@ func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resourceList []
 			if err != nil {
 				return nil, err
 			}
-			return findWorkload(kc, dc, resourceList, parent)
+			return findWorkload(kc, dc, parent)
 		}
 	}
 	return obj, nil
