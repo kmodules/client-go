@@ -28,8 +28,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
-func HasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
-	return hasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+func UntilHasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
 		switch event.Type {
 		case watch.Deleted:
 			return false, nil
@@ -41,11 +41,11 @@ func HasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name 
 				return false, e2
 			}
 			if v, ok := m.GetLabels()[key]; !ok {
-				return false, fmt.Errorf("%s %s/%s is missing label %s", gvk.String(), namespace, name, key)
+				return false, nil // continue
 			} else if value == nil {
 				return true, nil
 			} else if *value != v {
-				return false, fmt.Errorf("%s %s/%s has label %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
+				return false, nil // continue
 			}
 			return true, nil
 		default:
@@ -54,8 +54,8 @@ func HasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name 
 	}, timeout)
 }
 
-func HasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
-	return hasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+func UntilHasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return untilHasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
 		switch event.Type {
 		case watch.Deleted:
 			return false, nil
@@ -67,11 +67,11 @@ func HasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, 
 				return false, e2
 			}
 			if v, ok := m.GetAnnotations()[key]; !ok {
-				return false, fmt.Errorf("%s %s/%s is missing annotation %s", gvk.String(), namespace, name, key)
+				return false, nil // continue
 			} else if value == nil {
 				return true, nil
 			} else if *value != v {
-				return false, fmt.Errorf("%s %s/%s has annotation %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
+				return false, nil // continue
 			}
 			return true, nil
 		default:
@@ -80,7 +80,7 @@ func HasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, 
 	}, timeout)
 }
 
-func hasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, cond watchtools.ConditionFunc, timeout time.Duration) (out string, err error) {
+func untilHasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, cond watchtools.ConditionFunc, timeout time.Duration) (out string, err error) {
 	ctx := context.Background()
 	if timeout > 0 {
 		var cancel context.CancelFunc
