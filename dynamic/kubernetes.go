@@ -130,40 +130,40 @@ func hasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name st
 	return
 }
 
-func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, namespace, name string) (*unstructured.Unstructured, error) {
+func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, namespace, name string) (*unstructured.Unstructured, schema.GroupVersionResource, error) {
 	kc := kubernetes.NewForConfigOrDie(config)
 	dc, err := dynamic.NewForConfig(config)
 	if err != nil {
-		return nil, err
+		return nil, resource, err
 	}
 
 	obj, err := dc.Resource(resource).Namespace(namespace).Get(name, metav1.GetOptions{})
 	if err != nil {
-		return nil, err
+		return nil, resource, err
 	}
-	return findWorkload(kc, dc, obj)
+	return findWorkload(kc, dc, resource, obj)
 }
 
-func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, obj *unstructured.Unstructured) (*unstructured.Unstructured, error) {
+func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resource schema.GroupVersionResource, obj *unstructured.Unstructured) (*unstructured.Unstructured, schema.GroupVersionResource, error) {
 	m, err := meta.Accessor(obj)
 	if err != nil {
-		return nil, err
+		return nil, resource, err
 	}
 	for _, ref := range m.GetOwnerReferences() {
 		if ref.Controller != nil && *ref.Controller {
 			gvk := schema.FromAPIVersionAndKind(ref.APIVersion, ref.Kind)
 			gvr, err := discovery_util.ResourceForGVK(kc.Discovery(), gvk)
 			if err != nil {
-				return nil, err
+				return nil, gvr, err
 			}
 			parent, err := dc.Resource(gvr).Namespace(m.GetNamespace()).Get(ref.Name, metav1.GetOptions{})
 			if err != nil {
-				return nil, err
+				return nil, gvr, err
 			}
-			return findWorkload(kc, dc, parent)
+			return findWorkload(kc, dc, gvr, parent)
 		}
 	}
-	return obj, nil
+	return obj, resource, nil
 }
 
 func RemoveOwnerReferenceForItems(
