@@ -1,20 +1,134 @@
 package dynamic
 
 import (
+	"context"
+	"fmt"
+	"time"
+
+	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/core/v1"
 	discovery_util "github.com/appscode/kutil/discovery"
+	watchtools "github.com/appscode/kutil/tools/watch"
+	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 )
+
+func HasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return hasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+		switch event.Type {
+		case watch.Deleted:
+			return false, nil
+		case watch.Error:
+			return false, errors.Wrap(err, "error watching")
+		case watch.Added, watch.Modified:
+			m, e2 := meta.Accessor(event.Object)
+			if e2 != nil {
+				return false, e2
+			}
+			if v, ok := m.GetLabels()[key]; !ok {
+				return false, fmt.Errorf("%s %s/%s is missing label %s", gvk.String(), namespace, name, key)
+			} else if value == nil {
+				return true, nil
+			} else if value != nil && *value != v {
+				return false, fmt.Errorf("%s %s/%s has label %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
+			}
+			return true, nil
+		default:
+			return false, fmt.Errorf("unexpected event type: %v", event.Type)
+		}
+	}, timeout)
+}
+
+func HasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, key string, value *string, timeout time.Duration) (out string, err error) {
+	return hasKey(config, gvk, namespace, name, func(event watch.Event) (bool, error) {
+		switch event.Type {
+		case watch.Deleted:
+			return false, nil
+		case watch.Error:
+			return false, errors.Wrap(err, "error watching")
+		case watch.Added, watch.Modified:
+			m, e2 := meta.Accessor(event.Object)
+			if e2 != nil {
+				return false, e2
+			}
+			if v, ok := m.GetLabels()[key]; !ok {
+				return false, fmt.Errorf("%s %s/%s is missing annotation %s", gvk.String(), namespace, name, key)
+			} else if value == nil {
+				return true, nil
+			} else if value != nil && *value != v {
+				return false, fmt.Errorf("%s %s/%s has annotation %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
+			}
+			return true, nil
+		default:
+			return false, fmt.Errorf("unexpected event type: %v", event.Type)
+		}
+	}, timeout)
+}
+
+func hasKey(config *rest.Config, gvk schema.GroupVersionKind, namespace, name string, cond watchtools.ConditionFunc, timeout time.Duration) (out string, err error) {
+	ctx := context.Background()
+	if timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, kutil.ReadinessTimeout)
+		defer cancel()
+	}
+
+	kc := kubernetes.NewForConfigOrDie(config)
+	dc, err := dynamic.NewForConfig(config)
+	if err != nil {
+		return
+	}
+
+	gvr, err := discovery_util.ResourceForGVK(kc.Discovery(), gvk)
+	if err != nil {
+		return
+	}
+
+	var ri dynamic.ResourceInterface
+	if namespace != "" {
+		ri = dc.Resource(gvr).Namespace(namespace)
+	} else {
+		ri = dc.Resource(gvr)
+	}
+
+	lw := &cache.ListWatch{
+		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return ri.List(options)
+		},
+		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
+			return ri.Watch(options)
+		},
+	}
+
+	obj, err := scheme.Scheme.New(gvk)
+	if err != nil {
+		return
+	}
+	_, err = watchtools.UntilWithSync(ctx,
+		lw,
+		obj,
+		nil,
+		cond,
+	)
+	return
+}
 
 func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, namespace, name string) (*unstructured.Unstructured, error) {
 	kc := kubernetes.NewForConfigOrDie(config)

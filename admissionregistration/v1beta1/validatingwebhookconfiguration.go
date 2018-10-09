@@ -92,7 +92,7 @@ func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string
 
 func UpdateValidatingWebhookCABundle(config *rest.Config, webhookConfigName string, extraConditions ...watchtools.ConditionFunc) error {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, kutil.GCTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kutil.ReadinessTimeout)
 	defer cancel()
 
 	err := rest.LoadTLSFiles(config)
