@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 )
@@ -80,13 +79,9 @@ func untilHasKey(
 		},
 	}
 
-	obj, err := scheme.Scheme.New(gvk)
-	if err != nil {
-		return
-	}
 	_, err = watchtools.UntilWithSync(ctx,
 		lw,
-		obj,
+		&unstructured.Unstructured{},
 		nil,
 		func(event watch.Event) (bool, error) {
 			switch event.Type {
