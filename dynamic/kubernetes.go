@@ -44,7 +44,7 @@ func HasLabel(config *rest.Config, gvk schema.GroupVersionKind, namespace, name 
 				return false, fmt.Errorf("%s %s/%s is missing label %s", gvk.String(), namespace, name, key)
 			} else if value == nil {
 				return true, nil
-			} else if value != nil && *value != v {
+			} else if *value != v {
 				return false, fmt.Errorf("%s %s/%s has label %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
 			}
 			return true, nil
@@ -66,11 +66,11 @@ func HasAnnotation(config *rest.Config, gvk schema.GroupVersionKind, namespace, 
 			if e2 != nil {
 				return false, e2
 			}
-			if v, ok := m.GetLabels()[key]; !ok {
+			if v, ok := m.GetAnnotations()[key]; !ok {
 				return false, fmt.Errorf("%s %s/%s is missing annotation %s", gvk.String(), namespace, name, key)
 			} else if value == nil {
 				return true, nil
-			} else if value != nil && *value != v {
+			} else if *value != v {
 				return false, fmt.Errorf("%s %s/%s has annotation %s set to %s, but expected %s", gvk.String(), namespace, name, key, v, *value)
 			}
 			return true, nil
