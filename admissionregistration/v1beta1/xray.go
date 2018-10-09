@@ -132,7 +132,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)
 			}
 		})
-	if w, e2 := kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(d.webhook, metav1.GetOptions{}); e2 == nil {
+	if w, e2 := kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(d.webhookConfig, metav1.GetOptions{}); e2 == nil {
 		PatchValidatingWebhookConfiguration(kc, w, func(in *v1beta1.ValidatingWebhookConfiguration) *v1beta1.ValidatingWebhookConfiguration {
 			if len(in.Annotations) == 0 {
 				in.Annotations = map[string]string{}
