@@ -119,7 +119,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 			case watch.Deleted:
 				return false, nil
 			case watch.Error:
-				return false, errors.Wrap(err, "error watching")
+				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*apiregistration.APIService)
 				for _, cond := range cur.Status.Conditions {

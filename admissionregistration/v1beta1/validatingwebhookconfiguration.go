@@ -118,7 +118,7 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, webhookConfigName stri
 			case watch.Deleted:
 				return false, nil
 			case watch.Error:
-				return false, errors.Wrap(err, "error watching")
+				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*reg.ValidatingWebhookConfiguration)
 				_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
