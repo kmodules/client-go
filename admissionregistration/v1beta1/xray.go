@@ -83,7 +83,7 @@ func NewDeleteValidatingWebhookXray(config *rest.Config, apiserviceName, webhook
 
 func (d ValidatingWebhookXray) IsActive() error {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, kutil.GCTimeout)
+	ctx, cancel := context.WithTimeout(ctx, kutil.ReadinessTimeout)
 	defer cancel()
 
 	err := rest.LoadTLSFiles(d.config)
@@ -185,7 +185,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u)
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhookName)) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -225,7 +225,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhookName)) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if kutil.IsRequestRetryable(err) {
@@ -245,7 +245,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 		if kerr.IsForbidden(err) &&
-			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook "%s" denied the request:`, d.webhookName)) {
+			strings.HasPrefix(err.Error(), fmt.Sprintf(`admission webhook %q denied the request:`, d.webhookName)) {
 			defer func() {
 				// update to make it valid
 				mod := d.testObj.DeepCopyObject()
