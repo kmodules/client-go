@@ -46,7 +46,7 @@ func untilHasKey(
 	ctx := context.Background()
 	if timeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, kutil.ReadinessTimeout)
+		ctx, cancel = context.WithTimeout(ctx, timeout)
 		defer cancel()
 	}
 
@@ -95,14 +95,10 @@ func untilHasKey(
 					return false, e2
 				}
 				var ok bool
-				if out, ok = fn(m)[key]; !ok {
-					return false, nil // continue
-				} else if value == nil {
+				if out, ok = fn(m)[key]; ok && (value == nil || *value == out) {
 					return true, nil
-				} else if *value != out {
-					return false, nil // continue
 				}
-				return true, nil
+				return false, nil // continue
 			default:
 				return false, fmt.Errorf("unexpected event type: %v", event.Type)
 			}
