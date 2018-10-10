@@ -8,6 +8,7 @@ import (
 
 	"github.com/appscode/kutil"
 	"github.com/appscode/kutil/discovery"
+	meta_util "github.com/appscode/kutil/meta"
 	watchtools "github.com/appscode/kutil/tools/watch"
 	"github.com/evanphx/json-patch"
 	"github.com/golang/glog"
@@ -137,11 +138,34 @@ func (d ValidatingWebhookXray) IsActive() error {
 			}
 		})
 	if w, e2 := kc.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(d.webhookConfig, metav1.GetOptions{}); e2 == nil {
-		PatchValidatingWebhookConfiguration(kc, w, func(in *v1beta1.ValidatingWebhookConfiguration) *v1beta1.ValidatingWebhookConfiguration {
-			if len(in.Annotations) == 0 {
-				in.Annotations = map[string]string{}
+
+		fn := func(annotations map[string]string) map[string]string {
+			if len(annotations) == 0 {
+				annotations = map[string]string{}
 			}
-			in.Annotations[KeyAdmissionWebhooksActivated] = strconv.FormatBool(err == nil)
+			annotations[KeyAdmissionWebhooksActivated] = strconv.FormatBool(err == nil)
+			return annotations
+		}
+
+		PatchValidatingWebhookConfiguration(kc, w, func(in *v1beta1.ValidatingWebhookConfiguration) *v1beta1.ValidatingWebhookConfiguration {
+			data, ok := in.Annotations[meta_util.LastAppliedConfigAnnotation]
+			if ok {
+				u, e3 := runtime.Decode(unstructured.UnstructuredJSONScheme, []byte(data))
+				if e3 != nil {
+					goto LastAppliedConfig
+				}
+				m, e3 := meta.Accessor(u)
+				if err != nil {
+					goto LastAppliedConfig
+				}
+				m.SetAnnotations(fn(m.GetAnnotations()))
+				if mod, err := runtime.Encode(unstructured.UnstructuredJSONScheme, u); err == nil {
+					in.Annotations[meta_util.LastAppliedConfigAnnotation] = string(mod)
+				}
+			}
+
+		LastAppliedConfig:
+			in.Annotations = fn(in.Annotations)
 			return in
 		})
 	}
