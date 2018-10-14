@@ -196,7 +196,7 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 	})
 }
 
-var re = regexp.MustCompile(`^admission webhook "[^"]+" denied the request:*$`)
+var re = regexp.MustCompile(`^admission webhook "[^"]+" denied the request.*$`)
 
 func (d ValidatingWebhookXray) check() (bool, error) {
 	kc, err := kubernetes.NewForConfig(d.config)
