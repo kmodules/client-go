@@ -168,7 +168,7 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 			annotations[KeyAdmissionWebhookStatus] = ""
 		} else {
 			annotations[KeyAdmissionWebhookActive] = "false"
-			annotations[KeyAdmissionWebhookStatus] = err.Error()
+			annotations[KeyAdmissionWebhookStatus] = string(kerr.ReasonForError(err)) + "|" + err.Error()
 		}
 		return annotations
 	}
