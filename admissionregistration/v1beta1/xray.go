@@ -196,7 +196,13 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 	})
 }
 
-var re = regexp.MustCompile(`^admission webhook "[^"]+" denied the request.*$`)
+var reMutator = regexp.MustCompile(`^Internal error occurred: admission webhook "[^"]+" denied the request.*$`)
+var reValidator = regexp.MustCompile(`^admission webhook "[^"]+" denied the request.*$`)
+
+func admissionWebhookDeniedRequest(err error) bool {
+	return (kerr.IsInternalError(err) && reMutator.MatchString(err.Error())) ||
+		(kerr.IsForbidden(err) && reValidator.MatchString(err.Error()))
+}
 
 func (d ValidatingWebhookXray) check() (bool, error) {
 	kc, err := kubernetes.NewForConfig(d.config)
@@ -248,7 +254,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u, metav1.CreateOptions{})
-		if kerr.IsForbidden(err) && re.MatchString(err.Error()) {
+		if admissionWebhookDeniedRequest(err) {
 			glog.Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
@@ -278,7 +284,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
 		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
 
-		if kerr.IsForbidden(err) && re.MatchString(err.Error()) {
+		if admissionWebhookDeniedRequest(err) {
 			glog.Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
@@ -293,7 +299,7 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		}
 
 		err = ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
-		if kerr.IsForbidden(err) && re.MatchString(err.Error()) {
+		if admissionWebhookDeniedRequest(err) {
 			defer func() {
 				// update to make it valid
 				mod := d.testObj.DeepCopyObject()
