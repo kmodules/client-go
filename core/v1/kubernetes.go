@@ -266,3 +266,41 @@ func RemoveOwnerReference(meta metav1.Object, owner *core.ObjectReference) {
 	}
 	meta.SetOwnerReferences(ownerRefs)
 }
+
+// MergeAndReplaceProbes takes two Readiness/liveness probes (old and new) and merges new probe with old in a way that,
+// only initialized fields of 'new' probes replaces that fields of 'old' probes.
+func MergeAndReplaceProbes(old, new *core.Probe) *core.Probe {
+	if new == nil {
+		return old
+	}
+	if old == nil {
+		return new
+	}
+
+	if new.Exec != nil {
+		old.Exec = new.Exec
+	}
+	if new.HTTPGet != nil {
+		old.HTTPGet = new.HTTPGet
+	}
+	if new.TCPSocket != nil {
+		old.TCPSocket = new.TCPSocket
+	}
+	if new.InitialDelaySeconds != 0 {
+		old.InitialDelaySeconds = new.InitialDelaySeconds
+	}
+	if new.TimeoutSeconds != 0 {
+		old.TimeoutSeconds = new.TimeoutSeconds
+	}
+	if new.PeriodSeconds != 0 {
+		old.PeriodSeconds = new.PeriodSeconds
+	}
+	if new.SuccessThreshold != 0 {
+		old.SuccessThreshold = new.SuccessThreshold
+	}
+	if new.FailureThreshold != 0 {
+		old.FailureThreshold = new.FailureThreshold
+	}
+
+	return old
+}
