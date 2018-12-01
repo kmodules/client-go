@@ -89,7 +89,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d81ee883c5b03d6d3bf60bd133f289078a5e3a97e95389afa0484a7375a5ef47"
+  digest = "1:dd411129f91c0259a68f667d617cdd9510ed6e7bf767577684a26a3ed5c6ea25"
   name = "github.com/appscode/go"
   packages = [
     "analytics",
@@ -97,6 +97,7 @@
     "encoding/json/types",
     "homedir",
     "log",
+    "log/golog",
     "net",
     "net/http",
     "sets",
@@ -571,11 +572,27 @@
   version = "v0.3.6"
 
 [[projects]]
+  digest = "1:870d441fe217b8e689d7949fef6e43efbc787e50f200cb1e70dbca9204a1d6be"
+  name = "github.com/inconshreveable/mousetrap"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
+  version = "v1.0"
+
+[[projects]]
   digest = "1:e22af8c7518e1eab6f2eab2b7d7558927f816262586cd6ed9f349c97a6c285c4"
   name = "github.com/jmespath/go-jmespath"
   packages = ["."]
   pruneopts = "UT"
   revision = "0b12d6b5"
+
+[[projects]]
+  branch = "master"
+  digest = "1:289a0aeeff2a467506d6faacb71c783a8610e53639e8f065e1997a569e622d6b"
+  name = "github.com/jpillora/go-ogle-analytics"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "14b04e0594ef6a9fd943363b135656f0ec8c9d0e"
 
 [[projects]]
   digest = "1:3e551bbb3a7c0ab2a2bf4660e7fcad16db089fdcfbb44b0199e62838038623ea"
@@ -770,6 +787,14 @@
   ]
   pruneopts = "UT"
   revision = "d40851caa0d747393da1ffb28f7f9d8b4eeffebd"
+
+[[projects]]
+  digest = "1:645cabccbb4fa8aab25a956cbcbdf6a6845ca736b2c64e197ca7cbb9d210b939"
+  name = "github.com/spf13/cobra"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
+  version = "v0.0.3"
 
 [[projects]]
   digest = "1:c1b1102241e7f645bc8e0c22ae352e8f0dc6484b6cb4d132fa9f24174e0119e2"
@@ -1544,6 +1569,7 @@
     "github.com/appscode/go/analytics",
     "github.com/appscode/go/encoding/json/types",
     "github.com/appscode/go/log",
+    "github.com/appscode/go/log/golog",
     "github.com/appscode/go/net",
     "github.com/appscode/go/net/http",
     "github.com/appscode/go/sets",
@@ -1560,9 +1586,11 @@
     "github.com/go-openapi/spec",
     "github.com/golang/glog",
     "github.com/google/go-cmp/cmp",
+    "github.com/jpillora/go-ogle-analytics",
     "github.com/json-iterator/go",
     "github.com/pkg/errors",
     "github.com/spf13/afero",
+    "github.com/spf13/cobra",
     "github.com/spf13/pflag",
     "github.com/stretchr/testify/assert",
     "github.com/yudai/gojsondiff",
