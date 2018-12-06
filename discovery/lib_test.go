@@ -3,7 +3,7 @@ package discovery
 import (
 	"testing"
 
-	"github.com/appscode/go-version"
+	version "github.com/appscode/go-version"
 )
 
 func TestDefaultSupportedVersion(t *testing.T) {

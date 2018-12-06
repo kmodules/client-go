@@ -12,7 +12,7 @@ import (
 	dockertypes "github.com/docker/docker/api/types"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/kubernetes/pkg/credentialprovider"
