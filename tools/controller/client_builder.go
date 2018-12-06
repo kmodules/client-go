@@ -23,7 +23,7 @@ import (
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/golang/glog"
 	v1authenticationapi "k8s.io/api/authentication/v1"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
