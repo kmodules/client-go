@@ -16,11 +16,15 @@ type Worker struct {
 	maxRetries  int
 	threadiness int
 	reconcile   func(key string) error
+	// failureFunc are `pushFailureEvent` handler.
+	// These functions will be called after all retries fails.
+	// Will be useful to write failure events, `Failed` status etc.
+	failureFunc []func(key, reason string)
 }
 
-func New(name string, maxRetries, threadiness int, fn func(key string) error) *Worker {
+func New(name string, maxRetries, threadiness int, fn func(key string) error, failureFunc ...func(key, reason string)) *Worker {
 	q := workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), name)
-	return &Worker{name, q, maxRetries, threadiness, fn}
+	return &Worker{name, q, maxRetries, threadiness, fn, failureFunc}
 }
 
 func (w *Worker) GetQueue() workqueue.RateLimitingInterface {
@@ -83,6 +87,10 @@ func (w *Worker) processNextEntry() bool {
 		// queue and the re-enqueue history, the key will be processed later again.
 		w.queue.AddRateLimited(key)
 		return true
+	}
+
+	for _, fn := range w.failureFunc {
+		fn(key.(string), err.Error())
 	}
 
 	w.queue.Forget(key)
