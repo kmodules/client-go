@@ -1,6 +1,7 @@
 package v1beta1
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/appscode/kutil"
@@ -105,12 +106,13 @@ func (d ValidatingWebhookXray) IsActive() error {
 	if bypassValidatingWebhookXray {
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err == nil {
-			d.updateAPIService(apireg, apisvc, nil)
+			_ = d.updateAPIService(apireg, apisvc, nil)
 		}
 		return nil
 	}
 
 	attempt := 0
+	var failures []string
 	return wait.PollImmediateUntil(kutil.RetryInterval, func() (bool, error) {
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err != nil {
@@ -144,11 +146,17 @@ func (d ValidatingWebhookXray) IsActive() error {
 				attempt++
 				active, err := d.check()
 				if err != nil {
-					glog.Warningf("Attempt %d to detect ValidatingWebhook activation failed due to %s", attempt, err.Error())
+					failures = append(failures, fmt.Sprintf("Attempt %d to detect ValidatingWebhook activation failed due to %s", attempt, err.Error()))
 				}
 				err = retry(err)
 				if active || err != nil {
-					d.updateAPIService(apireg, apisvc, err)
+					_ = d.updateAPIService(apireg, apisvc, err)
+				}
+				if err != nil {
+					// log failures only if xray fails, otherwise don't confuse users with intermediate failures.
+					for _, msg := range failures {
+						glog.Warningln(msg)
+					}
 				}
 				return active, err
 			}
@@ -157,7 +165,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 	}, d.stopCh)
 }
 
-func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apisvc *apiregistration.APIService, err error) {
+func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apisvc *apiregistration.APIService, err error) error {
 	fn := func(annotations map[string]string) map[string]string {
 		if len(annotations) == 0 {
 			annotations = map[string]string{}
@@ -172,7 +180,7 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 		return annotations
 	}
 
-	apireg_util.PatchAPIService(apireg, apisvc, func(in *apiregistration.APIService) *apiregistration.APIService {
+	_, _, e3 := apireg_util.PatchAPIService(apireg, apisvc, func(in *apiregistration.APIService) *apiregistration.APIService {
 		data, ok := in.Annotations[meta_util.LastAppliedConfigAnnotation]
 		if ok {
 			u, e2 := runtime.Decode(unstructured.UnstructuredJSONScheme, []byte(data))
@@ -193,6 +201,7 @@ func (d ValidatingWebhookXray) updateAPIService(apireg apireg_cs.Interface, apis
 		in.Annotations = fn(in.Annotations)
 		return in
 	})
+	return e3
 }
 
 func (d ValidatingWebhookXray) check() (bool, error) {
