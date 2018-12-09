@@ -1560,6 +1560,14 @@
   pruneopts = "UT"
   revision = "cd6a8f44fe799a6b69c6dbbb1a930994738a367c"
 
+[[projects]]
+  digest = "1:7719608fe0b52a4ece56c2dde37bedd95b938677d1ab0f84b8a7852e4c59f849"
+  name = "sigs.k8s.io/yaml"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "fd68e9863619f6ec2fdd8625fe1f02e7c877e480"
+  version = "v1.1.0"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
@@ -1582,7 +1590,6 @@
     "github.com/evanphx/json-patch",
     "github.com/fatih/structs",
     "github.com/fsnotify/fsnotify",
-    "github.com/ghodss/yaml",
     "github.com/go-openapi/spec",
     "github.com/golang/glog",
     "github.com/google/go-cmp/cmp",
@@ -1684,6 +1691,7 @@
     "k8s.io/kubernetes/pkg/credentialprovider/secrets",
     "k8s.io/kubernetes/pkg/securitycontext",
     "k8s.io/kubernetes/pkg/util/parsers",
+    "sigs.k8s.io/yaml",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

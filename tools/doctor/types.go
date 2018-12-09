@@ -4,11 +4,11 @@ import (
 	"crypto/x509"
 	"strings"
 
-	"github.com/ghodss/yaml"
 	"github.com/pkg/errors"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/util/cert"
+	"sigs.k8s.io/yaml"
 )
 
 type ClusterInfo struct {
