@@ -8,6 +8,7 @@ import (
 	apireg_util "github.com/appscode/kutil/apiregistration/v1beta1"
 	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/appscode/kutil/discovery"
+	dynamic_util "github.com/appscode/kutil/dynamic"
 	meta_util "github.com/appscode/kutil/meta"
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
@@ -106,7 +107,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 	if bypassValidatingWebhookXray {
 		apisvc, err := apireg.ApiregistrationV1beta1().APIServices().Get(d.apisvc, metav1.GetOptions{})
 		if err == nil {
-			_ = d.updateAPIService(apireg, apisvc, nil)
+			d.updateAPIService(apireg, apisvc, nil)
 		}
 		return nil
 	}
@@ -150,7 +151,7 @@ func (d ValidatingWebhookXray) IsActive() error {
 				}
 				err = retry(err)
 				if active || err != nil {
-					_ = d.updateAPIService(apireg, apisvc, err)
+					d.updateAPIService(apireg, apisvc, err)
 				}
 				if err != nil {
 					// log failures only if xray fails, otherwise don't confuse users with intermediate failures.
@@ -255,13 +256,13 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 	if d.op == v1beta1.Create {
 		_, err := ri.Create(&u, metav1.CreateOptions{})
 		if kutil.AdmissionWebhookDeniedRequest(err) {
-			glog.Infof("failed to create invalid test object as expected with error: %s", err)
+			glog.V(10).Infof("failed to create invalid test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
 			return false, err
 		}
 
-		ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
+		dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
 		return false, ErrWebhookNotActivated
 	} else if d.op == v1beta1.Update {
 		_, err := ri.Create(&u, metav1.CreateOptions{})
@@ -282,10 +283,10 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 		}
 
 		_, err = ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
-		defer ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
+		defer dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
 
 		if kutil.AdmissionWebhookDeniedRequest(err) {
-			glog.Infof("failed to update test object as expected with error: %s", err)
+			glog.V(10).Infof("failed to update test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
 			return false, err
@@ -317,10 +318,10 @@ func (d ValidatingWebhookXray) check() (bool, error) {
 				ri.Patch(accessor.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
 
 				// delete
-				ri.Delete(accessor.GetName(), &metav1.DeleteOptions{})
+				dynamic_util.WaitUntilDeleted(ri, d.stopCh, accessor.GetName())
 			}()
 
-			glog.Infof("failed to delete test object as expected with error: %s", err)
+			glog.V(10).Infof("failed to delete test object as expected with error: %s", err)
 			return true, nil
 		} else if err != nil {
 			return false, err
