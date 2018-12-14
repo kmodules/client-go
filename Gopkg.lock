@@ -631,6 +631,14 @@
   version = "v1.0.1"
 
 [[projects]]
+  digest = "1:53bc4cd4914cd7cd52139990d5170d6dc99067ae31c56530621b18b35fc30318"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3536a929edddb9a5b34bd6861dc4a9647cb459fe"
+  version = "v1.1.2"
+
+[[projects]]
   digest = "1:33422d238f147d247752996a26574ac48dcf472976eda7f5134015f06bf16563"
   name = "github.com/modern-go/concurrent"
   packages = ["."]
@@ -1595,6 +1603,7 @@
     "github.com/google/go-cmp/cmp",
     "github.com/jpillora/go-ogle-analytics",
     "github.com/json-iterator/go",
+    "github.com/mitchellh/mapstructure",
     "github.com/pkg/errors",
     "github.com/spf13/afero",
     "github.com/spf13/cobra",
