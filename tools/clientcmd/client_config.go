@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/appscode/kutil/meta"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	"github.com/spf13/pflag"
 	"k8s.io/client-go/kubernetes"
@@ -101,7 +101,7 @@ func Fix(cfg *rest.Config) *rest.Config {
 				// AKS cluster
 
 				h := "https://" + host
-				glog.Infof("resetting Kubeconfig host to %s from %s for AKS to workaround https://github.com/Azure/AKS/issues/522", h, cfg.Host)
+				klog.Infof("resetting Kubeconfig host to %s from %s for AKS to workaround https://github.com/Azure/AKS/issues/522", h, cfg.Host)
 				cfg.Host = h
 			}
 		}

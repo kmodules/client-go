@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchServiceAccount(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.ServiceAccount) *core.ServiceAccount) (*core.ServiceAccount, kutil.VerbType, error) {
 	cur, err := c.CoreV1().ServiceAccounts(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating ServiceAccount %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating ServiceAccount %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.CoreV1().ServiceAccounts(meta.Namespace).Create(transform(&core.ServiceAccount{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ServiceAccount",
@@ -53,7 +53,7 @@ func PatchServiceAccountObject(c kubernetes.Interface, cur, mod *core.ServiceAcc
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching ServiceAccount %s/%s with %s", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching ServiceAccount %s/%s with %s", cur.Namespace, cur.Name, string(patch))
 	out, err := c.CoreV1().ServiceAccounts(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateServiceAccount(c kubernetes.Interface, meta metav1.ObjectMeta, tra
 			result, e2 = c.CoreV1().ServiceAccounts(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update ServiceAccount %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update ServiceAccount %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

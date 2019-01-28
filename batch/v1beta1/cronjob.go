@@ -2,7 +2,7 @@ package v1beta1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	batch "k8s.io/api/batch/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchCronJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.CronJob) *batch.CronJob) (*batch.CronJob, kutil.VerbType, error) {
 	cur, err := c.BatchV1beta1().CronJobs(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating CronJob %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating CronJob %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.BatchV1beta1().CronJobs(meta.Namespace).Create(transform(&batch.CronJob{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "CronJob",
@@ -53,7 +53,7 @@ func PatchCronJobObject(c kubernetes.Interface, cur, mod *batch.CronJob) (*batch
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching CronJob %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching CronJob %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.BatchV1beta1().CronJobs(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateCronJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 			result, e2 = c.BatchV1beta1().CronJobs(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update CronJob %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update CronJob %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

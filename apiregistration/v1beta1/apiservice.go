@@ -2,7 +2,7 @@ package v1beta1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchAPIService(c apireg_cs.Interface, name string, transform func(*reg.APIService) *reg.APIService) (*reg.APIService, kutil.VerbType, error) {
 	cur, err := c.ApiregistrationV1beta1().APIServices().Get(name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating APIService %s.", name)
+		klog.V(3).Infof("Creating APIService %s.", name)
 		out, err := c.ApiregistrationV1beta1().APIServices().Create(transform(&reg.APIService{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "APIService",
@@ -55,7 +55,7 @@ func PatchAPIServiceObject(c apireg_cs.Interface, cur, mod *reg.APIService) (*re
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching APIService %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching APIService %s with %s.", cur.Name, string(patch))
 	out, err := c.ApiregistrationV1beta1().APIServices().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -71,7 +71,7 @@ func TryUpdateAPIService(c apireg_cs.Interface, name string, transform func(*reg
 			result, e2 = c.ApiregistrationV1beta1().APIServices().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update APIService %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update APIService %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 

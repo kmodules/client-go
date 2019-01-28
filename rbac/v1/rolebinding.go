@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	rbac "k8s.io/api/rbac/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (*rbac.RoleBinding, kutil.VerbType, error) {
 	cur, err := c.RbacV1().RoleBindings(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating RoleBinding %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating RoleBinding %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.RbacV1().RoleBindings(meta.Namespace).Create(transform(&rbac.RoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "RoleBinding",
@@ -53,7 +53,7 @@ func PatchRoleBindingObject(c kubernetes.Interface, cur, mod *rbac.RoleBinding) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching RoleBinding %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching RoleBinding %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.RbacV1().RoleBindings(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 			result, e2 = c.RbacV1().RoleBindings(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update RoleBinding %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update RoleBinding %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

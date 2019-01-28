@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -147,7 +147,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 				continue
 			}
 
-			glog.V(3).Infof("Taking backup of %s apiVersion:%s kind:%s", list.GroupVersion, r.Name, r.Kind)
+			klog.V(3).Infof("Taking backup of %s apiVersion:%s kind:%s", list.GroupVersion, r.Name, r.Kind)
 			mgr.config.GroupVersion = &gv
 			mgr.config.APIPath = "/apis"
 			if gv.Group == core.GroupName {

@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	rbac "k8s.io/api/rbac/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchClusterRole(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRole) *rbac.ClusterRole) (*rbac.ClusterRole, kutil.VerbType, error) {
 	cur, err := c.RbacV1().ClusterRoles().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating ClusterRole %s.", meta.Name)
+		klog.V(3).Infof("Creating ClusterRole %s.", meta.Name)
 		out, err := c.RbacV1().ClusterRoles().Create(transform(&rbac.ClusterRole{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ClusterRole",
@@ -53,7 +53,7 @@ func PatchClusterRoleObject(c kubernetes.Interface, cur, mod *rbac.ClusterRole) 
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching ClusterRole %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching ClusterRole %s with %s.", cur.Name, string(patch))
 	out, err := c.RbacV1().ClusterRoles().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateClusterRole(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 			result, e2 = c.RbacV1().ClusterRoles().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update ClusterRole %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update ClusterRole %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 

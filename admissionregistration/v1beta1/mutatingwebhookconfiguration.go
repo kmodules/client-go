@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	reg "k8s.io/api/admissionregistration/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -25,7 +25,7 @@ import (
 func CreateOrPatchMutatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration) (*reg.MutatingWebhookConfiguration, kutil.VerbType, error) {
 	cur, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Get(name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating MutatingWebhookConfiguration %s.", name)
+		klog.V(3).Infof("Creating MutatingWebhookConfiguration %s.", name)
 		out, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Create(transform(&reg.MutatingWebhookConfiguration{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "MutatingWebhookConfiguration",
@@ -64,7 +64,7 @@ func PatchMutatingWebhookConfigurationObject(c kubernetes.Interface, cur, mod *r
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching MutatingWebhookConfiguration %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching MutatingWebhookConfiguration %s with %s.", cur.Name, string(patch))
 	out, err := c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -80,7 +80,7 @@ func TryUpdateMutatingWebhookConfiguration(c kubernetes.Interface, name string, 
 			result, e2 = c.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update MutatingWebhookConfiguration %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update MutatingWebhookConfiguration %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 
@@ -128,7 +128,7 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 					return in
 				})
 				if err != nil {
-					glog.Warning(err)
+					klog.Warning(err)
 				}
 				return err == nil, err
 			default:
@@ -187,7 +187,7 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 					return in
 				})
 				if err != nil {
-					glog.Warning(err)
+					klog.Warning(err)
 				}
 				return false, nil // continue
 			default:

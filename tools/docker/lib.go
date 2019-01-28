@@ -10,7 +10,7 @@ import (
 	httpz "github.com/appscode/go/net/http"
 	manifestV2 "github.com/docker/distribution/manifest/schema2"
 	dockertypes "github.com/docker/docker/api/types"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	v1 "k8s.io/api/core/v1"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
@@ -81,7 +81,7 @@ func ParseImageName(image string) (ref ImageRef, err error) {
 func PullManifest(ref ImageRef, keyring credentialprovider.DockerKeyring) (*reg.Registry, *dockertypes.AuthConfig, interface{}, error) {
 	creds, withCredentials := keyring.Lookup(ref.RepoToPull)
 	if !withCredentials {
-		glog.V(3).Infof("Pulling image %q without credentials", ref)
+		klog.V(3).Infof("Pulling image %q without credentials", ref)
 		auth := &dockertypes.AuthConfig{ServerAddress: ref.RegistryURL}
 		hub, mf, err := pullManifest(ref, auth)
 		return hub, auth, mf, err

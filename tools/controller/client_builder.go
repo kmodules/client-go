@@ -21,7 +21,7 @@ import (
 	"time"
 
 	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	v1authenticationapi "k8s.io/api/authentication/v1"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -61,7 +61,7 @@ func (b SimpleControllerClientBuilder) Config(name string) (*restclient.Config, 
 func (b SimpleControllerClientBuilder) ConfigOrDie(name string) *restclient.Config {
 	clientConfig, err := b.Config(name)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return clientConfig
 }
@@ -77,7 +77,7 @@ func (b SimpleControllerClientBuilder) Client(name string) (clientset.Interface,
 func (b SimpleControllerClientBuilder) ClientOrDie(name string) clientset.Interface {
 	client, err := b.Client(name)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return client
 }
@@ -142,15 +142,15 @@ func (b SAControllerClientBuilder) Config(name string) (*restclient.Config, erro
 				}
 				validConfig, valid, err := b.getAuthenticatedConfig(sa, string(secret.Data[v1.ServiceAccountTokenKey]))
 				if err != nil {
-					glog.Warningf("error validating API token for %s/%s in secret %s: %v", sa.Name, sa.Namespace, secret.Name, err)
+					klog.Warningf("error validating API token for %s/%s in secret %s: %v", sa.Name, sa.Namespace, secret.Name, err)
 					// continue watching for good tokens
 					return false, nil
 				}
 				if !valid {
-					glog.Warningf("secret %s contained an invalid API token for %s/%s", secret.Name, sa.Name, sa.Namespace)
+					klog.Warningf("secret %s contained an invalid API token for %s/%s", secret.Name, sa.Name, sa.Namespace)
 					// try to delete the secret containing the invalid token
 					if err := b.CoreClient.Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-						glog.Warningf("error deleting secret %s containing invalid API token for %s/%s: %v", secret.Name, sa.Name, sa.Namespace, err)
+						klog.Warningf("error deleting secret %s containing invalid API token for %s/%s: %v", secret.Name, sa.Name, sa.Namespace, err)
 					}
 					// continue watching for good tokens
 					return false, nil
@@ -204,14 +204,14 @@ func (b SAControllerClientBuilder) getAuthenticatedConfig(sa *v1.ServiceAccount,
 	tokenReview := &v1authenticationapi.TokenReview{Spec: v1authenticationapi.TokenReviewSpec{Token: token}}
 	if tokenResult, err := b.AuthenticationClient.TokenReviews().Create(tokenReview); err == nil {
 		if !tokenResult.Status.Authenticated {
-			glog.Warningf("Token for %s/%s did not authenticate correctly", sa.Name, sa.Namespace)
+			klog.Warningf("Token for %s/%s did not authenticate correctly", sa.Name, sa.Namespace)
 			return nil, false, nil
 		}
 		if tokenResult.Status.User.Username != username {
-			glog.Warningf("Token for %s/%s authenticated as unexpected username: %s", sa.Name, sa.Namespace, tokenResult.Status.User.Username)
+			klog.Warningf("Token for %s/%s authenticated as unexpected username: %s", sa.Name, sa.Namespace, tokenResult.Status.User.Username)
 			return nil, false, nil
 		}
-		glog.V(4).Infof("Verified credential for %s/%s", sa.Name, sa.Namespace)
+		klog.V(4).Infof("Verified credential for %s/%s", sa.Name, sa.Namespace)
 		return clientConfig, true, nil
 	}
 
@@ -225,7 +225,7 @@ func (b SAControllerClientBuilder) getAuthenticatedConfig(sa *v1.ServiceAccount,
 	}
 	err = client.Get().AbsPath("/apis").Do().Error()
 	if apierrors.IsUnauthorized(err) {
-		glog.Warningf("Token for %s/%s did not authenticate correctly: %v", sa.Name, sa.Namespace, err)
+		klog.Warningf("Token for %s/%s did not authenticate correctly: %v", sa.Name, sa.Namespace, err)
 		return nil, false, nil
 	}
 
@@ -235,7 +235,7 @@ func (b SAControllerClientBuilder) getAuthenticatedConfig(sa *v1.ServiceAccount,
 func (b SAControllerClientBuilder) ConfigOrDie(name string) *restclient.Config {
 	clientConfig, err := b.Config(name)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return clientConfig
 }
@@ -251,7 +251,7 @@ func (b SAControllerClientBuilder) Client(name string) (clientset.Interface, err
 func (b SAControllerClientBuilder) ClientOrDie(name string) clientset.Interface {
 	client, err := b.Client(name)
 	if err != nil {
-		glog.Fatal(err)
+		klog.Fatal(err)
 	}
 	return client
 }

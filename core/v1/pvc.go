@@ -2,7 +2,7 @@ package v1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchPVC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
 	cur, err := c.CoreV1().PersistentVolumeClaims(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating PersistentVolumeClaim %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating PersistentVolumeClaim %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.CoreV1().PersistentVolumeClaims(meta.Namespace).Create(transform(&core.PersistentVolumeClaim{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PersistentVolumeClaim",
@@ -53,7 +53,7 @@ func PatchPVCObject(c kubernetes.Interface, cur, mod *core.PersistentVolumeClaim
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching PersistentVolumeClaim %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching PersistentVolumeClaim %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.CoreV1().PersistentVolumeClaims(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdatePVC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 			result, e2 = c.CoreV1().PersistentVolumeClaims(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update PersistentVolumeClaim %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update PersistentVolumeClaim %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

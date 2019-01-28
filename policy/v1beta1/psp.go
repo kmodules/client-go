@@ -2,7 +2,7 @@ package v1beta1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchPodSecurityPolicy(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodSecurityPolicy) *policy.PodSecurityPolicy) (*policy.PodSecurityPolicy, kutil.VerbType, error) {
 	cur, err := c.PolicyV1beta1().PodSecurityPolicies().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating PodSecurityPolicy %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating PodSecurityPolicy %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.PolicyV1beta1().PodSecurityPolicies().Create(transform(&policy.PodSecurityPolicy{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodSecurityPolicy",
@@ -53,7 +53,7 @@ func PatchPodSecurityPolicyObject(c kubernetes.Interface, cur, mod *policy.PodSe
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching PodSecurityPolicy %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching PodSecurityPolicy %s with %s.", cur.Name, string(patch))
 	out, err := c.PolicyV1beta1().PodSecurityPolicies().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdatePodSecurityPolicy(c kubernetes.Interface, meta metav1.ObjectMeta, 
 			result, e2 = c.PolicyV1beta1().PodSecurityPolicies().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update PodSecurityPolicy %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update PodSecurityPolicy %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 

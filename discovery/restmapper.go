@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/conversion"
@@ -40,7 +40,7 @@ func DetectResource(restmapper *DefaultRESTMapper, obj interface{}) (schema.Grou
 func ResourceForGVK(client discovery.DiscoveryInterface, input schema.GroupVersionKind) (schema.GroupVersionResource, error) {
 	resourceList, err := client.ServerResourcesForGroupVersion(input.GroupVersion().String())
 	if discovery.IsGroupDiscoveryFailedError(err) {
-		glog.Errorf("Skipping failed API Groups: %v", err)
+		klog.Errorf("Skipping failed API Groups: %v", err)
 	} else if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
@@ -72,7 +72,7 @@ func LoadRestMapper(client discovery.DiscoveryInterface) (*DefaultRESTMapper, er
 
 	resourceLists, err := client.ServerResources()
 	if discovery.IsGroupDiscoveryFailedError(err) {
-		glog.Errorf("Skipping failed API Groups: %v", err)
+		klog.Errorf("Skipping failed API Groups: %v", err)
 	} else if err != nil {
 		return nil, err
 	}

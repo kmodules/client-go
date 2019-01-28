@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -222,7 +222,7 @@ func (m *PodControllerRefManager) AdoptPod(pod *v1.Pod) error {
 // ReleasePod sends a patch to free the pod from the control of the controller.
 // It returns the error if the patching fails. 404 and 422 errors are ignored.
 func (m *PodControllerRefManager) ReleasePod(pod *v1.Pod) error {
-	glog.V(2).Infof("patching pod %s_%s to remove its controllerRef to %s/%s:%s",
+	klog.V(2).Infof("patching pod %s_%s to remove its controllerRef to %s/%s:%s",
 		pod.Namespace, pod.Name, m.controllerKind.GroupVersion(), m.controllerKind.Kind, m.Controller.GetName())
 	deleteOwnerRefPatch := fmt.Sprintf(`{"metadata":{"ownerReferences":[{"$patch":"delete","uid":"%s"}],"uid":"%s"}}`, m.Controller.GetUID(), pod.UID)
 	err := m.podControl.PatchPod(pod.Namespace, pod.Name, []byte(deleteOwnerRefPatch))

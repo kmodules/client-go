@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -189,10 +189,10 @@ func (r RealPodControl) createPods(nodeName, namespace string, template *v1.PodT
 	} else {
 		accessor, err := meta.Accessor(object)
 		if err != nil {
-			glog.Errorf("parentObject does not have ObjectMeta, %v", err)
+			klog.Errorf("parentObject does not have ObjectMeta, %v", err)
 			return nil
 		}
-		glog.V(4).Infof("Controller %v created pod %v", accessor.GetName(), newPod.Name)
+		klog.V(4).Infof("Controller %v created pod %v", accessor.GetName(), newPod.Name)
 		r.Recorder.Eventf(object, v1.EventTypeNormal, SuccessfulCreatePodReason, "Created pod: %v", newPod.Name)
 	}
 	return nil
@@ -203,7 +203,7 @@ func (r RealPodControl) DeletePod(namespace string, podID string, object runtime
 	if err != nil {
 		return fmt.Errorf("object does not have ObjectMeta, %v", err)
 	}
-	glog.V(2).Infof("Controller %v deleting pod %v/%v", accessor.GetName(), namespace, podID)
+	klog.V(2).Infof("Controller %v deleting pod %v/%v", accessor.GetName(), namespace, podID)
 	if err := r.KubeClient.CoreV1().Pods(namespace).Delete(podID, nil); err != nil && !apierrors.IsNotFound(err) {
 		r.Recorder.Eventf(object, v1.EventTypeWarning, FailedDeletePodReason, "Error deleting: %v", err)
 		return fmt.Errorf("unable to delete pods: %v", err)

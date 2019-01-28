@@ -2,7 +2,7 @@ package queue
 
 import (
 	meta_util "github.com/appscode/kutil/meta"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -87,28 +87,28 @@ func NewObservableUpdateHandler(queue workqueue.RateLimitingInterface, enableSta
 func Enqueue(queue workqueue.RateLimitingInterface, obj interface{}) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
-		glog.Errorf("Couldn't get key for object %+v: %v", obj, err)
+		klog.Errorf("Couldn't get key for object %+v: %v", obj, err)
 		return
 	}
 	queue.Add(key)
 }
 
 func (h *QueueingEventHandler) OnAdd(obj interface{}) {
-	glog.V(6).Infof("Add event for %+v\n", obj)
+	klog.V(6).Infof("Add event for %+v\n", obj)
 	if h.enqueueAdd == nil || h.enqueueAdd(obj) {
 		Enqueue(h.queue, obj)
 	}
 }
 
 func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
-	glog.V(6).Infof("Update event for %+v\n", newObj)
+	klog.V(6).Infof("Update event for %+v\n", newObj)
 	if h.enqueueUpdate == nil || h.enqueueUpdate(oldObj, newObj) {
 		Enqueue(h.queue, newObj)
 	}
 }
 
 func (h *QueueingEventHandler) OnDelete(obj interface{}) {
-	glog.V(6).Infof("Delete event for %+v\n", obj)
+	klog.V(6).Infof("Delete event for %+v\n", obj)
 	if h.enqueueDelete {
 		Enqueue(h.queue, obj)
 	}

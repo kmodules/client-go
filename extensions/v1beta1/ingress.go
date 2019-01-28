@@ -2,7 +2,7 @@ package v1beta1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	extensions "k8s.io/api/extensions/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchIngress(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (*extensions.Ingress, kutil.VerbType, error) {
 	cur, err := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Create(transform(&extensions.Ingress{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Ingress",
@@ -53,7 +53,7 @@ func PatchIngressObject(c kubernetes.Interface, cur, mod *extensions.Ingress) (*
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching Ingress %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching Ingress %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.ExtensionsV1beta1().Ingresses(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateIngress(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 			result, e2 = c.ExtensionsV1beta1().Ingresses(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Ingress %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update Ingress %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

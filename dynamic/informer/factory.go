@@ -22,7 +22,7 @@ import (
 	"time"
 
 	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // SharedInformerFactory is a factory for requesting dynamic informers from a
@@ -65,7 +65,7 @@ func (f *SharedInformerFactory) Resource(apiVersion, resource string) (*Resource
 	if sharedInformer, ok := f.sharedInformers[key]; ok {
 		count := f.refCount[key] + 1
 		f.refCount[key] = count
-		glog.V(4).Infof("Subscribed to shared informer for %v in %v (total subscribers now %v)", resource, apiVersion, count)
+		klog.V(4).Infof("Subscribed to shared informer for %v in %v (total subscribers now %v)", resource, apiVersion, count)
 		return newResourceInformer(sharedInformer), nil
 	}
 
@@ -85,7 +85,7 @@ func (f *SharedInformerFactory) Resource(apiVersion, resource string) (*Resource
 		defer f.mutex.Unlock()
 
 		count := f.refCount[key] - 1
-		glog.V(4).Infof("Unsubscribed from shared informer for %v in %v (total subscribers now %v)", resource, apiVersion, count)
+		klog.V(4).Infof("Unsubscribed from shared informer for %v in %v (total subscribers now %v)", resource, apiVersion, count)
 
 		if count > 0 {
 			// Others are still using it.
@@ -94,13 +94,13 @@ func (f *SharedInformerFactory) Resource(apiVersion, resource string) (*Resource
 		}
 
 		// We're the last ones using it.
-		glog.V(4).Infof("Stopping shared informer for %v in %v (no more subscribers)", resource, apiVersion)
+		klog.V(4).Infof("Stopping shared informer for %v in %v (no more subscribers)", resource, apiVersion)
 		close(stopCh)
 		delete(f.refCount, key)
 		delete(f.sharedInformers, key)
 	}
 
-	glog.V(4).Infof("Starting shared informer for %v in %v", resource, apiVersion)
+	klog.V(4).Infof("Starting shared informer for %v in %v", resource, apiVersion)
 	sharedInformer := newSharedResourceInformer(client, f.defaultResync, closeFn)
 	f.sharedInformers[key] = sharedInformer
 	f.refCount[key] = 1

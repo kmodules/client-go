@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -31,7 +31,7 @@ func CreateOrPatch(
 
 	cur, err := ri.Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating %s %s/%s.", gvr.String(), meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating %s %s/%s.", gvr.String(), meta.Namespace, meta.Name)
 		u := &unstructured.Unstructured{}
 		u.SetName(meta.Name)
 		u.SetNamespace(meta.Namespace)
@@ -81,7 +81,7 @@ func PatchObject(
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching %s %s/%s with %s.", gvr.String(), cur.GetNamespace(), cur.GetName(), string(patch))
+	klog.V(3).Infof("Patching %s %s/%s with %s.", gvr.String(), cur.GetNamespace(), cur.GetName(), string(patch))
 	out, err := ri.Patch(cur.GetName(), types.MergePatchType, patch, metav1.UpdateOptions{})
 	return out, kutil.VerbPatched, err
 }
@@ -109,7 +109,7 @@ func TryUpdate(
 			result, e2 = ri.Update(transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update %s %s/%s due to %v.", attempt, gvr.String(), cur.GetNamespace(), cur.GetName(), e2)
+		klog.Errorf("Attempt %d failed to update %s %s/%s due to %v.", attempt, gvr.String(), cur.GetNamespace(), cur.GetName(), e2)
 		return false, nil
 	})
 

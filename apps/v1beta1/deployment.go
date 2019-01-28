@@ -4,7 +4,7 @@ import (
 	. "github.com/appscode/go/types"
 	"github.com/appscode/kutil"
 	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -18,7 +18,7 @@ import (
 func CreateOrPatchDeployment(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (*apps.Deployment, kutil.VerbType, error) {
 	cur, err := c.AppsV1beta1().Deployments(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating Deployment %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating Deployment %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.AppsV1beta1().Deployments(meta.Namespace).Create(transform(&apps.Deployment{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Deployment",
@@ -55,7 +55,7 @@ func PatchDeploymentObject(c kubernetes.Interface, cur, mod *apps.Deployment) (*
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching Deployment %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching Deployment %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.AppsV1beta1().Deployments(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -71,7 +71,7 @@ func TryUpdateDeployment(c kubernetes.Interface, meta metav1.ObjectMeta, transfo
 			result, e2 = c.AppsV1beta1().Deployments(cur.Namespace).Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update Deployment %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update Deployment %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

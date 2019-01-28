@@ -10,7 +10,7 @@ import (
 	"github.com/appscode/go/log"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/structs"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -133,9 +133,9 @@ func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
 		}
 	}
 
-	if !match && bool(glog.V(log.LevelDebug)) {
+	if !match && bool(klog.V(log.LevelDebug)) {
 		diff := Diff(old, nu)
-		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
+		klog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
 	}
 	return match
 }

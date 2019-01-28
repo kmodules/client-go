@@ -2,7 +2,7 @@ package v1beta1
 
 import (
 	"github.com/appscode/kutil"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/pkg/errors"
 	rbac "k8s.io/api/rbac/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -16,7 +16,7 @@ import (
 func CreateOrPatchClusterRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRoleBinding) *rbac.ClusterRoleBinding) (*rbac.ClusterRoleBinding, kutil.VerbType, error) {
 	cur, err := c.RbacV1beta1().ClusterRoleBindings().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating ClusterRoleBinding %s.", meta.Name)
+		klog.V(3).Infof("Creating ClusterRoleBinding %s.", meta.Name)
 		out, err := c.RbacV1beta1().ClusterRoleBindings().Create(transform(&rbac.ClusterRoleBinding{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "ClusterRoleBinding",
@@ -53,7 +53,7 @@ func PatchClusterRoleBindingObject(c kubernetes.Interface, cur, mod *rbac.Cluste
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching ClusterRoleBinding %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching ClusterRoleBinding %s with %s.", cur.Name, string(patch))
 	out, err := c.RbacV1beta1().ClusterRoleBindings().Patch(cur.Name, types.StrategicMergePatchType, patch)
 	return out, kutil.VerbPatched, err
 }
@@ -69,7 +69,7 @@ func TryUpdateClusterRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta,
 			result, e2 = c.RbacV1beta1().ClusterRoleBindings().Update(transform(cur.DeepCopy()))
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update ClusterRoleBinding %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update ClusterRoleBinding %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 
