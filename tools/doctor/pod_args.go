@@ -83,7 +83,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["client-ca-file"]; ok && v != "" {
-		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
+		data, err := exec.ExecIntoPod(d.config, &pod, exec.Command("cat", v))
 		if err != nil {
 			return nil, err
 		}
@@ -91,7 +91,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["tls-cert-file"]; ok && v != "" {
-		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
+		data, err := exec.ExecIntoPod(d.config, &pod, exec.Command("cat", v))
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +99,7 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["requestheader-client-ca-file"]; ok && v != "" {
-		data, err := exec.ExecIntoPod(d.config, &pod, "cat", v)
+		data, err := exec.ExecIntoPod(d.config, &pod, exec.Command("cat", v))
 		if err != nil {
 			return nil, err
 		}
