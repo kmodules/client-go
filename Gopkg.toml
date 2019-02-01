@@ -139,6 +139,10 @@
   name = "github.com/docker/libtrust"
   revision = "9cbd2a1374f46905c68a4eb3694a130610adc62a"
 
+[[constraint]]
+  branch = "master"
+  name = "github.com/prometheus/client_golang"
+
 [prune]
   unused-packages = true
   go-tests = true
