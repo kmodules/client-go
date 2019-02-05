@@ -156,6 +156,8 @@ func (backupOutput *BackupOutput) ExtractCheckInfo(out []byte) {
 func (backupOutput *BackupOutput) ExtractCleanupInfo(out []byte) error {
 	scanner := bufio.NewScanner(bytes.NewReader(out))
 	var line string
+	snapshotCount := 0
+	snapshotRemoved := 0
 	for scanner.Scan() {
 		line = scanner.Text()
 		line = strings.TrimSpace(line)
@@ -165,11 +167,11 @@ func (backupOutput *BackupOutput) ExtractCleanupInfo(out []byte) error {
 			if length < 3 {
 				return fmt.Errorf("failed to parse current available snapshot statistics")
 			}
-			snapshotCount, err := strconv.Atoi(parts[1])
+			c, err := strconv.Atoi(parts[1])
 			if err != nil {
 				return err
 			}
-			backupOutput.RepositoryStats.SnapshotCount = snapshotCount
+			snapshotCount = snapshotCount + c
 		}
 		if strings.HasPrefix(line, "remove") && strings.HasSuffix(line, "snapshots:") {
 			parts := strings.FieldsFunc(line, separators)
@@ -177,13 +179,15 @@ func (backupOutput *BackupOutput) ExtractCleanupInfo(out []byte) error {
 			if length < 3 {
 				return fmt.Errorf("failed to parse cleaned snapshot statistics")
 			}
-			snapshotRemoved, err := strconv.Atoi(parts[1])
+			c, err := strconv.Atoi(parts[1])
 			if err != nil {
 				return err
 			}
-			backupOutput.RepositoryStats.SnapshotRemovedOnLastCleanup = snapshotRemoved
+			snapshotRemoved = snapshotRemoved + c
 		}
 	}
+	backupOutput.RepositoryStats.SnapshotRemovedOnLastCleanup = snapshotRemoved
+	backupOutput.RepositoryStats.SnapshotCount = snapshotCount
 	return nil
 }
 
