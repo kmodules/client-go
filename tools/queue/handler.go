@@ -1,7 +1,10 @@
 package queue
 
 import (
+	"fmt"
+
 	meta_util "github.com/appscode/kutil/meta"
+	"github.com/fatih/structs"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -79,6 +82,32 @@ func NewObservableUpdateHandler(queue workqueue.RateLimitingInterface, enableSta
 		enqueueUpdate: func(old, nu interface{}) bool {
 			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil ||
 				!meta_util.AlreadyObserved2(old, nu, enableStatusSubresource)
+		},
+		enqueueDelete: true,
+	}
+}
+
+// NewObservableFailureHandler is similar to NewObservableUpdateHandler, but it will also look for "Failed" Status.
+func NewObservableFailureHandler(queue workqueue.RateLimitingInterface, enableStatusSubresource bool) *QueueingEventHandler {
+	return &QueueingEventHandler{
+		queue:      queue,
+		enqueueAdd: func(_ interface{}) bool { return false },
+		enqueueUpdate: func(old, nu interface{}) bool {
+			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil ||
+				!meta_util.AlreadyObserved2(old, nu, enableStatusSubresource) ||
+				func(nu interface{}) bool {
+					// check if new object has "status.phase"="Failed"
+					if nu == nil {
+						return false
+					}
+					if phase := structs.New(nu).
+						Field("Status").
+						Field("Phase").
+						Value(); fmt.Sprintf("%v", phase) == "Failed" {
+						return true
+					}
+					return false
+				}(nu)
 		},
 		enqueueDelete: true,
 	}
