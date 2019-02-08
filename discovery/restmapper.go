@@ -89,6 +89,10 @@ func LoadRestMapper(client discovery.DiscoveryInterface) (*DefaultRESTMapper, er
 }
 
 func guessGVK(obj interface{}) (schema.GroupVersionKind, error) {
+	if m, err := meta.TypeAccessor(obj); err == nil {
+		return schema.FromAPIVersionAndKind(m.GetAPIVersion(), m.GetKind()), nil
+	}
+
 	val, err := conversion.EnforcePtr(obj)
 	if err != nil {
 		return schema.GroupVersionKind{}, err
