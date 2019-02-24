@@ -126,7 +126,7 @@
 [[projects]]
   branch = "master"
   digest = "1:a378600b4c58d92a4966c9ff7ea858ca175172338aa74a0fb6aeb7f56b037609"
-  name = "github.com/appscode/kutil"
+  name = kutil "kmodules.xyz/client-go"
   packages = [
     ".",
     "apiextensions/v1beta1",
@@ -1599,18 +1599,18 @@
     "github.com/appscode/go/sets",
     "github.com/appscode/go/types",
     "github.com/appscode/jsonpatch",
-    "github.com/appscode/kutil",
-    "github.com/appscode/kutil/apiextensions/v1beta1",
-    "github.com/appscode/kutil/apiregistration/v1beta1",
-    "github.com/appscode/kutil/core/v1",
-    "github.com/appscode/kutil/discovery",
-    "github.com/appscode/kutil/dynamic",
-    "github.com/appscode/kutil/dynamic/clientset",
-    "github.com/appscode/kutil/dynamic/discovery",
-    "github.com/appscode/kutil/dynamic/lister",
-    "github.com/appscode/kutil/meta",
-    "github.com/appscode/kutil/tools/analytics",
-    "github.com/appscode/kutil/tools/exec",
+    kutil "kmodules.xyz/client-go",
+    "kmodules.xyz/client-go/apiextensions/v1beta1",
+    "kmodules.xyz/client-go/apiregistration/v1beta1",
+    "kmodules.xyz/client-go/core/v1",
+    "kmodules.xyz/client-go/discovery",
+    "kmodules.xyz/client-go/dynamic",
+    "kmodules.xyz/client-go/dynamic/clientset",
+    "kmodules.xyz/client-go/dynamic/discovery",
+    "kmodules.xyz/client-go/dynamic/lister",
+    "kmodules.xyz/client-go/meta",
+    "kmodules.xyz/client-go/tools/analytics",
+    "kmodules.xyz/client-go/tools/exec",
     "github.com/appscode/mergo",
     "github.com/davecgh/go-spew/spew",
     "github.com/docker/distribution/manifest/schema2",

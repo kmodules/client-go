@@ -1,5 +1,5 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/appscode/kutil)](https://goreportcard.com/report/github.com/appscode/kutil)
-[![GoDoc](https://godoc.org/github.com/appscode/kutil?status.svg "GoDoc")](https://godoc.org/github.com/appscode/kutil)
+[![Go Report Card](https://goreportcard.com/badge/kmodules.xyz/client-go)](https://goreportcard.com/report/kmodules.xyz/client-go)
+[![GoDoc](https://godoc.org/kmodules.xyz/client-go?status.svg "GoDoc")](https://godoc.org/kmodules.xyz/client-go)
 [![Build Status](https://travis-ci.org/appscode/kutil.svg?branch=master)](https://travis-ci.org/appscode/kutil)
 [![codecov](https://codecov.io/gh/appscode/kutil/branch/master/graph/badge.svg)](https://codecov.io/gh/appscode/kutil)
 [![Slack](https://slack.appscode.com/badge.svg)](https://slack.appscode.com)

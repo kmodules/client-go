@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/appscode/go/types"
-	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
 	"github.com/golang/glog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	k8s "k8s.io/kubernetes/pkg/controller"
+	dynamicclientset "kmodules.xyz/client-go/dynamic/clientset"
 )
 
 type UnstructuredManager struct {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	reg "k8s.io/api/admissionregistration/v1beta1"
@@ -20,6 +19,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	watchtools "k8s.io/client-go/tools/watch"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchMutatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration) (*reg.MutatingWebhookConfiguration, kutil.VerbType, error) {

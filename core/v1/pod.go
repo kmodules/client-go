@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -11,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchPod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Pod) *core.Pod) (*core.Pod, kutil.VerbType, error) {

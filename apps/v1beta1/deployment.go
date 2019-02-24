@@ -2,8 +2,6 @@ package v1beta1
 
 import (
 	. "github.com/appscode/go/types"
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1beta1"
@@ -13,6 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 func CreateOrPatchDeployment(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (*apps.Deployment, kutil.VerbType, error) {
