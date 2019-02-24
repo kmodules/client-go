@@ -50,12 +50,16 @@
   name = "github.com/appscode/go-version"
 
 [[override]]
+  name = "gopkg.in/square/go-jose.v2"
+  version = "=v2.2.1"
+
+[[override]]
   name = "github.com/russross/blackfriday"
-  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
+  version = "=v1.5.2"
 
 [[constraint]]
-  branch = "master"
   name = "github.com/spf13/afero"
+  version = "=v1.1.2"
 
 [[constraint]]
   name = "github.com/fsnotify/fsnotify"
@@ -63,44 +67,44 @@
 
 [[override]]
   name = "k8s.io/api"
-  version = "kubernetes-1.12.0"
+  version = "kubernetes-1.13.0"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.12.0"
+  version = "kubernetes-1.13.0"
 
 [[override]]
   name = "k8s.io/apimachinery"
-  branch = "ac-1.12.0"
-  source = "github.com/pharmer/apimachinery"
+  branch = "ac-1.13.0"
+  source = "github.com/kmodules/apimachinery"
 
 [[override]]
   name = "k8s.io/apiserver"
-  branch = "ac-1.12.0"
-  source = "github.com/pharmer/apiserver"
+  branch = "ac-1.13.0"
+  source = "github.com/kmodules/apiserver"
 
 [[override]]
   name = "k8s.io/client-go"
-  version = "v9.0.0"
+  version = "=v10.0.0"
 
 [[override]]
   name = "k8s.io/kube-aggregator"
-  version = "kubernetes-1.12.0"
+  version = "kubernetes-1.13.0"
 
 [[override]]
   name = "k8s.io/kubernetes"
-  version = "v1.12.0"
+  version = "=v1.13.0"
 
 [[override]]
   name = "k8s.io/kube-openapi"
-  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+  revision = "c59034cc13d587f5ef4e85ca0ade0c1866ae8e1d"
 
 [[override]]
   name = "github.com/appscode/docker-registry-client"
   branch = "master"
 
 [[override]]
-  branch = "release-branch.go1.9"
+  branch = "release-branch.go1.11"
   name = "golang.org/x/net"
 
 [[override]]
@@ -109,11 +113,11 @@
 
 [[override]]
   name = "github.com/Azure/azure-sdk-for-go"
-  version = "=v19.0.0"
+  version = "=v21.3.0"
 
 [[override]]
   name = "github.com/Azure/go-autorest"
-  version = "=v10.14.0"
+  version = "=v11.1.0"
 
 [[override]]
   name = "github.com/docker/distribution"
