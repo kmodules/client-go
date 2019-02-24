@@ -2,7 +2,7 @@
 set -eou pipefail
 
 GOPATH=$(go env GOPATH)
-REPO_ROOT="$GOPATH/src/github.com/appscode/kutil"
+REPO_ROOT="$GOPATH/src/kmodules.xyz/client-go"
 
 pushd $REPO_ROOT
 

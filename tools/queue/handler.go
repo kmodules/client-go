@@ -1,7 +1,6 @@
 package queue
 
 import (
-	meta_util "github.com/appscode/kutil/meta"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -10,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	meta_util "kmodules.xyz/client-go/meta"
 )
 
 // QueueingEventHandler queues the key for the object on add and update events

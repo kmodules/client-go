@@ -1,7 +1,6 @@
 package v1beta1
 
 import (
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -11,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	reg "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1"
 	apireg_cs "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchAPIService(c apireg_cs.Interface, name string, transform func(*reg.APIService) *reg.APIService) (*reg.APIService, kutil.VerbType, error) {

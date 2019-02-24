@@ -19,7 +19,6 @@ package clientset
 import (
 	"fmt"
 
-	dynamicdiscovery "github.com/appscode/kutil/dynamic/discovery"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -27,6 +26,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/util/retry"
+	dynamicdiscovery "kmodules.xyz/client-go/dynamic/discovery"
 )
 
 type Clientset struct {

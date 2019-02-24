@@ -3,7 +3,6 @@ package dynamic
 import (
 	"encoding/json"
 
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -14,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/jsonmergepatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatch(

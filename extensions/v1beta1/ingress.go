@@ -1,7 +1,6 @@
 package v1beta1
 
 import (
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -11,6 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchIngress(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (*extensions.Ingress, kutil.VerbType, error) {

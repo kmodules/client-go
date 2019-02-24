@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -9,6 +8,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchEndpoints(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Endpoints) *core.Endpoints) (*core.Endpoints, kutil.VerbType, error) {

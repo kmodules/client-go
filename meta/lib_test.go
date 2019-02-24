@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/appscode/kutil/meta"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"kmodules.xyz/client-go/meta"
 )
 
 var lblAphlict = map[string]string{

@@ -1,9 +1,6 @@
 package v1beta1
 
 import (
-	"github.com/appscode/kutil"
-	core_util "github.com/appscode/kutil/core/v1"
-	"github.com/appscode/kutil/discovery"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -13,6 +10,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
 )
 
 func CreateOrPatchDaemonSet(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, kutil.VerbType, error) {

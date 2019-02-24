@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	dynamicclientset "github.com/appscode/kutil/dynamic/clientset"
 	"github.com/golang/glog"
+	dynamicclientset "kmodules.xyz/client-go/dynamic/clientset"
 )
 
 // SharedInformerFactory is a factory for requesting dynamic informers from a

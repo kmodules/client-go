@@ -2,7 +2,6 @@ package v1
 
 import (
 	. "github.com/appscode/go/types"
-	"github.com/appscode/kutil"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	apps "k8s.io/api/apps/v1"
@@ -12,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchReplicaSet(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.ReplicaSet) *apps.ReplicaSet) (*apps.ReplicaSet, kutil.VerbType, error) {

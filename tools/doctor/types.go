@@ -132,7 +132,7 @@ func (c ClusterInfo) Validate() error {
 	}
 	{
 		if len(c.APIServers) == 0 && !strings.Contains(c.Version.GitVersion, "-gke.") {
-			errs = append(errs, errors.New(`failed to detect kube apiservers. Please file a bug at: https://github.com/appscode/kutil/issues/new .`))
+			errs = append(errs, errors.New(`failed to detect kube apiservers. Please file a bug at: https://kmodules.xyz/client-go/issues/new .`))
 		}
 	}
 	{
