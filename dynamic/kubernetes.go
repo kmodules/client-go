@@ -160,21 +160,20 @@ func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resource schema
 			if err != nil {
 				return nil, schema.GroupVersionResource{}, err
 			}
-
-			var ri dynamic.ResourceInterface
-			if ar.Namespaced {
-				ri = dc.Resource(resource).Namespace(m.GetNamespace())
-			} else {
-				ri = dc.Resource(resource)
-			}
-			parent, err := ri.Get(ref.Name, metav1.GetOptions{})
-			if err != nil {
-				return nil, schema.GroupVersionResource{}, err
-			}
 			gvr := schema.GroupVersionResource{
 				Group:    ar.Group,
 				Version:  ar.Version,
 				Resource: ar.Name,
+			}
+			var ri dynamic.ResourceInterface
+			if ar.Namespaced {
+				ri = dc.Resource(gvr).Namespace(m.GetNamespace())
+			} else {
+				ri = dc.Resource(gvr)
+			}
+			parent, err := ri.Get(ref.Name, metav1.GetOptions{})
+			if err != nil {
+				return nil, schema.GroupVersionResource{}, err
 			}
 			return findWorkload(kc, dc, gvr, parent)
 		}
