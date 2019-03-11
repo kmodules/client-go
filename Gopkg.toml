@@ -26,8 +26,8 @@
   name = "github.com/appscode/go"
 
 [[constraint]]
-  name = "github.com/appscode/mergo"
-  version = "v0.3.6"
+  name = "github.com/imdario/mergo"
+  version = "v0.3.7"
 
 [[constraint]]
   branch = "master"

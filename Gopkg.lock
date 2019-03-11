@@ -124,14 +124,6 @@
   version = "1.0.0"
 
 [[projects]]
-  digest = "1:8eb1de8112c9924d59bf1d3e5c26f5eaa2bfc2a5fcbb92dc1c2e4546d695f277"
-  name = "github.com/appscode/mergo"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
-  version = "v0.3.6"
-
-[[projects]]
   digest = "1:b41d823d3b233db39c6ded4464065dba66c6758317425787eca7d9d0626db23a"
   name = "github.com/aws/aws-sdk-go"
   packages = [
@@ -1572,7 +1564,6 @@
     "github.com/appscode/go/sets",
     "github.com/appscode/go/types",
     "github.com/appscode/jsonpatch",
-    "github.com/appscode/mergo",
     "github.com/davecgh/go-spew/spew",
     "github.com/docker/distribution/manifest/schema2",
     "github.com/docker/docker/api/types",
@@ -1582,6 +1573,7 @@
     "github.com/go-openapi/spec",
     "github.com/golang/glog",
     "github.com/google/go-cmp/cmp",
+    "github.com/imdario/mergo",
     "github.com/jpillora/go-ogle-analytics",
     "github.com/json-iterator/go",
     "github.com/mitchellh/mapstructure",
