@@ -24,7 +24,7 @@ var labelKeyBlacklist = []string{
 	NameLabelKey,
 	VersionLabelKey,
 	InstanceLabelKey,
-	PartOfLabelKey,
+	// PartOfLabelKey, // propagate part-of key
 	ComponentLabelKey,
 	ManagedByLabelKey,
 }
