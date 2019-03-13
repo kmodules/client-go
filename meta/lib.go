@@ -29,8 +29,12 @@ var labelKeyBlacklist = []string{
 	ManagedByLabelKey,
 }
 
-func init() {
-	pflag.StringSliceVar(&labelKeyBlacklist, "label-key-blacklist", labelKeyBlacklist, "list of keys that are not propagated from a CRD object to its offshoots")
+// InitFlags is for explicitly initializing the flags
+func InitFlags(fs *pflag.FlagSet) {
+	if fs == nil {
+		fs = pflag.CommandLine
+	}
+	fs.StringSliceVar(&labelKeyBlacklist, "label-key-blacklist", labelKeyBlacklist, "list of keys that are not propagated from a CRD object to its offshoots")
 }
 
 func DeleteInBackground() *metav1.DeleteOptions {
