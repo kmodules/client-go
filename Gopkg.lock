@@ -861,17 +861,23 @@
   revision = "584f3b12f43e1e55248c90e84804777009eed0a4"
 
 [[projects]]
-  digest = "1:0c56024909189aee3364b7f21a95a27459f718aa7c199a5c111c36cfffd9eaef"
+  digest = "1:28756bf526c1af662d24519f2fa7abca7237bebb06e3e02941b2b6e5b6ceb7b9"
   name = "golang.org/x/text"
   packages = [
     "collate",
     "collate/build",
+    "encoding",
+    "encoding/internal",
+    "encoding/internal/identifier",
+    "encoding/unicode",
     "internal/colltab",
     "internal/gen",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
+    "internal/utf8internal",
     "language",
+    "runes",
     "secure/bidirule",
     "transform",
     "unicode/bidi",
@@ -1056,7 +1062,7 @@
 
 [[projects]]
   branch = "ac-1.13.0"
-  digest = "1:068143894edd3f0e92504856c72c52c7a612df1c1b3b614c40ff7e6aa40d5edf"
+  digest = "1:35729876ef9740248d700e396c84959d2db3af4df2fa535598d89a05ba337199"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/equality",
@@ -1068,6 +1074,7 @@
     "pkg/apis/meta/internalversion",
     "pkg/apis/meta/v1",
     "pkg/apis/meta/v1/unstructured",
+    "pkg/apis/meta/v1/unstructured/unstructuredscheme",
     "pkg/apis/meta/v1/validation",
     "pkg/apis/meta/v1beta1",
     "pkg/conversion",
@@ -1225,7 +1232,19 @@
   source = "github.com/kmodules/apiserver"
 
 [[projects]]
-  digest = "1:1a8bfd8839ba85ebbd4fed7ff3970eef3d135a68570be93bff15c3b0c2987b31"
+  digest = "1:63793246976569a95e534c731e79cc555dabee6f8efa29a0b28ca33f23b7e28b"
+  name = "k8s.io/cli-runtime"
+  packages = [
+    "pkg/genericclioptions",
+    "pkg/genericclioptions/printers",
+    "pkg/genericclioptions/resource",
+  ]
+  pruneopts = "UT"
+  revision = "a04da5c88c0796c1dc5ff976a9c91999779ac0e4"
+  version = "kubernetes-1.13.0"
+
+[[projects]]
+  digest = "1:e433ea6193a695ae3bab9d54b62e8a9c3d74a81fbb582710b729c018433acdb7"
   name = "k8s.io/client-go"
   packages = [
     "deprecated-dynamic",
@@ -1351,6 +1370,7 @@
     "plugin/pkg/client/auth/openstack",
     "rest",
     "rest/watch",
+    "restmapper",
     "third_party/forked/golang/template",
     "tools/auth",
     "tools/cache",
@@ -1635,6 +1655,7 @@
     "k8s.io/apiserver/pkg/registry/rest",
     "k8s.io/apiserver/pkg/server",
     "k8s.io/apiserver/pkg/server/options",
+    "k8s.io/cli-runtime/pkg/genericclioptions",
     "k8s.io/client-go/deprecated-dynamic",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/dynamic",
@@ -1644,8 +1665,10 @@
     "k8s.io/client-go/kubernetes/typed/core/v1",
     "k8s.io/client-go/plugin/pkg/client/auth",
     "k8s.io/client-go/rest",
+    "k8s.io/client-go/restmapper",
     "k8s.io/client-go/tools/cache",
     "k8s.io/client-go/tools/clientcmd",
+    "k8s.io/client-go/tools/clientcmd/api",
     "k8s.io/client-go/tools/pager",
     "k8s.io/client-go/tools/portforward",
     "k8s.io/client-go/tools/record",

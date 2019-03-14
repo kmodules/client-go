@@ -84,6 +84,10 @@
   source = "github.com/kmodules/apiserver"
 
 [[override]]
+  name = "k8s.io/cli-runtime"
+  version = "kubernetes-1.13.0"
+
+[[override]]
   name = "k8s.io/client-go"
   version = "=v10.0.0"
 
