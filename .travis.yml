@@ -3,22 +3,9 @@ go:
  - 1.x
  - tip
 
-env:
-  - DEP_VERSION="0.4.1"
-
-before_install:
-  # ref: http://serverfault.com/a/316100
-  - mkdir -p $HOME/.ssh
-  - ssh-keyscan -H bitbucket.org >> $HOME/.ssh/known_hosts
-  # Download the binary to bin folder in $GOPATH
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
-  # Make the binary executable
-  - chmod +x $GOPATH/bin/dep
-
 go_import_path: kmodules.xyz/client-go
 
-install:
-  - dep ensure -vendor-only
+install: true
 
 script:
   - go build ./...
