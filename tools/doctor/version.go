@@ -1,8 +1,8 @@
 package doctor
 
 import (
-	version "github.com/appscode/go-version"
 	"github.com/pkg/errors"
+	"gomodules.xyz/version"
 )
 
 func (d *Doctor) extractVersion(info *ClusterInfo) error {

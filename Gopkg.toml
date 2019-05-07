@@ -47,7 +47,7 @@
 
 [[constraint]]
   branch = "master"
-  name = "github.com/appscode/go-version"
+  name = "gomodules.xyz/version"
 
 [[override]]
   name = "gopkg.in/square/go-jose.v2"
