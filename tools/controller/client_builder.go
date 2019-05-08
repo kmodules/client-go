@@ -17,6 +17,7 @@ limitations under the License.
 package controller
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -110,18 +111,22 @@ func (b SAControllerClientBuilder) Config(name string) (*restclient.Config, erro
 	}
 
 	var clientConfig *restclient.Config
-
+	fieldSelector := fields.SelectorFromSet(map[string]string{
+		"type": string(v1.SecretTypeServiceAccountToken),
+	}).String()
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-			options.FieldSelector = fields.SelectorFromSet(map[string]string{"type": string(v1.SecretTypeServiceAccountToken)}).String()
+			options.FieldSelector = fieldSelector
 			return b.CoreClient.Secrets(b.Namespace).List(options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
-			options.FieldSelector = fields.SelectorFromSet(map[string]string{"type": string(v1.SecretTypeServiceAccountToken)}).String()
+			options.FieldSelector = fieldSelector
 			return b.CoreClient.Secrets(b.Namespace).Watch(options)
 		},
 	}
-	_, err = watchtools.ListWatchUntil(30*time.Second, lw,
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	_, err = watchtools.UntilWithSync(ctx, lw, &v1.Secret{}, nil,
 		func(event watch.Event) (bool, error) {
 			switch event.Type {
 			case watch.Deleted:
@@ -142,15 +147,15 @@ func (b SAControllerClientBuilder) Config(name string) (*restclient.Config, erro
 				}
 				validConfig, valid, err := b.getAuthenticatedConfig(sa, string(secret.Data[v1.ServiceAccountTokenKey]))
 				if err != nil {
-					glog.Warningf("error validating API token for %s/%s in secret %s: %v", sa.Name, sa.Namespace, secret.Name, err)
+					glog.Warningf("error validating API token for %s/%s in secret %s: %v", sa.Namespace, sa.Name, secret.Name, err)
 					// continue watching for good tokens
 					return false, nil
 				}
 				if !valid {
-					glog.Warningf("secret %s contained an invalid API token for %s/%s", secret.Name, sa.Name, sa.Namespace)
+					glog.Warningf("secret %s contained an invalid API token for %s/%s", secret.Name, sa.Namespace, sa.Name)
 					// try to delete the secret containing the invalid token
 					if err := b.CoreClient.Secrets(secret.Namespace).Delete(secret.Name, &metav1.DeleteOptions{}); err != nil && !apierrors.IsNotFound(err) {
-						glog.Warningf("error deleting secret %s containing invalid API token for %s/%s: %v", secret.Name, sa.Name, sa.Namespace, err)
+						glog.Warningf("error deleting secret %s containing invalid API token for %s/%s: %v", secret.Name, sa.Namespace, sa.Name, err)
 					}
 					// continue watching for good tokens
 					return false, nil
