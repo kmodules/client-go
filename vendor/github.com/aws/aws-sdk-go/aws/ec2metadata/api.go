@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
-	"github.com/aws/aws-sdk-go/internal/sdkuri"
 )
 
 // GetMetadata uses the path provided to request information from the EC2
@@ -19,14 +19,13 @@ func (c *EC2Metadata) GetMetadata(p string) (string, error) {
 	op := &request.Operation{
 		Name:       "GetMetadata",
 		HTTPMethod: "GET",
-		HTTPPath:   sdkuri.PathJoin("/meta-data", p),
+		HTTPPath:   path.Join("/", "meta-data", p),
 	}
 
 	output := &metadataOutput{}
 	req := c.NewRequest(op, nil, output)
-	err := req.Send()
 
-	return output.Content, err
+	return output.Content, req.Send()
 }
 
 // GetUserData returns the userdata that was configured for the service. If
@@ -36,7 +35,7 @@ func (c *EC2Metadata) GetUserData() (string, error) {
 	op := &request.Operation{
 		Name:       "GetUserData",
 		HTTPMethod: "GET",
-		HTTPPath:   "/user-data",
+		HTTPPath:   path.Join("/", "user-data"),
 	}
 
 	output := &metadataOutput{}
@@ -46,9 +45,8 @@ func (c *EC2Metadata) GetUserData() (string, error) {
 			r.Error = awserr.New("NotFoundError", "user-data not found", r.Error)
 		}
 	})
-	err := req.Send()
 
-	return output.Content, err
+	return output.Content, req.Send()
 }
 
 // GetDynamicData uses the path provided to request information from the EC2
@@ -58,14 +56,13 @@ func (c *EC2Metadata) GetDynamicData(p string) (string, error) {
 	op := &request.Operation{
 		Name:       "GetDynamicData",
 		HTTPMethod: "GET",
-		HTTPPath:   sdkuri.PathJoin("/dynamic", p),
+		HTTPPath:   path.Join("/", "dynamic", p),
 	}
 
 	output := &metadataOutput{}
 	req := c.NewRequest(op, nil, output)
-	err := req.Send()
 
-	return output.Content, err
+	return output.Content, req.Send()
 }
 
 // GetInstanceIdentityDocument retrieves an identity document describing an
@@ -119,10 +116,6 @@ func (c *EC2Metadata) Region() (string, error) {
 	resp, err := c.GetMetadata("placement/availability-zone")
 	if err != nil {
 		return "", err
-	}
-
-	if len(resp) == 0 {
-		return "", awserr.New("EC2MetadataError", "invalid Region response", nil)
 	}
 
 	// returns region without the suffix. Eg: us-west-2a becomes us-west-2
