@@ -16,7 +16,7 @@ import (
 func CreateOrPatchPodSecurityPolicy(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodSecurityPolicy) *policy.PodSecurityPolicy) (*policy.PodSecurityPolicy, kutil.VerbType, error) {
 	cur, err := c.PolicyV1beta1().PodSecurityPolicies().Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating PodSecurityPolicy %s/%s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating PodSecurityPolicy %s.", meta.Name)
 		out, err := c.PolicyV1beta1().PodSecurityPolicies().Create(transform(&policy.PodSecurityPolicy{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodSecurityPolicy",
