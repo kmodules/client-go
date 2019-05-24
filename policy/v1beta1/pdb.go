@@ -105,15 +105,12 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		if err!=nil{fmt.Println("WTH!")}
 		fmt.Println(" Version =  ", v)
 		if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.15"); err == nil && ok {
-
-			fmt.Println(" Version >= 1.15  ", v)
+			return PatchPodDisruptionBudget(c,cur,transform)
 		}
-		fmt.Println("===============>Patch PDB")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
 		glog.Warningf("PDB %s/%s spec is modified, deleting first.", meta.Namespace, meta.Name)
 		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			fmt.Println("Ordinarily, this should produce any error, err = ", err)
 			return nil, kutil.VerbUnchanged, err
 		}
 		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
@@ -125,11 +122,9 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 			ObjectMeta: meta,
 		}))
 		if err != nil{
-			fmt.Println("Patch error = ", err)
+			return nil, kutil.VerbUnchanged, err
 		}
 		return out, kutil.VerbPatched, err
-	} else{
-		fmt.Println("+++++++++>PDBs are equal")
 	}
-	return cur, "unchanged", err
+	return cur, kutil.VerbUnchanged, nil
 }
