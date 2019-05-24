@@ -117,7 +117,13 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		fmt.Println("Slept")
 		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
 		fmt.Println("Creating new pdb")
-		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(mod)
+		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(transform(&policy.PodDisruptionBudget{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "PodDisruptionBudget",
+				APIVersion: policy.SchemeGroupVersion.String(),
+			},
+			ObjectMeta: meta,
+		}))
 		if err != nil{
 			fmt.Println("Patch error = ", err)
 		}
