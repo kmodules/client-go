@@ -2,7 +2,6 @@ package v1beta1
 
 import (
 	"fmt"
-	types2 "github.com/appscode/go/types"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
@@ -14,7 +13,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 	"reflect"
-	"time"
 )
 
 func CreateOrPatchPodDisruptionBudget(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
@@ -101,22 +99,16 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	}
 
 	mod := transform(cur.DeepCopy())
-	fmt.Println("++++++++++Current pdb = ", cur.Spec)
-	fmt.Println("+++++++++++New pdb = ", mod.Spec)
 	if !reflect.DeepEqual(cur.Spec , mod.Spec){
-		fmt.Println("===============>PDBs ain't equal")
+		fmt.Println("===============>Patch PDB")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
 		glog.Warningf("PDB %s/%s spec is modified, deleting first.", meta.Namespace, meta.Name)
-		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{GracePeriodSeconds:types2.Int64P(1),})
+		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			fmt.Println("Ordinarily, this should produce any error, err = ", err)
 			return nil, kutil.VerbUnchanged, err
 		}
-		fmt.Println("Sleeping")
-		time.Sleep(time.Second*10)
-		fmt.Println("Slept")
 		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
-		fmt.Println("Creating new pdb")
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
@@ -129,8 +121,7 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		}
 		return out, kutil.VerbPatched, err
 	} else{
-		fmt.Println("+++++++++>PDBs are equal err = ", err)
+		fmt.Println("+++++++++>PDBs are equal")
 	}
-	fmt.Println("END err= ", err)
 	return cur, "unchanged", err
 }
