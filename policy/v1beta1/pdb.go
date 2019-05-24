@@ -1,7 +1,6 @@
 package v1beta1
 
 import (
-	"fmt"
 	"reflect"
 
 	"github.com/golang/glog"
@@ -20,7 +19,7 @@ import (
 func CreateOrPatchPodDisruptionBudget(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
 	cur, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating PDB %s/%s.", meta.Namespace, meta.Name)
+		glog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
@@ -35,21 +34,17 @@ func CreateOrPatchPodDisruptionBudget(c kubernetes.Interface, meta metav1.Object
 
 	mod := transform(cur.DeepCopy())
 	if !reflect.DeepEqual(cur.Spec, mod.Spec) {
-		v, err := discovery.GetVersion(c.Discovery())
-		if err != nil {
-			fmt.Println("WTH!")
-		}
-		fmt.Println(" Version =  ", v)
+		// ref: https://github.com/kubernetes/kubernetes/issues/45398
 		if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.15"); err == nil && ok {
 			return PatchPodDisruptionBudget(c, cur, transform)
 		}
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
-		glog.Warningf("PDB %s/%s spec is modified, deleting first.", meta.Namespace, meta.Name)
+		glog.Warningf("Spec of PodDisruptionBudget %s/%s is modified, deleting existing one first.", meta.Namespace, meta.Name)
 		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
-		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
+		glog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", mod.Namespace, mod.Name)
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
