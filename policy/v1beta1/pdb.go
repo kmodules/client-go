@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 	"reflect"
+	"time"
 )
 
 func CreateOrPatchPodDisruptionBudget(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
@@ -100,8 +101,8 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	}
 
 	mod := transform(cur.DeepCopy())
-	fmt.Println("Current pdb = ", cur.String())
-	fmt.Println("New pdb = ", mod.String())
+	fmt.Println("++++++++++Current pdb = ", cur.Spec)
+	fmt.Println("+++++++++++New pdb = ", mod.Spec)
 	if !reflect.DeepEqual(cur.Spec , mod.Spec){
 		fmt.Println("===============>PDBs ain't equal")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
@@ -111,9 +112,21 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 			fmt.Println("Ordinarily, this should produce any error, err = ", err)
 			return nil, kutil.VerbUnchanged, err
 		}
+		fmt.Println("Sleeping")
+		time.Sleep(time.Second*10)
+		fmt.Println("Slept")
 		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
 		fmt.Println("Creating new pdb")
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(mod)
+		if err != nil{
+			fmt.Println("Patch error = ", err)
+		}
+		fmt.Println(" Again Sleeping")
+		time.Sleep(time.Second*10)
+		fmt.Println("Slept")
+		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
+		fmt.Println("Creating new pdb")
+		_, err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(mod)
 		if err != nil{
 			fmt.Println("Patch error = ", err)
 		}
