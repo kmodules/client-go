@@ -101,10 +101,12 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 
 	mod := transform(cur.DeepCopy())
 	if !reflect.DeepEqual(cur.Spec , mod.Spec){
+		v, err := discovery.GetVersion(c.Discovery())
+		if err!=nil{fmt.Println("WTH!")}
+		fmt.Println(" Version =  ", v)
 		if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.15"); err == nil && ok {
-			v, err := discovery.GetVersion(c.Discovery())
-			if err!=nil{fmt.Println("WTH!")}
-			fmt.Println(" Version =  ", v)
+
+			fmt.Println(" Version >= 1.15  ", v)
 		}
 		fmt.Println("===============>Patch PDB")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
