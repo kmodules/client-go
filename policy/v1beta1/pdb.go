@@ -127,15 +127,6 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		if err != nil{
 			fmt.Println("Patch error = ", err)
 		}
-		fmt.Println(" Again Sleeping")
-		time.Sleep(time.Second*10)
-		fmt.Println("Slept")
-		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
-		fmt.Println("Creating new pdb")
-		_, err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(mod)
-		if err != nil{
-			fmt.Println("Patch error = ", err)
-		}
 		return out, kutil.VerbPatched, err
 	} else{
 		fmt.Println("+++++++++>PDBs are equal err = ", err)
