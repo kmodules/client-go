@@ -85,6 +85,7 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	cur, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PDB %s/%s.", meta.Namespace, meta.Name)
+		fmt.Println("===============>Create NEw")
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(transform(&policy.PodDisruptionBudget{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "PodDisruptionBudget",
@@ -98,8 +99,10 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	}
 
 	mod := transform(cur.DeepCopy())
+	fmt.Println("Current pdb = ", cur.String())
+	fmt.Println("New pdb = ", mod.String())
 	if !reflect.DeepEqual(cur.Spec , mod.Spec){
-		fmt.Println("PDBs ain't equal")
+		fmt.Println("===============>PDBs ain't equal")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
 		glog.Warningf("PDB %s/%s spec is modified, deleting first.", meta.Namespace, meta.Name)
 		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
@@ -110,7 +113,9 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		glog.V(3).Infof("Creating PDB %s/%s.", mod.Namespace, mod.Name)
 		out, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Create(mod)
 		return out, kutil.VerbPatched, err
+	} else{
+		fmt.Println("+++++++++>PDBs are equal err = ", err)
 	}
-	fmt.Println("Ordinarily, we should not reach here, err = ", err)
+	fmt.Println("END err= ", err)
 	return &policy.PodDisruptionBudget{}, kutil.VerbUnchanged, err
 }
