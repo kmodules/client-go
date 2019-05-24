@@ -2,6 +2,7 @@ package v1beta1
 
 import (
 	"fmt"
+	types2 "github.com/appscode/go/types"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	policy "k8s.io/api/policy/v1beta1"
@@ -105,7 +106,7 @@ func CreateOrPatchPDB(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 		fmt.Println("===============>PDBs ain't equal")
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
 		glog.Warningf("PDB %s/%s spec is modified, deleting first.", meta.Namespace, meta.Name)
-		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
+		err = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{GracePeriodSeconds:types2.Int64P(1),})
 		if err != nil {
 			fmt.Println("Ordinarily, this should produce any error, err = ", err)
 			return nil, kutil.VerbUnchanged, err
