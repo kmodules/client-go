@@ -277,7 +277,7 @@ func IsOwnedByRef(o runtime.Object, owner *core.ObjectReference) bool {
 
 	return o.GetObjectKind().GroupVersionKind() == owner.GroupVersionKind() &&
 		obj.GetName() == owner.Name &&
-		(string(owner.UID) == "" || owner.UID != obj.GetUID())
+		(string(owner.UID) == "" || obj.GetUID() == owner.UID)
 }
 
 func IsOwnedBy(o1 runtime.Object, o2 runtime.Object) bool {
@@ -291,5 +291,5 @@ func IsOwnedBy(o1 runtime.Object, o2 runtime.Object) bool {
 	}
 	return o1.GetObjectKind().GroupVersionKind() == o2.GetObjectKind().GroupVersionKind() &&
 		obj.GetName() == owner.GetName() &&
-		(string(owner.GetUID()) == "" || owner.GetUID() != obj.GetUID())
+		(string(owner.GetUID()) == "" || obj.GetUID() == owner.GetUID())
 }
