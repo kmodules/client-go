@@ -31,8 +31,6 @@ github.com/appscode/go/log/golog
 github.com/appscode/go/net/http
 github.com/appscode/go/context
 github.com/appscode/go/homedir
-# github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30
-github.com/appscode/jsonpatch
 # github.com/aws/aws-sdk-go v1.14.12
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/request
@@ -113,7 +111,7 @@ github.com/docker/spdystream/spdy
 # github.com/emicklei/go-restful v2.9.3+incompatible
 github.com/emicklei/go-restful
 github.com/emicklei/go-restful/log
-# github.com/evanphx/json-patch v4.2.0+incompatible
+# github.com/evanphx/json-patch v4.5.0+incompatible
 github.com/evanphx/json-patch
 # github.com/fatih/structs v1.1.0
 github.com/fatih/structs
@@ -294,6 +292,8 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/runes
 # golang.org/x/time v0.0.0-20190308202827-9d24e82272b4
 golang.org/x/time/rate
+# gomodules.xyz/jsonpatch/v2 v2.0.0
+gomodules.xyz/jsonpatch/v2
 # gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3
 gomodules.xyz/version
 # google.golang.org/appengine v1.5.0
