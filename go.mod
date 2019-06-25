@@ -9,7 +9,6 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/appscode/docker-registry-client v0.0.0-20180426150142-1bb02bb202b0
 	github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
-	github.com/appscode/jsonpatch v0.0.0-20190108182946-7c0e3b262f30
 	github.com/aws/aws-sdk-go v1.14.12 // indirect
 	github.com/beorn7/perks v1.0.0 // indirect
 	github.com/coreos/bbolt v1.3.2 // indirect
@@ -28,7 +27,7 @@ require (
 	github.com/elazarl/goproxy v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/elazarl/goproxy/ext v0.0.0-20190421051319-9d40249d3c2f // indirect
 	github.com/emicklei/go-restful v2.9.3+incompatible // indirect
-	github.com/evanphx/json-patch v4.2.0+incompatible
+	github.com/evanphx/json-patch v4.5.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/go-ini/ini v1.40.0 // indirect
@@ -89,6 +88,7 @@ require (
 	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b // indirect
 	golang.org/x/text v0.3.2 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
+	gomodules.xyz/jsonpatch/v2 v2.0.0
 	gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3
 	google.golang.org/appengine v1.5.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
