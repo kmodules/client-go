@@ -97,10 +97,10 @@ require (
 	gopkg.in/square/go-jose.v2 v2.2.1 // indirect
 	gotest.tools v2.2.0+incompatible // indirect
 	k8s.io/api v0.0.0-20190313235455-40a48860b5ab
-	k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
+	k8s.io/apiextensions-apiserver v0.0.0-20190516231611-bf6753f2aa24
 	k8s.io/apimachinery v0.0.0-20190424052434-11f1676e3da4
-	k8s.io/apiserver v0.0.0-00010101000000-000000000000
-	k8s.io/cli-runtime v0.0.0-20190314001948-2899ed30580f
+	k8s.io/apiserver v0.0.0-20190516230822-f89599b3f645
+	k8s.io/cli-runtime v0.0.0-20190516231937-17bc0b7fcef5
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/cloud-provider v0.0.0-20190314002645-c892ea32361a // indirect
 	k8s.io/component-base v0.0.0-20190424053038-9fe063da3132 // indirect
