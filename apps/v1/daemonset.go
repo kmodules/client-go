@@ -81,7 +81,7 @@ func TryUpdateDaemonSet(c kubernetes.Interface, meta metav1.ObjectMeta, transfor
 
 func WaitUntilDaemonSetReady(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		if obj, err := kubeClient.AppsV1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil {
+		if obj, err := kubeClient.AppsV1().DaemonSets(meta.Namespace).Get(meta.Name, metav1.GetOptions{}); err == nil && obj.Status.DesiredNumberScheduled != 0 {
 			return obj.Status.DesiredNumberScheduled == obj.Status.NumberReady, nil
 		}
 		return false, nil
