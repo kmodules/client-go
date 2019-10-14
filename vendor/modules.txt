@@ -1,4 +1,4 @@
-# cloud.google.com/go v0.34.0
+# cloud.google.com/go v0.34.0 => cloud.google.com/go v0.34.0
 cloud.google.com/go/compute/metadata
 # contrib.go.opencensus.io/exporter/ocagent v0.4.6
 contrib.go.opencensus.io/exporter/ocagent
@@ -28,7 +28,7 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/appscode/docker-registry-client v0.0.0-20180426150142-1bb02bb202b0
 github.com/appscode/docker-registry-client/registry
-# github.com/appscode/go v0.0.0-20190808133642-1d4ef1f1c1e0
+# github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
 github.com/appscode/go/types
 github.com/appscode/go/encoding/json/types
 github.com/appscode/go/log
@@ -342,7 +342,7 @@ golang.org/x/text/runes
 golang.org/x/time/rate
 # gomodules.xyz/jsonpatch/v2 v2.0.0
 gomodules.xyz/jsonpatch/v2
-# gomodules.xyz/version v0.0.0-20190507203204-7cec7ee542d3
+# gomodules.xyz/version v0.1.0
 gomodules.xyz/version
 # google.golang.org/api v0.2.0
 google.golang.org/api/support/bundler
@@ -506,7 +506,7 @@ k8s.io/apimachinery/pkg/util/framer
 k8s.io/apimachinery/pkg/util/yaml
 k8s.io/apimachinery/pkg/apis/meta/v1/unstructured/unstructuredscheme
 k8s.io/apimachinery/third_party/forked/golang/netutil
-# k8s.io/apiserver v0.0.0-20190313205120-8b27c41bdbb1 => github.com/kmodules/apiserver v0.0.0-20190508082252-8397d761d4b5
+# k8s.io/apiserver v0.0.0-20190313205120-8b27c41bdbb1 => github.com/kmodules/apiserver v0.0.0-20190811223248-5a95b2df4348
 k8s.io/apiserver/pkg/endpoints/openapi
 k8s.io/apiserver/pkg/registry/rest
 k8s.io/apiserver/pkg/server
@@ -781,9 +781,9 @@ k8s.io/client-go/listers/storage/v1alpha1
 k8s.io/client-go/listers/storage/v1beta1
 # k8s.io/cloud-provider v0.0.0-20190314002645-c892ea32361a => k8s.io/cloud-provider v0.0.0-20190314002645-c892ea32361a
 k8s.io/cloud-provider/features
-# k8s.io/component-base v0.0.0-20190314000054-4a91899592f4
+# k8s.io/component-base v0.0.0-20190314000054-4a91899592f4 => k8s.io/component-base v0.0.0-20190314000054-4a91899592f4
 k8s.io/component-base/cli/flag
-# k8s.io/klog v0.3.1 => k8s.io/klog v0.3.0
+# k8s.io/klog v0.3.0 => k8s.io/klog v0.3.0
 k8s.io/klog
 # k8s.io/kube-aggregator v0.0.0-20190314000639-da8327669ac5 => k8s.io/kube-aggregator v0.0.0-20190314000639-da8327669ac5
 k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1
