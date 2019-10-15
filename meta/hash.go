@@ -113,7 +113,7 @@ func AlreadyReconciled(o interface{}) bool {
 		generation = obj.GetGeneration()
 		observedGeneration, err = toInt64(st.Field("Status").Field("ObservedGeneration").Value())
 	default:
-		err = fmt.Errorf("unknown object type")
+		err = fmt.Errorf("unknown object type %s", reflect.TypeOf(o).String())
 	}
 	if err != nil {
 		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
@@ -132,7 +132,7 @@ func toInt64(v interface{}) (int64, error) {
 	case *int64:
 		return *m, nil
 	default:
-		return 0, fmt.Errorf("failed to parse type %s into IntHash", reflect.TypeOf(v).String())
+		return 0, fmt.Errorf("failed to convert to int64 from %s", reflect.TypeOf(v).String())
 	}
 }
 
