@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"hash"
 	"hash/fnv"
 	"reflect"
@@ -12,6 +13,7 @@ import (
 	"github.com/fatih/structs"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 // ObjectHash includes all top label fields (like data, spec) except TypeMeta, ObjectMeta and Status
@@ -81,6 +83,7 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	printer.Fprintf(hasher, "%#v", objectToWrite)
 }
 
+// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
 func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
 	if !enableStatusSubresource {
 		return false
@@ -95,6 +98,42 @@ func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
 		panic(err)
 	}
 	return observed.Equal(cur)
+}
+
+func AlreadyReconciled(o interface{}) bool {
+	var generation, observedGeneration int64
+	var err error
+
+	switch obj := o.(type) {
+	case *unstructured.Unstructured:
+		generation = obj.GetGeneration()
+		observedGeneration, _, err = unstructured.NestedInt64(obj.Object, "status", "observedGeneration")
+	case metav1.Object:
+		st := structs.New(o)
+		generation = obj.GetGeneration()
+		observedGeneration, err = toInt64(st.Field("Status").Field("ObservedGeneration").Value())
+	default:
+		err = fmt.Errorf("unknown object type")
+	}
+	if err != nil {
+		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
+	}
+	return observedGeneration >= generation
+}
+
+func toInt64(v interface{}) (int64, error) {
+	switch m := v.(type) {
+	case nil:
+		return 0, nil
+	case int:
+		return int64(m), nil
+	case int64:
+		return m, nil
+	case *int64:
+		return *m, nil
+	default:
+		return 0, fmt.Errorf("failed to parse type %s into IntHash", reflect.TypeOf(v).String())
+	}
 }
 
 func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
