@@ -28,7 +28,7 @@ github.com/PuerkitoBio/purell
 github.com/PuerkitoBio/urlesc
 # github.com/appscode/docker-registry-client v0.0.0-20180426150142-1bb02bb202b0
 github.com/appscode/docker-registry-client/registry
-# github.com/appscode/go v0.0.0-20191006073906-e3d193d493fc
+# github.com/appscode/go v0.0.0-20191016085057-e186b6c94a3b
 github.com/appscode/go/types
 github.com/appscode/go/encoding/json/types
 github.com/appscode/go/log

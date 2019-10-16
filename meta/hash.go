@@ -83,23 +83,6 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	printer.Fprintf(hasher, "%#v", objectToWrite)
 }
 
-// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
-func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
-	if !enableStatusSubresource {
-		return false
-	}
-
-	obj := o.(metav1.Object)
-	st := structs.New(o)
-
-	cur := types.NewIntHash(obj.GetGeneration(), GenerationHash(obj))
-	observed, err := types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
-	if err != nil {
-		panic(err)
-	}
-	return observed.Equal(cur)
-}
-
 func AlreadyReconciled(o interface{}) bool {
 	var generation, observedGeneration *types.IntHash
 	var err error
@@ -122,9 +105,27 @@ func AlreadyReconciled(o interface{}) bool {
 	if err != nil {
 		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
 	}
-	return observedGeneration.Equal(generation)
+	return observedGeneration.MatchGeneration(generation)
 }
 
+// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
+func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
+	if !enableStatusSubresource {
+		return false
+	}
+
+	obj := o.(metav1.Object)
+	st := structs.New(o)
+
+	cur := types.NewIntHash(obj.GetGeneration(), GenerationHash(obj))
+	observed, err := types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
+	if err != nil {
+		panic(err)
+	}
+	return observed.Equal(cur)
+}
+
+// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
 func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
 	if old == nil {
 		return nu == nil
