@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches-ignore:
+      - 'release-*'
+    tags-ignore:
+      - '*.*'
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Run checks
+      run: make ci
