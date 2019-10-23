@@ -6,10 +6,11 @@ import (
 	"os"
 	"testing"
 
+	"kmodules.xyz/client-go/apiextensions/v1beta1"
+
 	"github.com/go-openapi/spec"
 	extensionsobj "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1beta1"
 	"k8s.io/kube-openapi/pkg/common"
-	"kmodules.xyz/client-go/apiextensions/v1beta1"
 )
 
 func TestConvertSchematoJsonProp(t *testing.T) {

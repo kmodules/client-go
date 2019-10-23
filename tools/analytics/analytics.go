@@ -9,6 +9,8 @@ import (
 	"sort"
 	"strings"
 
+	"kmodules.xyz/client-go/meta"
+
 	"github.com/appscode/go/analytics"
 	net2 "github.com/appscode/go/net"
 	"github.com/appscode/go/sets"
@@ -19,7 +21,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"kmodules.xyz/client-go/meta"
 )
 
 const (

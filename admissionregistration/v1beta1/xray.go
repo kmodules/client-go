@@ -4,6 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	apireg_util "kmodules.xyz/client-go/apiregistration/v1beta1"
+	core_util "kmodules.xyz/client-go/core/v1"
+	"kmodules.xyz/client-go/discovery"
+	dynamic_util "kmodules.xyz/client-go/dynamic"
+	meta_util "kmodules.xyz/client-go/meta"
+
 	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
@@ -23,11 +29,6 @@ import (
 	apiregistration "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1beta1"
 	apireg_cs "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	kutil "kmodules.xyz/client-go"
-	apireg_util "kmodules.xyz/client-go/apiregistration/v1beta1"
-	core_util "kmodules.xyz/client-go/core/v1"
-	"kmodules.xyz/client-go/discovery"
-	dynamic_util "kmodules.xyz/client-go/dynamic"
-	meta_util "kmodules.xyz/client-go/meta"
 )
 
 func init() {

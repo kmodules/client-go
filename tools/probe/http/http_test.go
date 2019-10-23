@@ -29,10 +29,11 @@ import (
 	"testing"
 	"time"
 
+	"kmodules.xyz/client-go/tools/probe"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"kmodules.xyz/client-go/tools/probe"
 )
 
 const FailureCode int = -1

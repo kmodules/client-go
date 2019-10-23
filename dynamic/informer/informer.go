@@ -21,14 +21,15 @@ import (
 	"sync"
 	"time"
 
+	dynamicclientset "kmodules.xyz/client-go/dynamic/clientset"
+	dynamiclister "kmodules.xyz/client-go/dynamic/lister"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
-	dynamicclientset "kmodules.xyz/client-go/dynamic/clientset"
-	dynamiclister "kmodules.xyz/client-go/dynamic/lister"
 )
 
 // SharedIndexInformer is an extension of the standard interface of the same

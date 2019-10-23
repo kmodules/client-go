@@ -19,9 +19,10 @@ package exec
 import (
 	"bytes"
 
+	"kmodules.xyz/client-go/tools/probe"
+
 	"k8s.io/klog"
 	"k8s.io/utils/exec"
-	"kmodules.xyz/client-go/tools/probe"
 )
 
 const (

@@ -5,6 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"kmodules.xyz/client-go/discovery"
+
 	"github.com/appscode/go/log"
 	apps "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
@@ -23,7 +25,6 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"kmodules.xyz/client-go/discovery"
 )
 
 func skipIfNoMinikube(t *testing.T) {

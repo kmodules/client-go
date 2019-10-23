@@ -4,11 +4,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
-	core "k8s.io/api/core/v1"
 	core_util "kmodules.xyz/client-go/core/v1"
 	"kmodules.xyz/client-go/meta"
 	"kmodules.xyz/client-go/tools/exec"
+
+	"github.com/pkg/errors"
+	core "k8s.io/api/core/v1"
 )
 
 func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {

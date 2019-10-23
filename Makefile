@@ -43,7 +43,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_DIRS := *.go admissionregistration apiextensions apps batch certificates core discovery dynamic extensions meta openapi rbac storage tools # directories which hold app source (not vendored)
+SRC_DIRS := *.go admissionregistration apiextensions apiregistration apps batch bin certificates core discovery dynamic extensions logs meta openapi policy rbac storage tools 
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
 BIN_PLATFORMS    := $(DOCKER_PLATFORMS)
@@ -113,7 +113,10 @@ fmt: $(BUILD_DIRS)
 	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
 	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
 	    $(BUILD_IMAGE)                                          \
-	    ./hack/fmt.sh $(SRC_DIRS)
+	    /bin/bash -c "                                          \
+	        REPO_PKG=$(GO_PKG)/$(REPO)                          \
+	        ./hack/fmt.sh $(SRC_DIRS)                           \
+	    "
 
 build: $(OUTBIN)
 
@@ -184,7 +187,7 @@ lint: $(BUILD_DIRS)
 	    --env GO111MODULE=on                                    \
 	    --env GOFLAGS="-mod=vendor"                             \
 	    $(BUILD_IMAGE)                                          \
-	    golangci-lint run --enable $(ADDTL_LINTERS) --timeout=10m --skip-files="generated.*\.go$\" --skip-dirs-use-default --skip-dirs=client,vendor
+	    golangci-lint run --enable $(ADDTL_LINTERS) --timeout=10m --skip-files="generated.*\.go$\" --skip-dirs-use-default
 
 $(BUILD_DIRS):
 	@mkdir -p $@
@@ -199,14 +202,14 @@ verify: verify-modules verify-gen
 verify-modules:
 	GO111MODULE=on go mod tidy
 	GO111MODULE=on go mod vendor
-	@if !(git diff --quiet HEAD); then \
+	@if !(git diff --exit-code HEAD); then \
 		echo "go module files are out of date"; exit 1; \
 	fi
 
 .PHONY: verify-gen
 verify-gen: gen fmt
-	@if !(git diff --quiet HEAD); then \
-		echo "file formatting is out of date, run make fmt"; exit 1; \
+	@if !(git diff --exit-code HEAD); then \
+		echo "file formatting is out of date, run make gen fmt"; exit 1; \
 	fi
 
 .PHONY: ci
