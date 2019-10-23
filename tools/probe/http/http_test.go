@@ -173,7 +173,7 @@ func TestHTTPProbeChecker(t *testing.T) {
 			handler:    headerEchoHandler,
 			reqHeaders: http.Header{},
 			health:     probe.Success,
-			accBody:    "User-Agent: kube-probe/",
+			accBody:    "User-Agent: kmodules.xyz/client-go/release-11.0",
 		},
 		{
 			// Echo handler that returns the contents of Host in the body
