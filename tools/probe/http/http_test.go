@@ -14,6 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//nolint:goconst
 package http
 
 import (
@@ -33,6 +34,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -40,10 +42,10 @@ const FailureCode int = -1
 
 func setEnv(key, value string) func() {
 	originalValue := os.Getenv(key)
-	os.Setenv(key, value)
+	utilruntime.Must(os.Setenv(key, value))
 	if len(originalValue) > 0 {
 		return func() {
-			os.Setenv(key, originalValue)
+			utilruntime.Must(os.Setenv(key, originalValue))
 		}
 	}
 	return func() {}
@@ -51,10 +53,10 @@ func setEnv(key, value string) func() {
 
 func unsetEnv(key string) func() {
 	originalValue := os.Getenv(key)
-	os.Unsetenv(key)
+	utilruntime.Must(os.Unsetenv(key))
 	if len(originalValue) > 0 {
 		return func() {
-			os.Setenv(key, originalValue)
+			utilruntime.Must(os.Setenv(key, originalValue))
 		}
 	}
 	return func() {}
@@ -74,7 +76,8 @@ func TestHTTPProbeProxy(t *testing.T) {
 
 	go func() {
 		http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-			fmt.Fprintf(w, res)
+			_, err := fmt.Fprint(w, res)
+			utilruntime.Must(err)
 		})
 		err := http.ListenAndServe(":9098", nil)
 		if err != nil {
@@ -99,7 +102,8 @@ func TestHTTPProbeChecker(t *testing.T) {
 	handleReq := func(s int, body string) func(w http.ResponseWriter, r *http.Request) {
 		return func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(s)
-			w.Write([]byte(body))
+			_, err := w.Write([]byte(body))
+			utilruntime.Must(err)
 		}
 	}
 
@@ -112,7 +116,8 @@ func TestHTTPProbeChecker(t *testing.T) {
 				output += fmt.Sprintf("%s: %s\n", k, v)
 			}
 		}
-		w.Write([]byte(output))
+		_, err := w.Write([]byte(output))
+		utilruntime.Must(err)
 	}
 
 	redirectHandler := func(s int, bad bool) func(w http.ResponseWriter, r *http.Request) {
@@ -174,7 +179,8 @@ func TestHTTPProbeChecker(t *testing.T) {
 			// Echo handler that returns the contents of Host in the body
 			handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(200)
-				w.Write([]byte(r.Host))
+				_, err := w.Write([]byte(r.Host))
+				utilruntime.Must(err)
 			},
 			reqHeaders: http.Header{
 				"Host": {"muffins.cupcakes.org"},
@@ -381,7 +387,8 @@ func TestHTTPProbeChecker_PayloadTruncated(t *testing.T) {
 		case "/success":
 			if r.Host == successHostHeader {
 				w.WriteHeader(http.StatusOK)
-				w.Write(oversizePayload)
+				_, err := w.Write(oversizePayload)
+				utilruntime.Must(err)
 			} else {
 				http.Error(w, "", http.StatusBadRequest)
 			}
@@ -414,7 +421,8 @@ func TestHTTPProbeChecker_PayloadNormal(t *testing.T) {
 		case "/success":
 			if r.Host == successHostHeader {
 				w.WriteHeader(http.StatusOK)
-				w.Write(normalPayload)
+				_, err := w.Write(normalPayload)
+				utilruntime.Must(err)
 			} else {
 				http.Error(w, "", http.StatusBadRequest)
 			}

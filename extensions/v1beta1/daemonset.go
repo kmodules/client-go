@@ -1,9 +1,6 @@
 package v1beta1
 
 import (
-	core_util "kmodules.xyz/client-go/core/v1"
-	"kmodules.xyz/client-go/discovery"
-
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	extensions "k8s.io/api/extensions/v1beta1"
@@ -58,10 +55,6 @@ func PatchDaemonSetObject(c kubernetes.Interface, cur, mod *extensions.DaemonSet
 	}
 	glog.V(3).Infof("Patching DaemonSet %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
-	if ok, err := discovery.CheckAPIVersion(c.Discovery(), "<= 1.5"); err == nil && ok {
-		// https://kubernetes.io/docs/tasks/manage-daemon/update-daemon-set/
-		core_util.RestartPods(c, cur.Namespace, cur.Spec.Selector)
-	}
 	return out, kutil.VerbPatched, err
 }
 

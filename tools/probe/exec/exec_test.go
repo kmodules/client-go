@@ -62,7 +62,7 @@ func (f *FakeCmd) Stop() {}
 
 func (f *FakeCmd) Start() error {
 	if f.writer != nil {
-		f.writer.Write(f.out)
+		_, _ = f.writer.Write(f.out)
 		return f.err
 	}
 	return f.err
