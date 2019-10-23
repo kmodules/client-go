@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"time"
 
+	core_util "kmodules.xyz/client-go/core/v1"
+
 	"github.com/golang/glog"
 	v1authenticationapi "k8s.io/api/authentication/v1"
 	v1 "k8s.io/api/core/v1"
@@ -37,7 +39,6 @@ import (
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 	watchtools "k8s.io/client-go/tools/watch"
-	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 // ControllerClientBuilder allows you to get clients and configs for controllers
@@ -186,7 +187,7 @@ func (b SAControllerClientBuilder) getOrCreateServiceAccount(name string) (*v1.S
 	// Create the namespace if we can't verify it exists.
 	// Tolerate errors, since we don't know whether this component has namespace creation permissions.
 	if _, err := b.CoreClient.Namespaces().Get(b.Namespace, metav1.GetOptions{}); err != nil {
-		b.CoreClient.Namespaces().Create(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: b.Namespace}})
+		_, _ = b.CoreClient.Namespaces().Create(&v1.Namespace{ObjectMeta: metav1.ObjectMeta{Name: b.Namespace}})
 	}
 
 	// Create the service account

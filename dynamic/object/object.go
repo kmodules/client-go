@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 )
 
 type StatusCondition struct {
@@ -86,7 +87,7 @@ func SetCondition(status map[string]interface{}, condition *StatusCondition) {
 	}
 	// The condition wasn't found. Append it.
 	conditions = append(conditions, condition.Object())
-	unstructured.SetNestedField(status, conditions, "conditions")
+	utilruntime.Must(unstructured.SetNestedField(status, conditions, "conditions"))
 }
 
 func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) {
@@ -95,7 +96,7 @@ func SetStatusCondition(obj map[string]interface{}, condition *StatusCondition) 
 		status = make(map[string]interface{})
 	}
 	SetCondition(status, condition)
-	unstructured.SetNestedField(obj, status, "status")
+	utilruntime.Must(unstructured.SetNestedField(obj, status, "status"))
 }
 
 func GetObservedGeneration(obj map[string]interface{}) int64 {

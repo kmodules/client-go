@@ -21,8 +21,9 @@ import (
 	"strconv"
 	"time"
 
-	"k8s.io/klog"
 	"kmodules.xyz/client-go/tools/probe"
+
+	"k8s.io/klog"
 )
 
 // New creates Prober.

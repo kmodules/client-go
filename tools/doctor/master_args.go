@@ -3,6 +3,8 @@ package doctor
 import (
 	"context"
 
+	core_util "kmodules.xyz/client-go/core/v1"
+
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -12,7 +14,6 @@ import (
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/tools/pager"
-	core_util "kmodules.xyz/client-go/core/v1"
 )
 
 func (d *Doctor) extractMasterArgs(info *ClusterInfo) error {

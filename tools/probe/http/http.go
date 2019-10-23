@@ -24,10 +24,11 @@ import (
 	"net/url"
 	"time"
 
+	"kmodules.xyz/client-go/tools/probe"
+
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/klog"
 	utilio "k8s.io/utils/io"
-	"kmodules.xyz/client-go/tools/probe"
 )
 
 const (
