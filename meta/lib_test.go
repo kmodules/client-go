@@ -171,7 +171,7 @@ func TestFilterKeys(t *testing.T) {
 	}
 }
 
-func TestGetValidNameWithFixedPrefix(t *testing.T) {
+func TestValidNameWithPrefix(t *testing.T) {
 	type args struct {
 		prefix string
 		str    string
@@ -216,23 +216,23 @@ func TestGetValidNameWithFixedPrefix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.GetValidNameWithFixedPrefix(tt.args.prefix, tt.args.str); got != tt.want {
-				t.Errorf("GetValidNameWithFixedPrefix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithPrefix(tt.args.prefix, tt.args.str); got != tt.want {
+				t.Errorf("ValidNameWithPrefix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGetValidNameWithFixedSuffix(t *testing.T) {
+func TestValidNameWithSuffix(t *testing.T) {
 	type args struct {
 		suffix string
 		str    string
 	}
 	tests := []struct {
 		testCase string
-		prefix string
-		name string
-		suffix string
+		prefix   string
+		name     string
+		suffix   string
 		expected string
 	}{
 		{
@@ -270,14 +270,14 @@ func TestGetValidNameWithFixedSuffix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.GetValidNameWithFixedSuffix(tt.args.suffix, tt.args.str); got != tt.want {
-				t.Errorf("GetValidNameWithFixedSuffix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithSuffix(tt.args.suffix, tt.args.str); got != tt.want {
+				t.Errorf("ValidNameWithSuffix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
 }
 
-func TestGetValidNameWithFixedPefixNSuffix(t *testing.T) {
+func TestValidNameWithPefixNSuffix(t *testing.T) {
 	type args struct {
 		prefix string
 		suffix string
@@ -327,8 +327,8 @@ func TestGetValidNameWithFixedPefixNSuffix(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.GetValidNameWithFixedPefixNSuffix(tt.args.prefix, tt.args.suffix, tt.args.str); got != tt.want {
-				t.Errorf("GetValidNameWithFixedPefixNSuffix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithPefixNSuffix(tt.args.prefix, tt.args.suffix, tt.args.str); got != tt.want {
+				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.want)
 			}
 		})
 	}

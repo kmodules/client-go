@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/pflag"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/apimachinery/pkg/util/validation"
 )
 
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/#labels
@@ -77,44 +78,35 @@ func FilterKeys(domainKey string, out, in map[string]string) map[string]string {
 	return out
 }
 
-func GetValidNameWithFixedPrefix(prefix, name string) string {
-	if len(name) == 0 {
-		return prefix
-	}
-
-	l := len(name)
-	if l > 63-len(prefix)-1 {
-		l = 63 - len(prefix) - 1
-	}
-	str := name[0:l]
-	return fmt.Sprintf("%s-%s", prefix, str)
+func ValidNameWithPrefix(prefix, name string) string {
+	out := fmt.Sprintf("%s-%s", prefix, name)
+	return strings.Trim(out[:min(validation.DNS1123LabelMaxLength, len(out))], "-")
 }
 
-func GetValidNameWithFixedSuffix(name, suffix string) string {
-	if len(name) == 0 {
-		return suffix
-	}
-
-	l := len(name)
-	if l > 63-len(suffix)-1 {
-		l = 63 - len(suffix) - 1
-	}
-	str := name[0:l]
-	return fmt.Sprintf("%s-%s", str, suffix)
+func ValidNameWithSuffix(name, suffix string) string {
+	out := fmt.Sprintf("%s-%s", name, suffix)
+	return strings.Trim(out[max(0, len(out)-validation.DNS1123LabelMaxLength):], "-")
 }
 
-func GetValidNameWithFixedPefixNSuffix(prefix, name, suffix string) string {
-	if len(name) == 0 {
-		if len(suffix) == 0 {
-			return prefix
-		}
-		return fmt.Sprintf("%s-%s", prefix, suffix)
+func ValidNameWithPefixNSuffix(prefix, name, suffix string) string {
+	out := strings.Trim(fmt.Sprintf("%s-%s-%s", prefix, name, suffix), "-")
+	n := len(out)
+	if n <= validation.DNS1123LabelMaxLength {
+		return out
 	}
+	return out[:validation.DNS1123LabelMaxLength/2+1] + out[(n-validation.DNS1123LabelMaxLength/2):]
+}
 
-	l := len(name)
-	if l > 63-len(prefix)-len(suffix)-2 {
-		l = 63 - len(prefix) - len(suffix) - 2
+func min(x, y int) int {
+	if x < y {
+		return x
 	}
-	str := name[0:l]
-	return fmt.Sprintf("%s-%s-%s", prefix, str, suffix)
+	return y
+}
+
+func max(x, y int) int {
+	if x > y {
+		return x
+	}
+	return y
 }
