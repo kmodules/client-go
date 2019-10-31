@@ -192,10 +192,10 @@ func TestGetValidNameWithFixedPrefix(t *testing.T) {
 		{
 			name: "equal to 64 char",
 			args: args{
-				prefix: "xyz-",
-				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+				prefix: "xyz",
+				str:    "1122aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1122",
 			},
-			want: "xyz-1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+			want: "xyz-1122aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1122",
 		},
 		{
 			name: "less than 64 char",
@@ -229,9 +229,11 @@ func TestGetValidNameWithFixedSuffix(t *testing.T) {
 		str    string
 	}
 	tests := []struct {
+		testCase string
+		prefix string
 		name string
-		args args
-		want string
+		suffix string
+		expected string
 	}{
 		{
 			name: "empty",

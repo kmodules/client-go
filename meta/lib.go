@@ -1,6 +1,7 @@
 package meta
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -76,40 +77,44 @@ func FilterKeys(domainKey string, out, in map[string]string) map[string]string {
 	return out
 }
 
-func GetValidNameWithFixedPrefix(prefix, str string) string {
-	name := prefix + str
-	if len(name) <= 63 {
-		return name
-	} else {
-		for len(name) > 63 {
-			name = name[:len(name)-1]
-		}
+func GetValidNameWithFixedPrefix(prefix, name string) string {
+	if len(name) == 0 {
+		return prefix
 	}
-	return name
+
+	l := len(name)
+	if l > 63-len(prefix)-1 {
+		l = 63 - len(prefix) - 1
+	}
+	str := name[0:l]
+	return fmt.Sprintf("%s-%s", prefix, str)
 }
 
-func GetValidNameWithFixedSuffix(suffix, str string) string {
-	name := str + suffix
-	if len(name) <= 63 {
-		return name
-	} else {
-		for len(name) > 63 && len(str) > 0 {
-			str = str[:len(str)-1]
-			name = str + suffix
-		}
+func GetValidNameWithFixedSuffix(name, suffix string) string {
+	if len(name) == 0 {
+		return suffix
 	}
-	return name
+
+	l := len(name)
+	if l > 63-len(suffix)-1 {
+		l = 63 - len(suffix) - 1
+	}
+	str := name[0:l]
+	return fmt.Sprintf("%s-%s", str, suffix)
 }
 
-func GetValidNameWithFixedPefixNSuffix(prefix, suffix, str string) string {
-	name := prefix + str + suffix
-	if len(name) <= 63 {
-		return name
-	} else {
-		for len(name) > 63 && len(str) > 0 {
-			str = str[:len(str)-1]
-			name = prefix + str + suffix
+func GetValidNameWithFixedPefixNSuffix(prefix, name, suffix string) string {
+	if len(name) == 0 {
+		if len(suffix) == 0 {
+			return prefix
 		}
+		return fmt.Sprintf("%s-%s", prefix, suffix)
 	}
-	return name
+
+	l := len(name)
+	if l > 63-len(prefix)-len(suffix)-2 {
+		l = 63 - len(prefix) - len(suffix) - 2
+	}
+	str := name[0:l]
+	return fmt.Sprintf("%s-%s-%s", prefix, str, suffix)
 }
