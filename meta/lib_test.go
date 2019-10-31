@@ -172,163 +172,108 @@ func TestFilterKeys(t *testing.T) {
 }
 
 func TestValidNameWithPrefix(t *testing.T) {
-	type args struct {
-		prefix string
-		str    string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
+
+	testCases := []struct {
+		prefix   string
+		name     string
+		expected string
 	}{
 		{
-			name: "empty",
-			args: args{
-				prefix: "",
-				str:    "",
-			},
-			want: "",
+			prefix:   "abc-",
+			name:     "",
+			expected: "abc",
 		},
 		{
-			name: "equal to 64 char",
-			args: args{
-				prefix: "xyz",
-				str:    "1122aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1122",
-			},
-			want: "xyz-1122aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1122",
+			prefix:   "abc",
+			name:     "",
+			expected: "abc",
 		},
 		{
-			name: "less than 64 char",
-			args: args{
-				prefix: "xyz-",
-				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
-			},
-			want: "xyz-aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
+			prefix:   "xyz",
+			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
+			expected: "xyz-aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 		},
 		{
-			name: "gather than 64 char",
-			args: args{
-				prefix: "xyz-",
-				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122444",
-			},
-			want: "xyz-1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+			prefix:   "xyz",
+			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789",
+			expected: "xyz-aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 		},
 	}
-	for _, tt := range tests {
+	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.ValidNameWithPrefix(tt.args.prefix, tt.args.str); got != tt.want {
-				t.Errorf("ValidNameWithPrefix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithPrefix(tt.prefix, tt.name); got != tt.expected {
+				t.Errorf("ValidNameWithPrefix() = %v, want %v", got, tt.expected)
 			}
 		})
 	}
 }
 
 func TestValidNameWithSuffix(t *testing.T) {
-	type args struct {
-		suffix string
-		str    string
-	}
-	tests := []struct {
-		testCase string
-		prefix   string
+	testCases := []struct {
 		name     string
 		suffix   string
 		expected string
 	}{
 		{
-			name: "empty",
-			args: args{
-				suffix: "",
-				str:    "",
-			},
-			want: "",
+			name:     "",
+			suffix:   "-abc",
+			expected: "abc",
 		},
 		{
-			name: "equal to 64 char",
-			args: args{
-				suffix: "-abc",
-				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
-			},
-			want: "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122-abc",
+			name:     "",
+			suffix:   "abc",
+			expected: "abc",
 		},
 		{
-			name: "less than 64 char",
-			args: args{
-				suffix: "-abc",
-				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
-			},
-			want: "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz-abc",
+			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
+			suffix:   "abc",
+			expected: "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567-abc",
 		},
 		{
-			name: "gather than 64 char",
-			args: args{
-				suffix: "-abc",
-				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122444",
-			},
-			want: "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122-abc",
+			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789",
+			suffix:   "abc",
+			expected: "bbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789-abc",
 		},
 	}
-	for _, tt := range tests {
+	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.ValidNameWithSuffix(tt.args.suffix, tt.args.str); got != tt.want {
-				t.Errorf("ValidNameWithSuffix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithSuffix(tt.name, tt.suffix); got != tt.expected {
+				t.Errorf("ValidNameWithSuffix() = %v, want %v", got, tt.expected)
 			}
 		})
 	}
 }
 
 func TestValidNameWithPefixNSuffix(t *testing.T) {
-	type args struct {
-		prefix string
-		suffix string
-		str    string
-	}
-	tests := []struct {
-		name string
-		args args
-		want string
+	testCases := []struct {
+		prefix   string
+		name     string
+		suffix   string
+		expected string
 	}{
 		{
-			name: "empty",
-			args: args{
-				prefix: "",
-				str:    "",
-				suffix: "",
-			},
-			want: "",
+			prefix:   "xyz",
+			name:     "",
+			suffix:   "abc",
+			expected: "xyz--abc",
 		},
 		{
-			name: "equal to 64 char",
-			args: args{
-				prefix: "xyz-",
-				str:    "12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12",
-				suffix: "-abc",
-			},
-			want: "xyz-12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12-abc",
+			prefix:   "xyz",
+			name:     "aabbccddeeffgghhiijjkkllmmnn123ooppqqrrssttuuvvwwxxyyzz",
+			suffix:   "abc",
+			expected: "xyz-aabbccddeeffgghhiijjkkllmmnn123ooppqqrrssttuuvvwwxxyyzz-abc",
 		},
 		{
-			name: "less than 64 char",
-			args: args{
-				prefix: "xyz-",
-				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
-				suffix: "-abc",
-			},
-			want: "xyz-aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz-abc",
-		},
-		{
-			name: "gather than 64 char",
-			args: args{
-				prefix: "xyz-",
-				str:    "12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12444",
-				suffix: "-abc",
-			},
-			want: "xyz-12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12-abc",
+			prefix:   "xyz",
+			name:     "aabbccddeeffgghhiijjkkllmmnn123456789ooppqqrrssttuuvvwwxxyyzz",
+			suffix:   "abc",
+			expected: "xyz-aabbccddeeffgghhiijjkkllmmnn789ooppqqrrssttuuvvwwxxyyzz-abc",
 		},
 	}
-	for _, tt := range tests {
+	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := meta.ValidNameWithPefixNSuffix(tt.args.prefix, tt.args.suffix, tt.args.str); got != tt.want {
-				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.want)
+			if got := meta.ValidNameWithPefixNSuffix(tt.prefix, tt.name, tt.suffix); got != tt.expected {
+				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.expected)
 			}
 		})
 	}
