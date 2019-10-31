@@ -75,3 +75,41 @@ func FilterKeys(domainKey string, out, in map[string]string) map[string]string {
 	}
 	return out
 }
+
+func GetValidNameWithFixedPrefix(prefix, str string) string {
+	name := prefix + str
+	if len(name) <= 63 {
+		return name
+	} else {
+		for len(name) > 63 {
+			name = name[:len(name)-1]
+		}
+	}
+	return name
+}
+
+func GetValidNameWithFixedSuffix(suffix, str string) string {
+	name := str + suffix
+	if len(name) <= 63 {
+		return name
+	} else {
+		for len(name) > 63 && len(str) > 0 {
+			str = str[:len(str)-1]
+			name = str + suffix
+		}
+	}
+	return name
+}
+
+func GetValidNameWithFixedPefixNSuffix(prefix, suffix, str string) string {
+	name := prefix + str + suffix
+	if len(name) <= 63 {
+		return name
+	} else {
+		for len(name) > 63 && len(str) > 0 {
+			str = str[:len(str)-1]
+			name = prefix + str + suffix
+		}
+	}
+	return name
+}

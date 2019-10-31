@@ -170,3 +170,164 @@ func TestFilterKeys(t *testing.T) {
 		})
 	}
 }
+
+func TestGetValidNameWithFixedPrefix(t *testing.T) {
+	type args struct {
+		prefix string
+		str    string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "empty",
+			args: args{
+				prefix: "",
+				str:    "",
+			},
+			want: "",
+		},
+		{
+			name: "equal to 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+			},
+			want: "xyz-1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+		},
+		{
+			name: "less than 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
+			},
+			want: "xyz-aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
+		},
+		{
+			name: "gather than 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122444",
+			},
+			want: "xyz-1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := meta.GetValidNameWithFixedPrefix(tt.args.prefix, tt.args.str); got != tt.want {
+				t.Errorf("GetValidNameWithFixedPrefix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetValidNameWithFixedSuffix(t *testing.T) {
+	type args struct {
+		suffix string
+		str    string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "empty",
+			args: args{
+				suffix: "",
+				str:    "",
+			},
+			want: "",
+		},
+		{
+			name: "equal to 64 char",
+			args: args{
+				suffix: "-abc",
+				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122",
+			},
+			want: "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122-abc",
+		},
+		{
+			name: "less than 64 char",
+			args: args{
+				suffix: "-abc",
+				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
+			},
+			want: "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz-abc",
+		},
+		{
+			name: "gather than 64 char",
+			args: args{
+				suffix: "-abc",
+				str:    "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122444",
+			},
+			want: "1122aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz1122-abc",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := meta.GetValidNameWithFixedSuffix(tt.args.suffix, tt.args.str); got != tt.want {
+				t.Errorf("GetValidNameWithFixedSuffix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestGetValidNameWithFixedPefixNSuffix(t *testing.T) {
+	type args struct {
+		prefix string
+		suffix string
+		str    string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "empty",
+			args: args{
+				prefix: "",
+				str:    "",
+				suffix: "",
+			},
+			want: "",
+		},
+		{
+			name: "equal to 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12",
+				suffix: "-abc",
+			},
+			want: "xyz-12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12-abc",
+		},
+		{
+			name: "less than 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz",
+				suffix: "-abc",
+			},
+			want: "xyz-aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz-abc",
+		},
+		{
+			name: "gather than 64 char",
+			args: args{
+				prefix: "xyz-",
+				str:    "12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12444",
+				suffix: "-abc",
+			},
+			want: "xyz-12aabbccddeeffgghhiijjkklmmnnooppqqrrssttuuvvwwxxyyzz12-abc",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := meta.GetValidNameWithFixedPefixNSuffix(tt.args.prefix, tt.args.suffix, tt.args.str); got != tt.want {
+				t.Errorf("GetValidNameWithFixedPefixNSuffix() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
