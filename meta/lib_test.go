@@ -174,33 +174,38 @@ func TestFilterKeys(t *testing.T) {
 func TestValidNameWithPrefix(t *testing.T) {
 
 	testCases := []struct {
+		title    string
 		prefix   string
 		name     string
 		expected string
 	}{
 		{
-			prefix:   "abc-",
-			name:     "",
-			expected: "abc",
-		},
-		{
+			title:    "name empty",
 			prefix:   "abc",
 			name:     "",
 			expected: "abc",
 		},
 		{
+			title:    "name empty and prefix contain `-` in last",
+			prefix:   "abc-",
+			name:     "",
+			expected: "abc",
+		},
+		{
+			title:    "name and prefix contain 63 character",
 			prefix:   "xyz",
 			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 			expected: "xyz-aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 		},
 		{
+			title:    "name and prefix contain more than 63 character",
 			prefix:   "xyz",
 			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789",
 			expected: "xyz-aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 		},
 	}
 	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			if got := meta.ValidNameWithPrefix(tt.prefix, tt.name); got != tt.expected {
 				t.Errorf("ValidNameWithPrefix() = %v, want %v", got, tt.expected)
 			}
@@ -210,33 +215,38 @@ func TestValidNameWithPrefix(t *testing.T) {
 
 func TestValidNameWithSuffix(t *testing.T) {
 	testCases := []struct {
+		title    string
 		name     string
 		suffix   string
 		expected string
 	}{
 		{
+			title:    "name empty",
+			name:     "",
+			suffix:   "abc",
+			expected: "abc",
+		},
+		{
+			title:    "name empty and suffix contain `-` in first",
 			name:     "",
 			suffix:   "-abc",
 			expected: "abc",
 		},
 		{
-			name:     "",
-			suffix:   "abc",
-			expected: "abc",
-		},
-		{
+			title:    "name and prefix contain 63 character",
 			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 			suffix:   "abc",
 			expected: "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567-abc",
 		},
 		{
+			title:    "name and prefix contain more than 63 character",
 			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789",
 			suffix:   "abc",
 			expected: "bbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789-abc",
 		},
 	}
 	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			if got := meta.ValidNameWithSuffix(tt.name, tt.suffix); got != tt.expected {
 				t.Errorf("ValidNameWithSuffix() = %v, want %v", got, tt.expected)
 			}
@@ -246,24 +256,28 @@ func TestValidNameWithSuffix(t *testing.T) {
 
 func TestValidNameWithPefixNSuffix(t *testing.T) {
 	testCases := []struct {
+		title    string
 		prefix   string
 		name     string
 		suffix   string
 		expected string
 	}{
 		{
+			title:    "name empty",
 			prefix:   "xyz",
 			name:     "",
 			suffix:   "abc",
 			expected: "xyz--abc",
 		},
 		{
+			title:    "name and prefix contain 63 character",
 			prefix:   "xyz",
 			name:     "aabbccddeeffgghhiijjkkllmmnn123ooppqqrrssttuuvvwwxxyyzz",
 			suffix:   "abc",
 			expected: "xyz-aabbccddeeffgghhiijjkkllmmnn123ooppqqrrssttuuvvwwxxyyzz-abc",
 		},
 		{
+			title:    "name and prefix contain more than 63 character",
 			prefix:   "xyz",
 			name:     "aabbccddeeffgghhiijjkkllmmnn123456789ooppqqrrssttuuvvwwxxyyzz",
 			suffix:   "abc",
@@ -271,7 +285,7 @@ func TestValidNameWithPefixNSuffix(t *testing.T) {
 		},
 	}
 	for _, tt := range testCases {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.title, func(t *testing.T) {
 			if got := meta.ValidNameWithPefixNSuffix(tt.prefix, tt.name, tt.suffix); got != tt.expected {
 				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.expected)
 			}
