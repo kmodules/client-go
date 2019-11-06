@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Copyright The Kmodules Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,25 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -eou pipefail
-
-export CGO_ENABLED=0
-export GO111MODULE=on
-export GOFLAGS="-mod=vendor"
-
-TARGETS="$@"
-
-echo "Running reimport.py"
-cmd="reimport3.py ${REPO_PKG} ${TARGETS}"
-$cmd
-echo
-
-echo "Running goimports:"
-cmd="goimports -w ${TARGETS}"
-echo $cmd; $cmd
-echo
-
-echo "Running gofmt:"
-cmd="gofmt -s -w ${TARGETS}"
-echo $cmd; $cmd
-echo
