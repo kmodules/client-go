@@ -189,8 +189,8 @@ github.com/kisielk/errcheck v1.2.0/go.mod h1:/BMXB+zMLi60iA8Vv6Ksmxu/1UDYcXs4uQL
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kmodules/apimachinery v0.0.0-20191119091232-0553326db082 h1:Fut+qzge/i2FCCAKBgrHLLMnTpze53tb5KUz2IZq4dA=
 github.com/kmodules/apimachinery v0.0.0-20191119091232-0553326db082/go.mod h1:llRdnznGEAqC3DcNm6yEj472xaFVfLM7hnYofMb12tQ=
-github.com/kmodules/apiserver v0.0.0-20191119091916-1c1d882138da h1:ohDnuUCiSn3DpvA41YlNFYPvukhjrBbZjjj+CtTo8a4=
-github.com/kmodules/apiserver v0.0.0-20191119091916-1c1d882138da/go.mod h1:Idob8Va6/sMX5SmwPLsU0pdvFlkwxuJ5x+fXMG8NbKE=
+github.com/kmodules/apiserver v0.0.0-20191119111000-36ac3646ae82 h1:7YgT9xEZLII4FfFA8qDafK06xl06qMs3vNaUTY2lCCU=
+github.com/kmodules/apiserver v0.0.0-20191119111000-36ac3646ae82/go.mod h1:Idob8Va6/sMX5SmwPLsU0pdvFlkwxuJ5x+fXMG8NbKE=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1 h1:mweAR1A6xJ3oS2pRaGiHgQ4OO8tzTaLawm8vnODuwDk=
 github.com/konsorten/go-windows-terminal-sequences v1.0.1/go.mod h1:T0+1ngSBFLxvqU3pZ+m/2kptfBszLMUkC4ZK/EgS/cQ=
 github.com/kr/pretty v0.1.0 h1:L/CwN0zerZDmRFUapSPitk6f+Q3+0za1rQkzVuMiMFI=

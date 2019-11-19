@@ -243,7 +243,7 @@ func formatQuoted(names ...string) string {
 }
 
 // CertHealthz returns true if tls.crt is unchanged when checked
-func NewCertHealthz(certFile string) (HealthzChecker, error) {
+func NewCertHealthz(certFile string) (HealthChecker, error) {
 	var hash string
 	if certFile != "" {
 		var err error

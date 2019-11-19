@@ -132,7 +132,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 	if err := rest.SetKubernetesDefaults(mgr.config); err != nil {
 		return err
 	}
-	mgr.config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
+	mgr.config.NegotiatedSerializer = serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs}
 	if mgr.config.UserAgent == "" {
 		mgr.config.UserAgent = rest.DefaultKubernetesUserAgent()
 	}

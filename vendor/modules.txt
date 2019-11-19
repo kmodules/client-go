@@ -403,7 +403,7 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/netutil
 k8s.io/apimachinery/third_party/forked/golang/reflect
-# k8s.io/apiserver v0.0.0-20191114103151-9ca1dc586682 => github.com/kmodules/apiserver v0.0.0-20191119091916-1c1d882138da
+# k8s.io/apiserver v0.0.0-20191114103151-9ca1dc586682 => github.com/kmodules/apiserver v0.0.0-20191119111000-36ac3646ae82
 k8s.io/apiserver/pkg/admission
 k8s.io/apiserver/pkg/admission/configuration
 k8s.io/apiserver/pkg/admission/initializer
