@@ -59,7 +59,7 @@ replace (
 	k8s.io/client-go => k8s.io/client-go v0.0.0-20191114101535-6c5935290e33
 	k8s.io/cloud-provider => k8s.io/cloud-provider v0.0.0-20191114112024-4bbba8331835
 	k8s.io/component-base => k8s.io/component-base v0.0.0-20191114102325-35a9586014f7
-	k8s.io/klog => k8s.io/klog v0.3.0
+	k8s.io/klog => k8s.io/klog v0.4.0
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.0.0-20191114103820-f023614fb9ea
 	k8s.io/kube-openapi => k8s.io/kube-openapi v0.0.0-20190816220812-743ec37842bf
 	k8s.io/metrics => k8s.io/metrics v0.0.0-20191114105837-a4a2842dc51b
