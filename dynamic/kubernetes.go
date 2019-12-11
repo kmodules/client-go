@@ -267,7 +267,7 @@ func EnsureOwnerReferenceForItems(
 	gvr schema.GroupVersionResource,
 	namespace string,
 	items []string,
-	ref *core.ObjectReference,
+	owner *metav1.OwnerReference,
 ) error {
 	var ri dynamic.ResourceInterface
 	if namespace == "" {
@@ -286,7 +286,7 @@ func EnsureOwnerReferenceForItems(
 			continue
 		}
 		if _, _, err := Patch(c, gvr, item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
-			v1.EnsureOwnerReference(in, ref)
+			v1.EnsureOwnerReference(in, owner)
 			return in
 		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
@@ -300,7 +300,7 @@ func EnsureOwnerReferenceForSelector(
 	gvr schema.GroupVersionResource,
 	namespace string,
 	selector labels.Selector,
-	ref *core.ObjectReference,
+	owner *metav1.OwnerReference,
 ) error {
 	var ri dynamic.ResourceInterface
 	if namespace == "" {
@@ -316,7 +316,7 @@ func EnsureOwnerReferenceForSelector(
 	var errs []error
 	for _, item := range list.Items {
 		if _, _, err := Patch(c, gvr, &item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
-			v1.EnsureOwnerReference(in, ref)
+			v1.EnsureOwnerReference(in, owner)
 			return in
 		}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
