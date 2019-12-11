@@ -223,8 +223,8 @@ func MergeLocalObjectReferences(l1, l2 []core.LocalObjectReference) []core.Local
 	return result
 }
 
-// NewOwnerReference creates an OwnerReference pointing to the given owner.
-func NewOwnerReference(owner metav1.Object, gvk schema.GroupVersionKind) *metav1.OwnerReference {
+// NewOwnerRef creates an OwnerReference pointing to the given owner.
+func NewOwnerRef(owner metav1.Object, gvk schema.GroupVersionKind) *metav1.OwnerReference {
 	blockOwnerDeletion := false
 	isController := false
 	return &metav1.OwnerReference{
@@ -237,12 +237,29 @@ func NewOwnerReference(owner metav1.Object, gvk schema.GroupVersionKind) *metav1
 	}
 }
 
-func EnsureOwnerReference(meta metav1.Object, owner *metav1.OwnerReference) {
+// EnsureOwnerReference adds owner if absent or syncs owner if already present.
+//
+// If you are writing a controller or an operator, use the following code snippet for dependent objects.
+// Here, `controller = true` and `blockOwnerDeletion = true`
+//
+// owner := metav1.NewControllerRef(foo, samplev1alpha1.SchemeGroupVersion.WithKind("Foo"))
+// EnsureOwnerReference(dependent, owner)
+//
+// If our CRD is not a controller but just want to be a owner, use the following code snippet.
+// Here, `controller = false` and `blockOwnerDeletion = false`
+//
+// owner := NewOwnerRef(foo, samplev1alpha1.SchemeGroupVersion.WithKind("Foo"))
+// EnsureOwnerReference(dependent, owner)
+//
+// To understand the impact of `blockOwnerDeletion`, read:
+// - https://kubernetes.io/docs/concepts/workloads/controllers/garbage-collection/#foreground-cascading-deletion
+// - https://github.com/kubernetes/apimachinery/blob/v0.17.0/pkg/apis/meta/v1/types.go#L297-L323
+func EnsureOwnerReference(dependent metav1.Object, owner *metav1.OwnerReference) {
 	if owner == nil {
 		return
 	}
 
-	refs := meta.GetOwnerReferences()
+	refs := dependent.GetOwnerReferences()
 
 	fi := -1
 	for i, ref := range refs {
@@ -259,7 +276,7 @@ func EnsureOwnerReference(meta metav1.Object, owner *metav1.OwnerReference) {
 		refs[fi] = *owner
 	}
 
-	meta.SetOwnerReferences(refs)
+	dependent.SetOwnerReferences(refs)
 }
 
 func RemoveOwnerReference(meta metav1.Object, owner *core.ObjectReference) {
