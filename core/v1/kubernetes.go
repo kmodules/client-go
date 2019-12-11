@@ -20,9 +20,7 @@ import (
 	"github.com/imdario/mergo"
 	jsoniter "github.com/json-iterator/go"
 	core "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -262,10 +260,8 @@ func EnsureOwnerReference(dependent metav1.Object, owner *metav1.OwnerReference)
 	refs := dependent.GetOwnerReferences()
 
 	fi := -1
-	for i, ref := range refs {
-		if ref.Kind == owner.Kind &&
-			ref.Name == owner.Name &&
-			ref.UID == owner.UID {
+	for i := range refs {
+		if refs[i].UID == owner.UID {
 			fi = i
 			break
 		}
@@ -279,38 +275,24 @@ func EnsureOwnerReference(dependent metav1.Object, owner *metav1.OwnerReference)
 	dependent.SetOwnerReferences(refs)
 }
 
-func RemoveOwnerReference(meta metav1.Object, owner *core.ObjectReference) {
-	ownerRefs := meta.GetOwnerReferences()
-	for i, ref := range ownerRefs {
-		if ref.Kind == owner.Kind && ref.Name == owner.Name {
-			ownerRefs = append(ownerRefs[:i], ownerRefs[i+1:]...)
+func RemoveOwnerReference(dependent metav1.Object, owner metav1.Object) {
+	refs := dependent.GetOwnerReferences()
+	for i := range refs {
+		if refs[i].UID == owner.GetUID() {
+			refs = append(refs[:i], refs[i+1:]...)
 			break
 		}
 	}
-	meta.SetOwnerReferences(ownerRefs)
+	dependent.SetOwnerReferences(refs)
 }
 
-func IsOwnedByRef(o runtime.Object, owner *core.ObjectReference) bool {
-	obj, err := meta.Accessor(o)
-	if err != nil {
-		return false
+// IsOwnedBy checks if the dependent has a owner reference to the given owner
+func IsOwnedBy(dependent metav1.Object, owner metav1.Object) (owned bool, controller bool) {
+	refs := dependent.GetOwnerReferences()
+	for i := range refs {
+		if refs[i].UID == owner.GetUID() {
+			return true, refs[i].Controller != nil && *refs[i].Controller
+		}
 	}
-
-	return o.GetObjectKind().GroupVersionKind() == owner.GroupVersionKind() &&
-		obj.GetName() == owner.Name &&
-		(string(owner.UID) == "" || obj.GetUID() == owner.UID)
-}
-
-func IsOwnedBy(o1 runtime.Object, o2 runtime.Object) bool {
-	obj, err := meta.Accessor(o1)
-	if err != nil {
-		return false
-	}
-	owner, err := meta.Accessor(o2)
-	if err != nil {
-		return false
-	}
-	return o1.GetObjectKind().GroupVersionKind() == o2.GetObjectKind().GroupVersionKind() &&
-		obj.GetName() == owner.GetName() &&
-		(string(owner.GetUID()) == "" || obj.GetUID() == owner.GetUID())
+	return false, false
 }
