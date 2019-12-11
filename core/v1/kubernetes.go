@@ -17,15 +17,13 @@ limitations under the License.
 package v1
 
 import (
-	"fmt"
-
-	"github.com/appscode/go/types"
 	"github.com/imdario/mergo"
 	jsoniter "github.com/json-iterator/go"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var json = jsoniter.ConfigFastest
@@ -225,40 +223,43 @@ func MergeLocalObjectReferences(l1, l2 []core.LocalObjectReference) []core.Local
 	return result
 }
 
-func EnsureOwnerReference(meta metav1.Object, owner *core.ObjectReference) {
-	if owner == nil ||
-		owner.APIVersion == "" ||
-		owner.Kind == "" ||
-		owner.Name == "" ||
-		owner.UID == "" {
+// NewOwnerReference creates an OwnerReference pointing to the given owner.
+func NewOwnerReference(owner metav1.Object, gvk schema.GroupVersionKind) *metav1.OwnerReference {
+	blockOwnerDeletion := false
+	isController := false
+	return &metav1.OwnerReference{
+		APIVersion:         gvk.GroupVersion().String(),
+		Kind:               gvk.Kind,
+		Name:               owner.GetName(),
+		UID:                owner.GetUID(),
+		BlockOwnerDeletion: &blockOwnerDeletion,
+		Controller:         &isController,
+	}
+}
+
+func EnsureOwnerReference(meta metav1.Object, owner *metav1.OwnerReference) {
+	if owner == nil {
 		return
 	}
-	if meta.GetNamespace() != owner.Namespace {
-		panic(fmt.Errorf("owner %s %s must be from the same namespace as object %s", owner.Kind, owner.Name, meta.GetName()))
-	}
 
-	ownerRefs := meta.GetOwnerReferences()
+	refs := meta.GetOwnerReferences()
 
 	fi := -1
-	for i, ref := range ownerRefs {
-		if ref.Kind == owner.Kind && ref.Name == owner.Name {
+	for i, ref := range refs {
+		if ref.Kind == owner.Kind &&
+			ref.Name == owner.Name &&
+			ref.UID == owner.UID {
 			fi = i
 			break
 		}
 	}
 	if fi == -1 {
-		ownerRefs = append(ownerRefs, metav1.OwnerReference{})
-		fi = len(ownerRefs) - 1
-	}
-	ownerRefs[fi].APIVersion = owner.APIVersion
-	ownerRefs[fi].Kind = owner.Kind
-	ownerRefs[fi].Name = owner.Name
-	ownerRefs[fi].UID = owner.UID
-	if ownerRefs[fi].BlockOwnerDeletion == nil {
-		ownerRefs[fi].BlockOwnerDeletion = types.FalseP()
+		refs = append(refs, *owner)
+	} else {
+		refs[fi] = *owner
 	}
 
-	meta.SetOwnerReferences(ownerRefs)
+	meta.SetOwnerReferences(refs)
 }
 
 func RemoveOwnerReference(meta metav1.Object, owner *core.ObjectReference) {
