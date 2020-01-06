@@ -29,14 +29,18 @@ func TestDefaultSupportedVersion(t *testing.T) {
 		err         bool
 	}{
 		{"1.8.5", false, true},
-		{"1.9.0", false, false},
+		{"1.9.0", false, true},
 		{"1.9.0", true, true},
-		{"1.9.8", true, false},
-		{"1.10.0", false, false},
+		{"1.9.8", true, true},
+		{"1.10.0", false, true},
 		{"1.10.0", true, true},
-		{"1.10.2", true, false},
+		{"1.10.2", true, true},
 		{"1.11.0", false, false},
 		{"1.11.0", true, false},
+		{"1.16.0", false, true},
+		{"1.16.0", true, true},
+		{"1.16.3", false, false},
+		{"1.16.3", true, false},
 	}
 
 	for _, tc := range cases {
