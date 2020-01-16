@@ -127,28 +127,16 @@ func ValidNameWithPefixNSuffix(prefix, name, suffix string, customLength ...int)
 	return strings.Trim(out[:(maxLength+1)/2]+out[(n-maxLength/2):], "-")
 }
 
-func ValidCronJobNameWithPrefix(prefix, name string, customLength ...int) string {
-	maxLength := MaxCronJobNameLength
-	if len(customLength) != 0 {
-		maxLength = customLength[0]
-	}
-	return ValidNameWithPrefix(prefix, name, maxLength)
+func ValidCronJobNameWithPrefix(prefix, name string) string {
+	return ValidNameWithPrefix(prefix, name, MaxCronJobNameLength)
 }
 
-func ValidCronJobNameWithSuffix(name, suffix string, customLength ...int) string {
-	maxLength := MaxCronJobNameLength
-	if len(customLength) != 0 {
-		maxLength = customLength[0]
-	}
-	return ValidNameWithSuffix(name, suffix, maxLength)
+func ValidCronJobNameWithSuffix(name, suffix string) string {
+	return ValidNameWithSuffix(name, suffix, MaxCronJobNameLength)
 }
 
-func ValidCronJobNameWithPefixNSuffix(prefix, name, suffix string, customLength ...int) string {
-	maxLength := MaxCronJobNameLength
-	if len(customLength) != 0 {
-		maxLength = customLength[0]
-	}
-	return ValidNameWithPefixNSuffix(prefix, name, suffix, maxLength)
+func ValidCronJobNameWithPefixNSuffix(prefix, name, suffix string) string {
+	return ValidNameWithPefixNSuffix(prefix, name, suffix, MaxCronJobNameLength)
 }
 
 func min(x, y int) int {
