@@ -37,7 +37,7 @@ const (
 	ComponentLabelKey = "app.kubernetes.io/component"
 	ManagedByLabelKey = "app.kubernetes.io/managed-by"
 
-	MaxCronJobLength = 52 //xref: https://github.com/kubernetes/kubernetes/pull/52733
+	MaxCronJobNameLength = 52 //xref: https://github.com/kubernetes/kubernetes/pull/52733
 )
 
 var labelKeyBlacklist = []string{
@@ -128,7 +128,7 @@ func ValidNameWithPefixNSuffix(prefix, name, suffix string, customLength ...int)
 }
 
 func ValidCronJobNameWithPrefix(prefix, name string, customLength ...int) string {
-	maxLength := MaxCronJobLength
+	maxLength := MaxCronJobNameLength
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
@@ -137,7 +137,7 @@ func ValidCronJobNameWithPrefix(prefix, name string, customLength ...int) string
 }
 
 func ValidCronJobNameWithSuffix(name, suffix string, customLength ...int) string {
-	maxLength := MaxCronJobLength
+	maxLength := MaxCronJobNameLength
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
@@ -146,7 +146,7 @@ func ValidCronJobNameWithSuffix(name, suffix string, customLength ...int) string
 }
 
 func ValidCronJobNameWithPefixNSuffix(prefix, name, suffix string, customLength ...int) string {
-	maxLength := MaxCronJobLength
+	maxLength := MaxCronJobNameLength
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
