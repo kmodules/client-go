@@ -132,8 +132,7 @@ func ValidCronJobNameWithPrefix(prefix, name string, customLength ...int) string
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
-	out := fmt.Sprintf("%s-%s", prefix, name)
-	return strings.Trim(out[:min(maxLength, len(out))], "-")
+	return ValidNameWithPrefix(prefix, name, maxLength)
 }
 
 func ValidCronJobNameWithSuffix(name, suffix string, customLength ...int) string {
@@ -141,8 +140,7 @@ func ValidCronJobNameWithSuffix(name, suffix string, customLength ...int) string
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
-	out := fmt.Sprintf("%s-%s", name, suffix)
-	return strings.Trim(out[max(0, len(out)-maxLength):], "-")
+	return ValidNameWithSuffix(name, suffix, maxLength)
 }
 
 func ValidCronJobNameWithPefixNSuffix(prefix, name, suffix string, customLength ...int) string {
@@ -150,12 +148,7 @@ func ValidCronJobNameWithPefixNSuffix(prefix, name, suffix string, customLength 
 	if len(customLength) != 0 {
 		maxLength = customLength[0]
 	}
-	out := fmt.Sprintf("%s-%s-%s", prefix, name, suffix)
-	n := len(out)
-	if n <= maxLength {
-		return strings.Trim(out, "-")
-	}
-	return strings.Trim(out[:(maxLength+1)/2]+out[(n-maxLength/2):], "-")
+	return ValidNameWithPefixNSuffix(prefix, name, suffix, maxLength)
 }
 
 func min(x, y int) int {
