@@ -192,6 +192,7 @@ func TestValidNameWithPrefix(t *testing.T) {
 	testCases := []struct {
 		title    string
 		prefix   string
+		maxLen   []int
 		name     string
 		expected string
 	}{
@@ -219,10 +220,24 @@ func TestValidNameWithPrefix(t *testing.T) {
 			name:     "aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789",
 			expected: "xyz-aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz1234567",
 		},
+		{
+			title:    "custom maximum length",
+			prefix:   "abcd",
+			name:     "efgh",
+			maxLen:   []int{6},
+			expected: "abcd-e",
+		},
+		{
+			title:    "custom maximum length with prefix len maxLen-1",
+			prefix:   "abcd",
+			name:     "efgh",
+			maxLen:   []int{5},
+			expected: "abcd",
+		},
 	}
 	for _, tt := range testCases {
 		t.Run(tt.title, func(t *testing.T) {
-			if got := meta.ValidNameWithPrefix(tt.prefix, tt.name); got != tt.expected {
+			if got := meta.ValidNameWithPrefix(tt.prefix, tt.name, tt.maxLen...); got != tt.expected {
 				t.Errorf("ValidNameWithPrefix() = %v, want %v", got, tt.expected)
 			}
 		})
@@ -234,6 +249,7 @@ func TestValidNameWithSuffix(t *testing.T) {
 		title    string
 		name     string
 		suffix   string
+		maxLen   []int
 		expected string
 	}{
 		{
@@ -260,10 +276,24 @@ func TestValidNameWithSuffix(t *testing.T) {
 			suffix:   "abc",
 			expected: "bbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz123456789-abc",
 		},
+		{
+			title:    "custom maximum length",
+			name:     "abcd",
+			suffix:   "efgh",
+			maxLen:   []int{6},
+			expected: "d-efgh",
+		},
+		{
+			title:    "custom maximum length with suffix len maxLen-1",
+			name:     "abcd",
+			suffix:   "efgh",
+			maxLen:   []int{5},
+			expected: "efgh",
+		},
 	}
 	for _, tt := range testCases {
 		t.Run(tt.title, func(t *testing.T) {
-			if got := meta.ValidNameWithSuffix(tt.name, tt.suffix); got != tt.expected {
+			if got := meta.ValidNameWithSuffix(tt.name, tt.suffix, tt.maxLen...); got != tt.expected {
 				t.Errorf("ValidNameWithSuffix() = %v, want %v", got, tt.expected)
 			}
 		})
@@ -276,6 +306,7 @@ func TestValidNameWithPefixNSuffix(t *testing.T) {
 		prefix   string
 		name     string
 		suffix   string
+		maxLen   []int
 		expected string
 	}{
 		{
@@ -299,10 +330,42 @@ func TestValidNameWithPefixNSuffix(t *testing.T) {
 			suffix:   "abc",
 			expected: "xyz-aabbccddeeffgghhiijjkkllmmnn789ooppqqrrssttuuvvwwxxyyzz-abc",
 		},
+		{
+			title:    "custom max length(even)",
+			prefix:   "xyz",
+			name:     "mn",
+			suffix:   "abc",
+			maxLen:   []int{8},
+			expected: "xyz--abc",
+		},
+		{
+			title:    "custom max length(odd)",
+			prefix:   "xyz",
+			name:     "mn",
+			suffix:   "abc",
+			maxLen:   []int{9},
+			expected: "xyz-m-abc",
+		},
+		{
+			title:    "custom max length with suffix+prefix == max len",
+			prefix:   "xyz",
+			name:     "mn",
+			suffix:   "abc",
+			maxLen:   []int{6},
+			expected: "xyzabc",
+		},
+		{
+			title:    "custom max length with suffix+prefix > max len",
+			prefix:   "xyz",
+			name:     "mn",
+			suffix:   "abc",
+			maxLen:   []int{4},
+			expected: "xybc",
+		},
 	}
 	for _, tt := range testCases {
 		t.Run(tt.title, func(t *testing.T) {
-			if got := meta.ValidNameWithPefixNSuffix(tt.prefix, tt.name, tt.suffix); got != tt.expected {
+			if got := meta.ValidNameWithPefixNSuffix(tt.prefix, tt.name, tt.suffix, tt.maxLen...); got != tt.expected {
 				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.expected)
 			}
 		})
