@@ -145,6 +145,10 @@ type Topology struct {
 }
 
 func (t Topology) ConvertAffinity(affinity *core.Affinity) {
+	if affinity == nil {
+		return
+	}
+
 	t.convertPodAffinityTerm(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
 	t.convertWeightedPodAffinityTerm(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
 
