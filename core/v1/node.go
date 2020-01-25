@@ -219,6 +219,7 @@ func DetectTopology(kc kubernetes.Interface) (*Topology, error) {
 		topology.LabelRegion = core.LabelZoneRegion
 		topology.LabelInstanceType = core.LabelInstanceType
 	}
+	topology.TotalNodes = 0
 
 	mapRegion := make(map[string]sets.String)
 	instances := make(map[string]int)
@@ -227,6 +228,8 @@ func DetectTopology(kc kubernetes.Interface) (*Topology, error) {
 		return kc.CoreV1().Nodes().List(opts)
 	}))
 	err = lister.EachListItem(context.Background(), metav1.ListOptions{Limit: 100}, func(obj runtime.Object) error {
+		topology.TotalNodes++
+
 		m, err := meta.Accessor(obj)
 		if err != nil {
 			return err
