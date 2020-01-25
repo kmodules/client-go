@@ -122,12 +122,11 @@ func IsMaster(node core.Node) bool {
 	return ok17 || (ok16 && role16 == "master")
 }
 
-type Zones []string
-
 type Topology struct {
-	Regions           map[string][]string
-	TotalNodes        int
-	InstanceTypes     map[string]int
+	Regions       map[string][]string
+	TotalNodes    int
+	InstanceTypes map[string]int
+
 	LabelZone         string
 	LabelRegion       string
 	LabelInstanceType string
@@ -143,6 +142,54 @@ type Topology struct {
 	//
 	//LabelInstanceType       = "beta.kubernetes.io/instance-type"
 	//LabelInstanceTypeStable = "node.kubernetes.io/instance-type"
+}
+
+func (t Topology) ConvertAffinity(affinity *core.Affinity) {
+	t.convertPodAffinityTerm(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
+	t.convertWeightedPodAffinityTerm(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+
+	t.convertPodAffinityTerm(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
+	t.convertWeightedPodAffinityTerm(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+}
+
+func isZoneKey(key string) bool {
+	return key == core.LabelZoneFailureDomain || key == "topology.kubernetes.io/zone"
+}
+
+func isRegionKey(key string) bool {
+	return key == core.LabelZoneRegion || key == "topology.kubernetes.io/region"
+}
+
+func isInstanceTypeKey(key string) bool {
+	return key == core.LabelInstanceType || key == "node.kubernetes.io/instance-type"
+}
+
+func (t Topology) convertPodAffinityTerm(terms []core.PodAffinityTerm) {
+	for i := range terms {
+		if isZoneKey(terms[i].TopologyKey) {
+			terms[i].TopologyKey = t.LabelZone
+		}
+		if isRegionKey(terms[i].TopologyKey) {
+			terms[i].TopologyKey = t.LabelRegion
+		}
+		if isInstanceTypeKey(terms[i].TopologyKey) {
+			terms[i].TopologyKey = t.LabelInstanceType
+		}
+	}
+}
+
+func (t Topology) convertWeightedPodAffinityTerm(terms []core.WeightedPodAffinityTerm) {
+	for i := range terms {
+		if isZoneKey(terms[i].PodAffinityTerm.TopologyKey) {
+			terms[i].PodAffinityTerm.TopologyKey = t.LabelZone
+		}
+		if isRegionKey(terms[i].PodAffinityTerm.TopologyKey) {
+			terms[i].PodAffinityTerm.TopologyKey = t.LabelRegion
+		}
+		if isInstanceTypeKey(terms[i].PodAffinityTerm.TopologyKey) {
+			terms[i].PodAffinityTerm.TopologyKey = t.LabelInstanceType
+		}
+	}
 }
 
 func DetectTopology(kc kubernetes.Interface) (*Topology, error) {
