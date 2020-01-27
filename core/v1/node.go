@@ -149,11 +149,15 @@ func (t Topology) ConvertAffinity(affinity *core.Affinity) {
 		return
 	}
 
-	t.convertPodAffinityTerm(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
-	t.convertWeightedPodAffinityTerm(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+	if affinity.PodAffinity != nil {
+		t.convertPodAffinityTerm(affinity.PodAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
+		t.convertWeightedPodAffinityTerm(affinity.PodAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+	}
 
-	t.convertPodAffinityTerm(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
-	t.convertWeightedPodAffinityTerm(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+	if affinity.PodAntiAffinity != nil {
+		t.convertPodAffinityTerm(affinity.PodAntiAffinity.RequiredDuringSchedulingIgnoredDuringExecution)
+		t.convertWeightedPodAffinityTerm(affinity.PodAntiAffinity.PreferredDuringSchedulingIgnoredDuringExecution)
+	}
 }
 
 func isZoneKey(key string) bool {
