@@ -176,11 +176,9 @@ func (t Topology) convertPodAffinityTerm(terms []core.PodAffinityTerm) {
 	for i := range terms {
 		if isZoneKey(terms[i].TopologyKey) {
 			terms[i].TopologyKey = t.LabelZone
-		}
-		if isRegionKey(terms[i].TopologyKey) {
+		} else if isRegionKey(terms[i].TopologyKey) {
 			terms[i].TopologyKey = t.LabelRegion
-		}
-		if isInstanceTypeKey(terms[i].TopologyKey) {
+		} else if isInstanceTypeKey(terms[i].TopologyKey) {
 			terms[i].TopologyKey = t.LabelInstanceType
 		}
 	}
@@ -190,11 +188,9 @@ func (t Topology) convertWeightedPodAffinityTerm(terms []core.WeightedPodAffinit
 	for i := range terms {
 		if isZoneKey(terms[i].PodAffinityTerm.TopologyKey) {
 			terms[i].PodAffinityTerm.TopologyKey = t.LabelZone
-		}
-		if isRegionKey(terms[i].PodAffinityTerm.TopologyKey) {
+		} else if isRegionKey(terms[i].PodAffinityTerm.TopologyKey) {
 			terms[i].PodAffinityTerm.TopologyKey = t.LabelRegion
-		}
-		if isInstanceTypeKey(terms[i].PodAffinityTerm.TopologyKey) {
+		} else if isInstanceTypeKey(terms[i].PodAffinityTerm.TopologyKey) {
 			terms[i].PodAffinityTerm.TopologyKey = t.LabelInstanceType
 		}
 	}
