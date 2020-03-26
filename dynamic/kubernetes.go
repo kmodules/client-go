@@ -45,7 +45,7 @@ import (
 )
 
 func WaitUntilDeleted(ri dynamic.ResourceInterface, stopCh <-chan struct{}, name string, subresources ...string) error {
-	err := ri.Delete(name, &metav1.DeleteOptions{}, subresources...)
+	err := ri.Delete(ctx, name, metav1.DeleteOptions{}, subresources...)
 	if kerr.IsNotFound(err) {
 		return nil
 	} else if err != nil {
@@ -53,7 +53,7 @@ func WaitUntilDeleted(ri dynamic.ResourceInterface, stopCh <-chan struct{}, name
 	}
 	// delete operation was successful, now wait for obj to be removed(eg: objects with finalizers)
 	return wait.PollImmediateUntil(kutil.RetryInterval, func() (bool, error) {
-		_, e2 := ri.Get(name, metav1.GetOptions{}, subresources...)
+		_, e2 := ri.Get(ctx, name, metav1.GetOptions{}, subresources...)
 		if kerr.IsNotFound(e2) {
 			return true, nil
 		} else if e2 != nil && !kutil.IsRequestRetryable(e2) {
@@ -107,11 +107,11 @@ func untilHasKey(
 	lw := &cache.ListWatch{
 		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
-			return ri.List(options)
+			return ri.List(ctx, options)
 		},
 		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, name).String()
-			return ri.Watch(options)
+			return ri.Watch(ctx, options)
 		},
 	}
 
@@ -157,7 +157,7 @@ func DetectWorkload(config *rest.Config, resource schema.GroupVersionResource, n
 		ri = dc.Resource(resource)
 	}
 
-	obj, err := ri.Get(name, metav1.GetOptions{})
+	obj, err := ri.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return nil, resource, err
 	}
@@ -187,7 +187,7 @@ func findWorkload(kc kubernetes.Interface, dc dynamic.Interface, resource schema
 			} else {
 				ri = dc.Resource(gvr)
 			}
-			parent, err := ri.Get(ref.Name, metav1.GetOptions{})
+			parent, err := ri.Get(ctx, ref.Name, metav1.GetOptions{})
 			if err != nil {
 				return nil, schema.GroupVersionResource{}, err
 			}
@@ -213,7 +213,7 @@ func RemoveOwnerReferenceForItems(
 
 	var errs []error
 	for _, name := range items {
-		item, err := ri.Get(name, metav1.GetOptions{})
+		item, err := ri.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			if !kerr.IsNotFound(err) {
 				errs = append(errs, err)
@@ -244,7 +244,7 @@ func RemoveOwnerReferenceForSelector(
 		ri = c.Resource(gvr).Namespace(namespace)
 	}
 
-	list, err := ri.List(metav1.ListOptions{LabelSelector: selector.String()})
+	list, err := ri.List(ctx, metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return err
 	}
@@ -277,7 +277,7 @@ func EnsureOwnerReferenceForItems(
 
 	var errs []error
 	for _, name := range items {
-		item, err := ri.Get(name, metav1.GetOptions{})
+		item, err := ri.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			if !kerr.IsNotFound(err) {
 				errs = append(errs, err)
@@ -307,7 +307,7 @@ func EnsureOwnerReferenceForSelector(
 	} else {
 		ri = c.Resource(gvr).Namespace(namespace)
 	}
-	list, err := ri.List(metav1.ListOptions{LabelSelector: selector.String()})
+	list, err := ri.List(ctx, metav1.ListOptions{LabelSelector: selector.String()})
 	if err != nil {
 		return err
 	}

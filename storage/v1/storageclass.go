@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"context"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	storage "k8s.io/api/storage/v1"
@@ -29,29 +31,29 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchStorageClass(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*storage.StorageClass) *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
-	cur, err := c.StorageV1().StorageClasses().Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchStorageClass(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*storage.StorageClass) *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
+	cur, err := c.StorageV1().StorageClasses().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating StorageClass %s.", meta.Name)
-		out, err := c.StorageV1().StorageClasses().Create(transform(&storage.StorageClass{
+		out, err := c.StorageV1().StorageClasses().Create(ctx, transform(&storage.StorageClass{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "StorageClass",
 				APIVersion: storage.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchStorageClass(c, cur, transform)
+	return PatchStorageClass(ctx, c, cur, transform)
 }
 
-func PatchStorageClass(c kubernetes.Interface, cur *storage.StorageClass, transform func(*storage.StorageClass) *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
-	return PatchStorageClassObject(c, cur, transform(cur.DeepCopy()))
+func PatchStorageClass(ctx context.Context, c kubernetes.Interface, cur *storage.StorageClass, transform func(*storage.StorageClass) *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
+	return PatchStorageClassObject(ctx, c, cur, transform(cur.DeepCopy()))
 }
 
-func PatchStorageClassObject(c kubernetes.Interface, cur, mod *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
+func PatchStorageClassObject(ctx context.Context, c kubernetes.Interface, cur, mod *storage.StorageClass) (*storage.StorageClass, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -70,7 +72,7 @@ func PatchStorageClassObject(c kubernetes.Interface, cur, mod *storage.StorageCl
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching StorageClass %s with %s.", cur.Name, string(patch))
-	out, err := c.StorageV1().StorageClasses().Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.StorageV1().StorageClasses().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return out, kutil.VerbPatched, err
 }
 
@@ -78,11 +80,11 @@ func TryUpdateStorageClass(c kubernetes.Interface, meta metav1.ObjectMeta, trans
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.StorageV1().StorageClasses().Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.StorageV1().StorageClasses().Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.StorageV1().StorageClasses().Update(transform(cur.DeepCopy()))
+			result, e2 = c.StorageV1().StorageClasses().Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update StorageClass %s due to %v.", attempt, cur.Name, e2)

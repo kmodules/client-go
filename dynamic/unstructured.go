@@ -46,13 +46,13 @@ func CreateOrPatch(
 		ri = c.Resource(gvr).Namespace(meta.Namespace)
 	}
 
-	cur, err := ri.Get(meta.Name, metav1.GetOptions{})
+	cur, err := ri.Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating %s %s/%s.", gvr.String(), meta.Namespace, meta.Name)
 		u := &unstructured.Unstructured{}
 		u.SetName(meta.Name)
 		u.SetNamespace(meta.Namespace)
-		out, err := ri.Create(transform(u), metav1.CreateOptions{})
+		out, err := ri.Create(ctx, transform(u), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -66,7 +66,7 @@ func Patch(
 	cur *unstructured.Unstructured,
 	transform func(*unstructured.Unstructured) *unstructured.Unstructured,
 ) (*unstructured.Unstructured, kutil.VerbType, error) {
-	return PatchObject(c, gvr, cur, transform(cur.DeepCopy()))
+	return PatchObject(ctx, c, gvr, cur, transform(cur.DeepCopy()))
 }
 
 func PatchObject(
@@ -99,7 +99,7 @@ func PatchObject(
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching %s %s/%s with %s.", gvr.String(), cur.GetNamespace(), cur.GetName(), string(patch))
-	out, err := ri.Patch(cur.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
+	out, err := ri.Patch(ctx, cur.GetName(), types.MergePatchType, patch, metav1.PatchOptions{})
 	return out, kutil.VerbPatched, err
 }
 
@@ -119,11 +119,11 @@ func TryUpdate(
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := ri.Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := ri.Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = ri.Update(transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = ri.Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update %s %s/%s due to %v.", attempt, gvr.String(), cur.GetNamespace(), cur.GetName(), e2)
@@ -154,9 +154,9 @@ func UpdateStatus(
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
 		var e2 error
-		result, e2 = ri.UpdateStatus(transform(cur), metav1.UpdateOptions{})
+		result, e2 = ri.UpdateStatus(ctx, transform(cur), metav1.UpdateOptions{})
 		if kerr.IsConflict(e2) {
-			latest, e3 := ri.Get(in.GetName(), metav1.GetOptions{})
+			latest, e3 := ri.Get(ctx, in.GetName(), metav1.GetOptions{})
 			switch {
 			case e3 == nil:
 				cur = latest

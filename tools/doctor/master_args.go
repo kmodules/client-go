@@ -77,7 +77,7 @@ func (d *Doctor) findMasterPods() ([]core.Pod, error) {
 }
 
 func (d *Doctor) findMasterPodsByLabel() ([]core.Pod, error) {
-	pods, err := d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(metav1.ListOptions{
+	pods, err := d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{
 			"component": "kube-apiserver",
 		}).String(),
@@ -90,7 +90,7 @@ func (d *Doctor) findMasterPodsByLabel() ([]core.Pod, error) {
 	}
 
 	// kops
-	pods, err = d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(metav1.ListOptions{
+	pods, err = d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{
 			"k8s-app": "kube-apiserver",
 		}).String(),
@@ -102,7 +102,7 @@ func (d *Doctor) findMasterPodsByLabel() ([]core.Pod, error) {
 }
 
 func (d *Doctor) findMasterPodsByKubernetesService() ([]core.Pod, error) {
-	ep, err := d.kc.CoreV1().Endpoints(core.NamespaceDefault).Get("kubernetes", metav1.GetOptions{})
+	ep, err := d.kc.CoreV1().Endpoints(core.NamespaceDefault).Get(ctx, "kubernetes", metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (d *Doctor) findMasterPodsByKubernetesService() ([]core.Pod, error) {
 	}
 
 	lister := pager.New(func(ctx context.Context, opts metav1.ListOptions) (runtime.Object, error) {
-		return d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(opts)
+		return d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, opts)
 	})
 	objects, err := lister.List(context.Background(), metav1.ListOptions{})
 	if err != nil {

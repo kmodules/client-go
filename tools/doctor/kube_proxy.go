@@ -25,7 +25,7 @@ import (
 // k8s-app=kube-proxy
 
 func (d *Doctor) findKubeProxyPods() ([]core.Pod, error) {
-	pods, err := d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(metav1.ListOptions{
+	pods, err := d.kc.CoreV1().Pods(metav1.NamespaceSystem).List(ctx, metav1.ListOptions{
 		LabelSelector: labels.SelectorFromSet(labels.Set{
 			"k8s-app": "kube-proxy",
 		}).String(),

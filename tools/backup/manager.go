@@ -20,6 +20,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"io"
 	"io/ioutil"
 	"os"
@@ -178,7 +179,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 				return err
 			}
 			request := client.Get().Resource(r.Name).Param("pretty", "true")
-			resp, err := request.DoRaw()
+			resp, err := request.DoRaw(context.TODO())
 			if err != nil {
 				return err
 			}

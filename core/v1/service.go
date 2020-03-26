@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"context"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -29,29 +31,29 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchService(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Service) *core.Service) (*core.Service, kutil.VerbType, error) {
-	cur, err := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchService(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Service) *core.Service) (*core.Service, kutil.VerbType, error) {
+	cur, err := c.CoreV1().Services(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Service %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.CoreV1().Services(meta.Namespace).Create(transform(&core.Service{
+		out, err := c.CoreV1().Services(meta.Namespace).Create(ctx, transform(&core.Service{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Service",
 				APIVersion: core.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchService(c, cur, transform)
+	return PatchService(ctx, c, cur, transform)
 }
 
-func PatchService(c kubernetes.Interface, cur *core.Service, transform func(*core.Service) *core.Service) (*core.Service, kutil.VerbType, error) {
-	return PatchServiceObject(c, cur, transform(cur.DeepCopy()))
+func PatchService(ctx context.Context, c kubernetes.Interface, cur *core.Service, transform func(*core.Service) *core.Service) (*core.Service, kutil.VerbType, error) {
+	return PatchServiceObject(ctx, c, cur, transform(cur.DeepCopy()))
 }
 
-func PatchServiceObject(c kubernetes.Interface, cur, mod *core.Service) (*core.Service, kutil.VerbType, error) {
+func PatchServiceObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.Service) (*core.Service, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -70,7 +72,7 @@ func PatchServiceObject(c kubernetes.Interface, cur, mod *core.Service) (*core.S
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Service %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.CoreV1().Services(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.CoreV1().Services(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return out, kutil.VerbPatched, err
 }
 
@@ -78,11 +80,11 @@ func TryUpdateService(c kubernetes.Interface, meta metav1.ObjectMeta, transform 
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.CoreV1().Services(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.CoreV1().Services(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.CoreV1().Services(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.CoreV1().Services(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Service %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -131,7 +133,7 @@ func WaitUntilServiceDeletedBySelector(kubeClient kubernetes.Interface, namespac
 	}
 
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		svcList, err := kubeClient.CoreV1().Services(namespace).List(metav1.ListOptions{
+		svcList, err := kubeClient.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
 			LabelSelector: sel.String(),
 		})
 		if err != nil {

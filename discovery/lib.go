@@ -150,7 +150,7 @@ func IsSupportedVersion(kc kubernetes.Interface, constraint string, blackListedV
 	}
 	v := gv.ToMutator().ResetMetadata().ResetPrerelease().Done()
 
-	nodes, err := kc.CoreV1().Nodes().List(metav1.ListOptions{
+	nodes, err := kc.CoreV1().Nodes().List(ctx, metav1.ListOptions{
 		LabelSelector: "node-role.kubernetes.io/master",
 	})
 	if err != nil {
