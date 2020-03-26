@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
 	fuzz "github.com/google/gofuzz"
 )
 
@@ -154,12 +153,14 @@ func (t Time) MarshalJSON() ([]byte, error) {
 	return buf, nil
 }
 
-func (t Time) MarshalJSONPB(_ *jsonpb.Marshaler) ([]byte, error) {
-	return t.MarshalJSON()
-}
-
-func (t *Time) UnmarshalJSONPB(_ *jsonpb.Unmarshaler, jstr []byte) error {
-	return t.UnmarshalJSON(jstr)
+// ToUnstructured implements the value.UnstructuredConverter interface.
+func (t Time) ToUnstructured() interface{} {
+	if t.IsZero() {
+		return nil
+	}
+	buf := make([]byte, 0, len(time.RFC3339))
+	buf = t.UTC().AppendFormat(buf, time.RFC3339)
+	return string(buf)
 }
 
 // OpenAPISchemaType is used by the kube-openapi generator when constructing
