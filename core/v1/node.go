@@ -83,7 +83,7 @@ func PatchNodeObject(ctx context.Context, c kubernetes.Interface, cur, mod *core
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateNode(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node) (result *core.Node, err error) {
+func TryUpdateNode(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node) (result *core.Node, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -196,7 +196,7 @@ func (t Topology) convertWeightedPodAffinityTerm(terms []core.WeightedPodAffinit
 	}
 }
 
-func DetectTopology(kc kubernetes.Interface) (*Topology, error) {
+func DetectTopology(ctx context.Context, kc kubernetes.Interface) (*Topology, error) {
 	// TODO: Use https://github.com/kubernetes/client-go/blob/kubernetes-1.17.0/metadata/interface.go once upgraded to 1.17
 
 	var topology Topology

@@ -76,7 +76,7 @@ func PatchServiceObject(ctx context.Context, c kubernetes.Interface, cur, mod *c
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateService(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Service) *core.Service) (result *core.Service, err error) {
+func TryUpdateService(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Service) *core.Service) (result *core.Service, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -126,14 +126,14 @@ func MergeServicePorts(cur, desired []core.ServicePort) []core.ServicePort {
 	return desired
 }
 
-func WaitUntilServiceDeletedBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
+func WaitUntilServiceDeletedBySelector(ctx context.Context, c kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err
 	}
 
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		svcList, err := kubeClient.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
+		svcList, err := c.CoreV1().Services(namespace).List(ctx, metav1.ListOptions{
 			LabelSelector: sel.String(),
 		})
 		if err != nil {

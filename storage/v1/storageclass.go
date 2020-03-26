@@ -76,7 +76,7 @@ func PatchStorageClassObject(ctx context.Context, c kubernetes.Interface, cur, m
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateStorageClass(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*storage.StorageClass) *storage.StorageClass) (result *storage.StorageClass, err error) {
+func TryUpdateStorageClass(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*storage.StorageClass) *storage.StorageClass) (result *storage.StorageClass, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

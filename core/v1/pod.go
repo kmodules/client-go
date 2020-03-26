@@ -76,7 +76,7 @@ func PatchPodObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePod(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Pod) *core.Pod) (result *core.Pod, err error) {
+func TryUpdatePod(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Pod) *core.Pod) (result *core.Pod, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -116,19 +116,19 @@ func PodRunningAndReady(pod core.Pod) (bool, error) {
 	return false, nil
 }
 
-func RestartPods(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
+func RestartPods(ctx context.Context, c kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
 	r, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err
 	}
-	return kubeClient.CoreV1().Pods(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{
+	return c.CoreV1().Pods(namespace).DeleteCollection(ctx, metav1.DeleteOptions{}, metav1.ListOptions{
 		LabelSelector: r.String(),
 	})
 }
 
-func WaitUntilPodRunning(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilPodRunning(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		if pod, err := kubeClient.CoreV1().Pods(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
+		if pod, err := c.CoreV1().Pods(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
 			runningAndReady, _ := PodRunningAndReady(*pod)
 			return runningAndReady, nil
 		}
@@ -136,14 +136,14 @@ func WaitUntilPodRunning(kubeClient kubernetes.Interface, meta metav1.ObjectMeta
 	})
 }
 
-func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector, count int) error {
+func WaitUntilPodRunningBySelector(ctx context.Context, c kubernetes.Interface, namespace string, selector *metav1.LabelSelector, count int) error {
 	r, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err
 	}
 
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		podList, err := kubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+		podList, err := c.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
 			LabelSelector: r.String(),
 		})
 		if err != nil {
@@ -164,14 +164,14 @@ func WaitUntilPodRunningBySelector(kubeClient kubernetes.Interface, namespace st
 	})
 }
 
-func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
+func WaitUntilPodDeletedBySelector(ctx context.Context, c kubernetes.Interface, namespace string, selector *metav1.LabelSelector) error {
 	sel, err := metav1.LabelSelectorAsSelector(selector)
 	if err != nil {
 		return err
 	}
 
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		podList, err := kubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
+		podList, err := c.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{
 			LabelSelector: sel.String(),
 		})
 		if err != nil {
@@ -182,9 +182,9 @@ func WaitUntilPodDeletedBySelector(kubeClient kubernetes.Interface, namespace st
 }
 
 // WaitUntillPodTerminatedByLabel waits until all pods with the label are terminated. Timeout is 5 minutes.
-func WaitUntillPodTerminatedByLabel(kubeClient kubernetes.Interface, namespace string, label string) error {
+func WaitUntillPodTerminatedByLabel(ctx context.Context, c kubernetes.Interface, namespace string, label string) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		podList, err := kubeClient.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{LabelSelector: label})
+		podList, err := c.CoreV1().Pods(namespace).List(ctx, metav1.ListOptions{LabelSelector: label})
 		if err != nil {
 			return false, nil
 		}

@@ -17,6 +17,7 @@ limitations under the License.
 package dynamic
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -34,6 +35,7 @@ import (
 )
 
 func CreateOrPatch(
+	ctx context.Context,
 	c dynamic.Interface,
 	gvr schema.GroupVersionResource,
 	meta metav1.ObjectMeta,
@@ -57,10 +59,11 @@ func CreateOrPatch(
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return Patch(c, gvr, cur, transform)
+	return Patch(ctx, c, gvr, cur, transform)
 }
 
 func Patch(
+	ctx context.Context,
 	c dynamic.Interface,
 	gvr schema.GroupVersionResource,
 	cur *unstructured.Unstructured,
@@ -70,6 +73,7 @@ func Patch(
 }
 
 func PatchObject(
+	ctx context.Context,
 	c dynamic.Interface,
 	gvr schema.GroupVersionResource,
 	cur, mod *unstructured.Unstructured,
@@ -104,6 +108,7 @@ func PatchObject(
 }
 
 func TryUpdate(
+	ctx context.Context,
 	c dynamic.Interface,
 	gvr schema.GroupVersionResource,
 	meta metav1.ObjectMeta,
@@ -137,6 +142,7 @@ func TryUpdate(
 }
 
 func UpdateStatus(
+	ctx context.Context,
 	c dynamic.Interface,
 	gvr schema.GroupVersionResource,
 	in *unstructured.Unstructured,

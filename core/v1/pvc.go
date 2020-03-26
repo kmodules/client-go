@@ -76,7 +76,7 @@ func PatchPVCObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePVC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (result *core.PersistentVolumeClaim, err error) {
+func TryUpdatePVC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (result *core.PersistentVolumeClaim, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

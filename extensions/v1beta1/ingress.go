@@ -76,7 +76,7 @@ func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *e
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateIngress(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (result *extensions.Ingress, err error) {
+func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (result *extensions.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

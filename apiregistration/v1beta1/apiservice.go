@@ -78,7 +78,7 @@ func PatchAPIServiceObject(ctx context.Context, c apireg_cs.Interface, cur, mod 
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateAPIService(c apireg_cs.Interface, name string, transform func(*reg.APIService) *reg.APIService) (result *reg.APIService, err error) {
+func TryUpdateAPIService(ctx context.Context, c apireg_cs.Interface, name string, transform func(*reg.APIService) *reg.APIService) (result *reg.APIService, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

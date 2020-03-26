@@ -77,7 +77,7 @@ func PatchRCObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.R
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateRC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.ReplicationController) *core.ReplicationController) (result *core.ReplicationController, err error) {
+func TryUpdateRC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.ReplicationController) *core.ReplicationController) (result *core.ReplicationController, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -98,7 +98,7 @@ func TryUpdateRC(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(
 	return
 }
 
-func WaitUntilRCReady(c kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilRCReady(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
 		if obj, err := c.CoreV1().ReplicationControllers(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
 			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil

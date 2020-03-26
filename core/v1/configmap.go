@@ -76,7 +76,7 @@ func PatchConfigMapObject(ctx context.Context, c kubernetes.Interface, cur, mod 
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateConfigMap(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.ConfigMap) *core.ConfigMap) (result *core.ConfigMap, err error) {
+func TryUpdateConfigMap(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.ConfigMap) *core.ConfigMap) (result *core.ConfigMap, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

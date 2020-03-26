@@ -76,7 +76,7 @@ func PatchPodSecurityPolicyObject(ctx context.Context, c kubernetes.Interface, c
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePodSecurityPolicy(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodSecurityPolicy) *policy.PodSecurityPolicy) (result *policy.PodSecurityPolicy, err error) {
+func TryUpdatePodSecurityPolicy(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodSecurityPolicy) *policy.PodSecurityPolicy) (result *policy.PodSecurityPolicy, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

@@ -86,7 +86,7 @@ func PatchMutatingWebhookConfigurationObject(ctx context.Context, c kubernetes.I
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateMutatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration) (result *reg.MutatingWebhookConfiguration, err error) {
+func TryUpdateMutatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration) (result *reg.MutatingWebhookConfiguration, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -138,7 +138,7 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*reg.MutatingWebhookConfiguration)
-				_, _, err := PatchMutatingWebhookConfiguration(kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {
+				_, _, err := PatchMutatingWebhookConfiguration(context.TODO(), kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {
 					for i := range in.Webhooks {
 						in.Webhooks[i].ClientConfig.CABundle = config.CAData
 					}
@@ -198,7 +198,7 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 					return false, errors.New("error watching")
 				case watch.Added, watch.Modified:
 					cur := event.Object.(*reg.MutatingWebhookConfiguration)
-					_, _, err := PatchMutatingWebhookConfiguration(kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {
+					_, _, err := PatchMutatingWebhookConfiguration(context.TODO(), kc, cur, func(in *reg.MutatingWebhookConfiguration) *reg.MutatingWebhookConfiguration {
 						for i := range in.Webhooks {
 							in.Webhooks[i].ClientConfig.CABundle = config.CAData
 						}

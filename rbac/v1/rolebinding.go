@@ -76,7 +76,7 @@ func PatchRoleBindingObject(ctx context.Context, c kubernetes.Interface, cur, mo
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (result *rbac.RoleBinding, err error) {
+func TryUpdateRoleBinding(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.RoleBinding) *rbac.RoleBinding) (result *rbac.RoleBinding, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -97,9 +97,9 @@ func TryUpdateRoleBinding(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 	return
 }
 
-func WaitUntillRoleBindingDeleted(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntillRoleBindingDeleted(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		_, err := kubeClient.RbacV1().RoleBindings(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+		_, err := c.RbacV1().RoleBindings(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if err != nil && kerr.IsNotFound(err) {
 			return true, nil
 		}

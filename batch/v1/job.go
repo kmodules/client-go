@@ -77,7 +77,7 @@ func PatchJobObject(ctx context.Context, c kubernetes.Interface, cur, mod *batch
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
+func TryUpdateJob(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.Job) *batch.Job) (result *batch.Job, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -98,7 +98,7 @@ func TryUpdateJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func
 	return
 }
 
-func WaitUntilJobCompletion(c kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilJobCompletion(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollInfinite(kutil.RetryInterval, func() (bool, error) {
 		job, err := c.BatchV1().Jobs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if err != nil {

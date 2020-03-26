@@ -80,7 +80,7 @@ func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mo
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateStatefulSet(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (result *apps.StatefulSet, err error) {
+func TryUpdateStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (result *apps.StatefulSet, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -101,17 +101,17 @@ func TryUpdateStatefulSet(c kubernetes.Interface, meta metav1.ObjectMeta, transf
 	return
 }
 
-func WaitUntilStatefulSetReady(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilStatefulSetReady(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
-		if obj, err := kubeClient.AppsV1().StatefulSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
+		if obj, err := c.AppsV1().StatefulSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
 			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil
 		}
 		return false, nil
 	})
 }
 
-func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
-	statefulSet, err := kubeClient.AppsV1().StatefulSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+func DeleteStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
+	statefulSet, err := c.AppsV1().StatefulSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -121,7 +121,7 @@ func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) 
 	}
 
 	// Update StatefulSet
-	_, _, err = PatchStatefulSet(kubeClient, statefulSet, func(in *apps.StatefulSet) *apps.StatefulSet {
+	_, _, err = PatchStatefulSet(ctx, c, statefulSet, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Spec.Replicas = atypes.Int32P(0)
 		return in
 	})
@@ -129,10 +129,10 @@ func DeleteStatefulSet(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) 
 		return err
 	}
 
-	err = core_util.WaitUntilPodDeletedBySelector(kubeClient, statefulSet.Namespace, statefulSet.Spec.Selector)
+	err = core_util.WaitUntilPodDeletedBySelector(ctx, c, statefulSet.Namespace, statefulSet.Spec.Selector)
 	if err != nil {
 		return err
 	}
 
-	return kubeClient.AppsV1().StatefulSets(statefulSet.Namespace).Delete(ctx, statefulSet.Name, metav1.DeleteOptions{})
+	return c.AppsV1().StatefulSets(statefulSet.Namespace).Delete(ctx, statefulSet.Name, metav1.DeleteOptions{})
 }

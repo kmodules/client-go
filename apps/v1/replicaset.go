@@ -77,7 +77,7 @@ func PatchReplicaSetObject(ctx context.Context, c kubernetes.Interface, cur, mod
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateReplicaSet(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.ReplicaSet) *apps.ReplicaSet) (result *apps.ReplicaSet, err error) {
+func TryUpdateReplicaSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.ReplicaSet) *apps.ReplicaSet) (result *apps.ReplicaSet, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -98,7 +98,7 @@ func TryUpdateReplicaSet(c kubernetes.Interface, meta metav1.ObjectMeta, transfo
 	return
 }
 
-func WaitUntilReplicaSetReady(c kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilReplicaSetReady(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
 		if obj, err := c.AppsV1().ReplicaSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
 			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil

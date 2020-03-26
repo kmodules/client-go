@@ -79,7 +79,7 @@ func PatchDeploymentObject(ctx context.Context, c kubernetes.Interface, cur, mod
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateDeployment(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (result *apps.Deployment, err error) {
+func TryUpdateDeployment(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.Deployment) *apps.Deployment) (result *apps.Deployment, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -100,7 +100,7 @@ func TryUpdateDeployment(c kubernetes.Interface, meta metav1.ObjectMeta, transfo
 	return
 }
 
-func WaitUntilDeploymentReady(c kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntilDeploymentReady(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.ReadinessTimeout, func() (bool, error) {
 		if obj, err := c.AppsV1().Deployments(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{}); err == nil {
 			return Int32(obj.Spec.Replicas) == obj.Status.ReadyReplicas, nil
@@ -109,8 +109,8 @@ func WaitUntilDeploymentReady(c kubernetes.Interface, meta metav1.ObjectMeta) er
 	})
 }
 
-func DeleteDeployment(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
-	deployment, err := kubeClient.AppsV1().Deployments(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+func DeleteDeployment(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
+	deployment, err := c.AppsV1().Deployments(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if err != nil {
 		if kerr.IsNotFound(err) {
 			return nil
@@ -118,12 +118,12 @@ func DeleteDeployment(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) e
 		return err
 	}
 	deletePolicy := metav1.DeletePropagationForeground
-	if err := kubeClient.AppsV1().Deployments(deployment.Namespace).Delete(ctx, deployment.Name, metav1.DeleteOptions{
+	if err := c.AppsV1().Deployments(deployment.Namespace).Delete(ctx, deployment.Name, metav1.DeleteOptions{
 		PropagationPolicy: &deletePolicy,
 	}); err != nil && !kerr.IsNotFound(err) {
 		return err
 	}
-	if err := core_util.WaitUntilPodDeletedBySelector(kubeClient, deployment.Namespace, deployment.Spec.Selector); err != nil {
+	if err := core_util.WaitUntilPodDeletedBySelector(ctx, c, deployment.Namespace, deployment.Spec.Selector); err != nil {
 		return err
 	}
 	return nil

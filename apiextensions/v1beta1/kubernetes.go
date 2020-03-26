@@ -18,7 +18,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func RegisterCRDs(disClient discovery.DiscoveryInterface, apiextClient crd_cs.ApiextensionsV1beta1Interface, crds []*crd_api.CustomResourceDefinition) error {
+func RegisterCRDs(ctx context.Context, disClient discovery.DiscoveryInterface, apiextClient crd_cs.ApiextensionsV1beta1Interface, crds []*crd_api.CustomResourceDefinition) error {
 	major, minor, _, _, _, err := discovery_util.GetVersionInfo(disClient)
 	if err != nil {
 		return err

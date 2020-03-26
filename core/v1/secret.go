@@ -92,7 +92,7 @@ func PatchSecretObject(ctx context.Context, c kubernetes.Interface, cur, mod *co
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateSecret(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret) (result *core.Secret, err error) {
+func TryUpdateSecret(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret) (result *core.Secret, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

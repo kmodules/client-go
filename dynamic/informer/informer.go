@@ -17,6 +17,7 @@ limitations under the License.
 package informer
 
 import (
+	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -29,6 +30,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/tools/cache"
 )
 
@@ -111,9 +113,11 @@ func newSharedResourceInformer(client *dynamicclientset.ResourceClient, defaultR
 	informer := cache.NewSharedIndexInformer(
 		&cache.ListWatch{
 			ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
-				return client.List(options)
+				return client.List(context.TODO(), options)
 			},
-			WatchFunc: client.Watch,
+			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+				return client.Watch(context.TODO(), options)
+			},
 		},
 		&unstructured.Unstructured{},
 		defaultResyncPeriod,

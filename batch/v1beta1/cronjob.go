@@ -76,7 +76,7 @@ func PatchCronJobObject(ctx context.Context, c kubernetes.Interface, cur, mod *b
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateCronJob(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.CronJob) *batch.CronJob) (result *batch.CronJob, err error) {
+func TryUpdateCronJob(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batch.CronJob) *batch.CronJob) (result *batch.CronJob, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

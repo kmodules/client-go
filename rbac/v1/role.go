@@ -76,7 +76,7 @@ func PatchRoleObject(ctx context.Context, c kubernetes.Interface, cur, mod *rbac
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateRole(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (result *rbac.Role, err error) {
+func TryUpdateRole(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.Role) *rbac.Role) (result *rbac.Role, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -97,9 +97,9 @@ func TryUpdateRole(c kubernetes.Interface, meta metav1.ObjectMeta, transform fun
 	return
 }
 
-func WaitUntillRoleDeleted(kubeClient kubernetes.Interface, meta metav1.ObjectMeta) error {
+func WaitUntillRoleDeleted(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta) error {
 	return wait.PollImmediate(kutil.RetryInterval, kutil.GCTimeout, func() (bool, error) {
-		_, err := kubeClient.RbacV1().Roles(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+		_, err := c.RbacV1().Roles(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if err != nil && kerr.IsNotFound(err) {
 			return true, nil
 		}

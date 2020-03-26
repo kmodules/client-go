@@ -105,7 +105,7 @@ func PatchPodDisruptionBudgetObject(ctx context.Context, c kubernetes.Interface,
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePodDisruptionBudget(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (result *policy.PodDisruptionBudget, err error) {
+func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (result *policy.PodDisruptionBudget, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++

@@ -86,7 +86,7 @@ func PatchValidatingWebhookConfigurationObject(ctx context.Context, c kubernetes
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateValidatingWebhookConfiguration(c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (result *reg.ValidatingWebhookConfiguration, err error) {
+func TryUpdateValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (result *reg.ValidatingWebhookConfiguration, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -138,7 +138,7 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, webhookConfigName stri
 				return false, errors.New("error watching")
 			case watch.Added, watch.Modified:
 				cur := event.Object.(*reg.ValidatingWebhookConfiguration)
-				_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
+				_, _, err := PatchValidatingWebhookConfiguration(context.TODO(), kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
 					for i := range in.Webhooks {
 						in.Webhooks[i].ClientConfig.CABundle = config.CAData
 					}
@@ -198,7 +198,7 @@ func SyncValidatingWebhookCABundle(config *rest.Config, webhookConfigName string
 					return false, errors.New("error watching")
 				case watch.Added, watch.Modified:
 					cur := event.Object.(*reg.ValidatingWebhookConfiguration)
-					_, _, err := PatchValidatingWebhookConfiguration(kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
+					_, _, err := PatchValidatingWebhookConfiguration(context.TODO(), kc, cur, func(in *reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration {
 						for i := range in.Webhooks {
 							in.Webhooks[i].ClientConfig.CABundle = config.CAData
 						}

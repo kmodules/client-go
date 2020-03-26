@@ -17,6 +17,7 @@ limitations under the License.
 package doctor
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 
@@ -33,7 +34,7 @@ const (
 )
 
 func (d *Doctor) extractExtendedAPIServerInfo(info *ClusterInfo) error {
-	authConfigMap, err := d.kc.CoreV1().ConfigMaps(authenticationConfigMapNamespace).Get(ctx, authenticationConfigMapName, metav1.GetOptions{})
+	authConfigMap, err := d.kc.CoreV1().ConfigMaps(authenticationConfigMapNamespace).Get(context.TODO(), authenticationConfigMapName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
