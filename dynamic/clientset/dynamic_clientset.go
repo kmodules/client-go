@@ -17,6 +17,7 @@ limitations under the License.
 package clientset
 
 import (
+	"context"
 	"fmt"
 
 	dynamicdiscovery "kmodules.xyz/client-go/dynamic/discovery"
@@ -124,10 +125,10 @@ func (rc *ResourceClient) APIResource() *dynamicdiscovery.APIResource {
 	return rc.resource
 }
 
-func (rc *ResourceClient) UpdateWithRetries(orig *unstructured.Unstructured, update func(obj *unstructured.Unstructured) bool) (result *unstructured.Unstructured, err error) {
+func (rc *ResourceClient) UpdateWithRetries(ctx context.Context, orig *unstructured.Unstructured, update func(obj *unstructured.Unstructured) bool) (result *unstructured.Unstructured, err error) {
 	name := orig.GetName()
 	err = retry.RetryOnConflict(retry.DefaultBackoff, func() error {
-		current, err := rc.Get(name, metav1.GetOptions{})
+		current, err := rc.Get(ctx, name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -140,7 +141,7 @@ func (rc *ResourceClient) UpdateWithRetries(orig *unstructured.Unstructured, upd
 			result = current
 			return nil
 		}
-		result, err = rc.Update(current, metav1.UpdateOptions{})
+		result, err = rc.Update(ctx, current, metav1.UpdateOptions{})
 		return err
 	})
 	return result, err

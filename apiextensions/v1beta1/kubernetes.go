@@ -1,6 +1,7 @@
 package v1beta1
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -17,7 +18,7 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-func RegisterCRDs(disClient discovery.DiscoveryInterface, apiextClient crd_cs.ApiextensionsV1beta1Interface, crds []*crd_api.CustomResourceDefinition) error {
+func RegisterCRDs(ctx context.Context, disClient discovery.DiscoveryInterface, apiextClient crd_cs.ApiextensionsV1beta1Interface, crds []*crd_api.CustomResourceDefinition) error {
 	major, minor, _, _, _, err := discovery_util.GetVersionInfo(disClient)
 	if err != nil {
 		return err
@@ -30,9 +31,9 @@ func RegisterCRDs(disClient discovery.DiscoveryInterface, apiextClient crd_cs.Ap
 			crd.Spec.Validation.OpenAPIV3Schema.Type = ""
 		}
 
-		existing, err := apiextClient.CustomResourceDefinitions().Get(crd.Name, metav1.GetOptions{})
+		existing, err := apiextClient.CustomResourceDefinitions().Get(ctx, crd.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(err) {
-			_, err = apiextClient.CustomResourceDefinitions().Create(crd)
+			_, err = apiextClient.CustomResourceDefinitions().Create(ctx, crd, metav1.CreateOptions{})
 			if err != nil {
 				return err
 			}
@@ -57,7 +58,7 @@ func RegisterCRDs(disClient discovery.DiscoveryInterface, apiextClient crd_cs.Ap
 			} else if crd.Spec.Subresources == nil && existing.Spec.Subresources != nil {
 				existing.Spec.Subresources = nil
 			}
-			_, err = apiextClient.CustomResourceDefinitions().Update(existing)
+			_, err = apiextClient.CustomResourceDefinitions().Update(ctx, existing, metav1.UpdateOptions{})
 			if err != nil {
 				return err
 			}
@@ -69,7 +70,7 @@ func RegisterCRDs(disClient discovery.DiscoveryInterface, apiextClient crd_cs.Ap
 func WaitForCRDReady(restClient rest.Interface, crds []*crd_api.CustomResourceDefinition) error {
 	err := wait.Poll(3*time.Second, 5*time.Minute, func() (bool, error) {
 		for _, crd := range crds {
-			res := restClient.Get().AbsPath("apis", crd.Spec.Group, crd.Spec.Versions[0].Name, crd.Spec.Names.Plural).Do()
+			res := restClient.Get().AbsPath("apis", crd.Spec.Group, crd.Spec.Versions[0].Name, crd.Spec.Names.Plural).Do(context.TODO())
 			err := res.Error()
 			if err != nil {
 				// RESTClient returns *apierrors.StatusError for any status codes < 200 or > 206

@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"context"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	core "k8s.io/api/core/v1"
@@ -29,19 +31,19 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchSecret(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret, forceSyncType ...bool) (*core.Secret, kutil.VerbType, error) {
+func CreateOrPatchSecret(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret, forceSyncType ...bool) (*core.Secret, kutil.VerbType, error) {
 	syncType := len(forceSyncType) == 1 && forceSyncType[0]
 
-	cur, err := c.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+	cur, err := c.CoreV1().Secrets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Secret %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.CoreV1().Secrets(meta.Namespace).Create(transform(&core.Secret{
+		out, err := c.CoreV1().Secrets(meta.Namespace).Create(ctx, transform(&core.Secret{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "Secret",
 				APIVersion: core.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -51,23 +53,23 @@ func CreateOrPatchSecret(c kubernetes.Interface, meta metav1.ObjectMeta, transfo
 	if mod.Type != cur.Type && syncType {
 		// secret type can't be modified once created, so we have to delete first, then recreate with correct type
 		glog.Warningf("Secret %s/%s type is modified, deleting first.", meta.Namespace, meta.Name)
-		err = c.CoreV1().Secrets(meta.Namespace).Delete(meta.Name, &metav1.DeleteOptions{})
+		err = c.CoreV1().Secrets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
 
 		glog.V(3).Infof("Creating Secret %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.CoreV1().Secrets(meta.Namespace).Create(mod)
+		out, err := c.CoreV1().Secrets(meta.Namespace).Create(ctx, mod, metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	}
-	return PatchSecretObject(c, cur, mod)
+	return PatchSecretObject(ctx, c, cur, mod)
 }
 
-func PatchSecret(c kubernetes.Interface, cur *core.Secret, transform func(*core.Secret) *core.Secret) (*core.Secret, kutil.VerbType, error) {
-	return PatchSecretObject(c, cur, transform(cur.DeepCopy()))
+func PatchSecret(ctx context.Context, c kubernetes.Interface, cur *core.Secret, transform func(*core.Secret) *core.Secret) (*core.Secret, kutil.VerbType, error) {
+	return PatchSecretObject(ctx, c, cur, transform(cur.DeepCopy()))
 }
 
-func PatchSecretObject(c kubernetes.Interface, cur, mod *core.Secret) (*core.Secret, kutil.VerbType, error) {
+func PatchSecretObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.Secret) (*core.Secret, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -86,19 +88,19 @@ func PatchSecretObject(c kubernetes.Interface, cur, mod *core.Secret) (*core.Sec
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Secret %s/%s", cur.Namespace, cur.Name)
-	out, err := c.CoreV1().Secrets(cur.Namespace).Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.CoreV1().Secrets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateSecret(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret) (result *core.Secret, err error) {
+func TryUpdateSecret(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Secret) *core.Secret) (result *core.Secret, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.CoreV1().Secrets(meta.Namespace).Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.CoreV1().Secrets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.CoreV1().Secrets(cur.Namespace).Update(transform(cur.DeepCopy()))
+			result, e2 = c.CoreV1().Secrets(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Secret %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)

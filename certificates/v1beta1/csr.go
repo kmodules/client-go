@@ -17,6 +17,8 @@ limitations under the License.
 package v1beta1
 
 import (
+	"context"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	certificates "k8s.io/api/certificates/v1beta1"
@@ -29,29 +31,29 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
-	cur, err := c.CertificatesV1beta1().CertificateSigningRequests().Get(meta.Name, metav1.GetOptions{})
+func CreateOrPatchCSR(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
+	cur, err := c.CertificatesV1beta1().CertificateSigningRequests().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating CertificateSigningRequest %s/%s.", meta.Namespace, meta.Name)
-		out, err := c.CertificatesV1beta1().CertificateSigningRequests().Create(transform(&certificates.CertificateSigningRequest{
+		out, err := c.CertificatesV1beta1().CertificateSigningRequests().Create(ctx, transform(&certificates.CertificateSigningRequest{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "CertificateSigningRequest",
 				APIVersion: certificates.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}))
+		}), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchCSR(c, cur, transform)
+	return PatchCSR(ctx, c, cur, transform)
 }
 
-func PatchCSR(c kubernetes.Interface, cur *certificates.CertificateSigningRequest, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
-	return PatchCSRObject(c, cur, transform(cur.DeepCopy()))
+func PatchCSR(ctx context.Context, c kubernetes.Interface, cur *certificates.CertificateSigningRequest, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
+	return PatchCSRObject(ctx, c, cur, transform(cur.DeepCopy()))
 }
 
-func PatchCSRObject(c kubernetes.Interface, cur, mod *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
+func PatchCSRObject(ctx context.Context, c kubernetes.Interface, cur, mod *certificates.CertificateSigningRequest) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -70,19 +72,19 @@ func PatchCSRObject(c kubernetes.Interface, cur, mod *certificates.CertificateSi
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching CertificateSigningRequest %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.CertificatesV1beta1().CertificateSigningRequests().Patch(cur.Name, types.StrategicMergePatchType, patch)
+	out, err := c.CertificatesV1beta1().CertificateSigningRequests().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateCSR(c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
+func TryUpdateCSR(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest) (result *certificates.CertificateSigningRequest, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
-		cur, e2 := c.CertificatesV1beta1().CertificateSigningRequests().Get(meta.Name, metav1.GetOptions{})
+		cur, e2 := c.CertificatesV1beta1().CertificateSigningRequests().Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.CertificatesV1beta1().CertificateSigningRequests().Update(transform(cur.DeepCopy()))
+			result, e2 = c.CertificatesV1beta1().CertificateSigningRequests().Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update CertificateSigningRequest %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
