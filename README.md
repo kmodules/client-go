@@ -1,3 +1,4 @@
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-Ready--to--Code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/kmodules/client-go) 
 [![Go Report Card](https://goreportcard.com/badge/kmodules.xyz/client-go)](https://goreportcard.com/report/kmodules.xyz/client-go)
 [![GoDoc](https://godoc.org/kmodules.xyz/client-go?status.svg "GoDoc")](https://godoc.org/kmodules.xyz/client-go)
 [![Build Status](https://github.com/kmodules/client-go/workflows/CI/badge.svg)](https://github.com/kmodules/client-go/actions?workflow=CI)
