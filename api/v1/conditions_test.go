@@ -26,10 +26,11 @@ var transitionTime = metav1.Now()
 
 var conditions = []Condition{
 	{
-		Type:    "type-1",
-		Status:  "True",
-		Reason:  "No reason",
-		Message: "No msg",
+		Type:               "type-1",
+		Status:             "True",
+		Reason:             "No reason",
+		Message:            "No msg",
+		ObservedGeneration: 1,
 	}, {
 		Type:    "type-2",
 		Status:  "False",
@@ -87,10 +88,11 @@ func TestGetCondition(t *testing.T) {
 			title:           "condition is present in the condition list",
 			desiredCondType: "type-1",
 			expected: &Condition{
-				Type:    "type-1",
-				Status:  "True",
-				Reason:  "No reason",
-				Message: "No msg",
+				Type:               "type-1",
+				Status:             "True",
+				Reason:             "No reason",
+				Message:            "No msg",
+				ObservedGeneration: 1,
 			},
 		},
 		{
@@ -101,7 +103,7 @@ func TestGetCondition(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.title, func(t *testing.T) {
-			if got := GetCondition(conditions, tt.desiredCondType); !equalCondition(tt.expected, got) {
+			if _, got := GetCondition(conditions, tt.desiredCondType); !equalCondition(tt.expected, got) {
 				t.Errorf("Expected: %v Found: %v", tt.expected, got)
 			}
 		})
@@ -132,16 +134,18 @@ func TestSetCondition(t *testing.T) {
 		{
 			title: "condition is in the condition list but not in desired state",
 			desired: Condition{
-				Type:    "type-1",
-				Status:  "False",
-				Reason:  "Updated",
-				Message: "Condition has changed",
+				Type:               "type-1",
+				Status:             "True",
+				Reason:             "Updated",
+				Message:            "Condition has changed",
+				ObservedGeneration: 2,
 			},
 			expected: &Condition{
-				Type:    "type-1",
-				Status:  "False",
-				Reason:  "Updated",
-				Message: "Condition has changed",
+				Type:               "type-1",
+				Status:             "True",
+				Reason:             "Updated",
+				Message:            "Condition has changed",
+				ObservedGeneration: 2,
 			},
 		},
 		{
@@ -163,8 +167,8 @@ func TestSetCondition(t *testing.T) {
 	}
 	for _, tt := range cases {
 		t.Run(tt.title, func(t *testing.T) {
-			newConditions := SetCondition(conditions, tt.desired.Type, tt.desired.Status, tt.desired.Reason, tt.desired.Message)
-			if got := GetCondition(newConditions, tt.desired.Type); !equalCondition(tt.expected, got) {
+			newConditions := SetCondition(conditions, tt.desired)
+			if _, got := GetCondition(newConditions, tt.desired.Type); !equalCondition(tt.expected, got) {
 				t.Errorf("Expected: %v Found: %v", tt.expected, got)
 			}
 		})
@@ -179,7 +183,7 @@ func TestRemoveCondition(t *testing.T) {
 	}{
 		{
 			title:           "condition is present in the condition list",
-			desiredCondType: "type-1",
+			desiredCondType: "type-2",
 			expected:        nil,
 		},
 		{
@@ -191,7 +195,7 @@ func TestRemoveCondition(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.title, func(t *testing.T) {
 			newConditions := RemoveCondition(conditions, tt.desiredCondType)
-			if got := GetCondition(newConditions, tt.desiredCondType); !equalCondition(tt.expected, got) {
+			if _, got := GetCondition(newConditions, tt.desiredCondType); !equalCondition(tt.expected, got) {
 				t.Errorf("Expected: %v Found: %v", tt.expected, got)
 			}
 		})
@@ -233,7 +237,8 @@ func equalCondition(expected, got *Condition) bool {
 		expected.Type == got.Type &&
 		expected.Status == got.Status &&
 		expected.Reason == got.Reason &&
-		expected.Message == got.Message {
+		expected.Message == got.Message &&
+		expected.ObservedGeneration == got.ObservedGeneration {
 		return true
 
 	}

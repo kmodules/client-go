@@ -73,51 +73,47 @@ func HasCondition(conditions []Condition, condType string) bool {
 }
 
 // GetCondition returns a pointer to the desired condition referred by "condType". Otherwise, it returns nil.
-func GetCondition(conditions []Condition, condType string) *Condition {
+func GetCondition(conditions []Condition, condType string) (int, *Condition) {
 	for i := range conditions {
 		c := conditions[i]
 		if c.Type == condType {
-			return &c
+			return i, &c
 		}
 	}
-	return nil
+	return -1, nil
 }
 
 // SetCondition add/update the desired condition to the condition list. It does nothing if the condition is already in
 // its desired state.
-func SetCondition(conditions []Condition, condType string, status ConditionStatus, reason string, msg string) []Condition {
-	curCond := GetCondition(conditions, condType)
+func SetCondition(conditions []Condition, newCondition Condition) []Condition {
+	idx, curCond := GetCondition(conditions, newCondition.Type)
 	// If the current condition is in its desired state, we have nothing to do. Just return the original condition list.
 	if curCond != nil &&
-		curCond.Status == status &&
-		curCond.Reason == reason &&
-		curCond.Message == msg {
+		curCond.Status == newCondition.Status &&
+		curCond.Reason == newCondition.Reason &&
+		curCond.Message == newCondition.Message &&
+		curCond.ObservedGeneration == newCondition.ObservedGeneration {
 		return conditions
 	}
-	// Now, the desired conditions is not in the condition list or is not in its desired state.
-	// Remove it from the condition list.
-	newConditions := RemoveCondition(conditions, condType)
-
-	// Add the desired condition to the condition list.
-	return append(newConditions, Condition{
-		Type:               condType,
-		Status:             status,
-		Reason:             reason,
-		Message:            msg,
-		LastTransitionTime: metav1.Now(),
-	})
+	// The desired conditions is not in the condition list or is not in its desired state.
+	// Update it if present in the condition list, or append the new condition if it does not present.
+	newCondition.LastTransitionTime = metav1.Now()
+	if idx != -1 {
+		conditions[idx] = newCondition
+	} else {
+		conditions = append(conditions, newCondition)
+	}
+	return conditions
 }
 
 // RemoveCondition remove a condition from the condition list referred by "condType" parameter.
 func RemoveCondition(conditions []Condition, condType string) []Condition {
-	var newConditions []Condition
-	for i := range conditions {
-		if conditions[i].Type == condType {
-			continue
-		}
-		newConditions = append(newConditions, conditions[i])
+	idx, _ := GetCondition(conditions, condType)
+	if idx == -1 {
+		// The desired condition is not present in the condition list. So, nothing to do.
+		return conditions
 	}
-	return newConditions
+	return append(conditions[:idx], conditions[idx+1:]...)
 }
 
 // IsConditionTrue returns "true" if the desired condition is in true state.
