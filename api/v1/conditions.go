@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// KEP: https://github.com/kubernetes/enhancements/blob/ced773ab59f0ff080888a912ab99474245623dad/keps/sig-api-machinery/1623-standardize-conditions/README.md
+
 type ConditionStatus string
 
 // These are valid condition statuses. "ConditionTrue" means a resource is in the condition.
