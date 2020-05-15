@@ -224,7 +224,7 @@ test: $(BUILD_DIRS)
 	        ./hack/test.sh $(SRC_DIRS)                          \
 	    "
 
-ADDTL_LINTERS   := goconst,gofmt,goimports,unparam
+ADDTL_LINTERS   := goconst,gofmt,goimports,unparam,scopelint
 
 .PHONY: lint
 lint: $(BUILD_DIRS)
