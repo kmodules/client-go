@@ -27,6 +27,9 @@ const (
 	ConditionProgressing = "Progressing"
 	ConditionAvailable   = "Available"
 	ConditionFailure     = "Failure"
+
+	ConditionRequestApproved = "Approved"
+	ConditionRequestDenied   = "Denied"
 )
 
 type ConditionStatus string
