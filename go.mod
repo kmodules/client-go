@@ -26,14 +26,14 @@ require (
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	gomodules.xyz/jsonpatch/v2 v2.1.0
 	gomodules.xyz/version v0.1.0
-	k8s.io/api v0.18.0
-	k8s.io/apiextensions-apiserver v0.18.0
-	k8s.io/apimachinery v0.18.0
-	k8s.io/apiserver v0.18.0
-	k8s.io/cli-runtime v0.18.0
-	k8s.io/client-go v0.18.0
+	k8s.io/api v0.18.3
+	k8s.io/apiextensions-apiserver v0.18.3
+	k8s.io/apimachinery v0.18.3
+	k8s.io/apiserver v0.18.3
+	k8s.io/cli-runtime v0.18.3
+	k8s.io/client-go v0.18.3
 	k8s.io/klog v1.0.0
-	k8s.io/kube-aggregator v0.18.0
-	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c
+	k8s.io/kube-aggregator v0.18.3
+	k8s.io/kube-openapi v0.0.0-20200410145947-61e04a5be9a6
 	sigs.k8s.io/yaml v1.2.0
 )
