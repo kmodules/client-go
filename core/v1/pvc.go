@@ -31,7 +31,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchPVC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
+func CreateOrPatchPVC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim, opts metav1.PatchOptions) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
 	cur, err := c.CoreV1().PersistentVolumeClaims(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PersistentVolumeClaim %s/%s.", meta.Namespace, meta.Name)
@@ -41,19 +41,22 @@ func CreateOrPatchPVC(ctx context.Context, c kubernetes.Interface, meta metav1.O
 				APIVersion: core.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchPVC(ctx, c, cur, transform)
+	return PatchPVC(ctx, c, cur, transform, opts)
 }
 
-func PatchPVC(ctx context.Context, c kubernetes.Interface, cur *core.PersistentVolumeClaim, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
-	return PatchPVCObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchPVC(ctx context.Context, c kubernetes.Interface, cur *core.PersistentVolumeClaim, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim, opts metav1.PatchOptions) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
+	return PatchPVCObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchPVCObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.PersistentVolumeClaim) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
+func PatchPVCObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.PersistentVolumeClaim, opts metav1.PatchOptions) (*core.PersistentVolumeClaim, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,11 +75,11 @@ func PatchPVCObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching PersistentVolumeClaim %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.CoreV1().PersistentVolumeClaims(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.CoreV1().PersistentVolumeClaims(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePVC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim) (result *core.PersistentVolumeClaim, err error) {
+func TryUpdatePVC(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.PersistentVolumeClaim) *core.PersistentVolumeClaim, opts metav1.UpdateOptions) (result *core.PersistentVolumeClaim, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -84,7 +87,7 @@ func TryUpdatePVC(ctx context.Context, c kubernetes.Interface, meta metav1.Objec
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.CoreV1().PersistentVolumeClaims(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.CoreV1().PersistentVolumeClaims(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update PersistentVolumeClaim %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)

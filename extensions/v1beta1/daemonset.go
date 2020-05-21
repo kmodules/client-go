@@ -31,7 +31,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchDaemonSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, kutil.VerbType, error) {
+func CreateOrPatchDaemonSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet, opts metav1.PatchOptions) (*extensions.DaemonSet, kutil.VerbType, error) {
 	cur, err := c.ExtensionsV1beta1().DaemonSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating DaemonSet %s/%s.", meta.Namespace, meta.Name)
@@ -41,19 +41,22 @@ func CreateOrPatchDaemonSet(ctx context.Context, c kubernetes.Interface, meta me
 				APIVersion: extensions.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchDaemonSet(ctx, c, cur, transform)
+	return PatchDaemonSet(ctx, c, cur, transform, opts)
 }
 
-func PatchDaemonSet(ctx context.Context, c kubernetes.Interface, cur *extensions.DaemonSet, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (*extensions.DaemonSet, kutil.VerbType, error) {
-	return PatchDaemonSetObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchDaemonSet(ctx context.Context, c kubernetes.Interface, cur *extensions.DaemonSet, transform func(*extensions.DaemonSet) *extensions.DaemonSet, opts metav1.PatchOptions) (*extensions.DaemonSet, kutil.VerbType, error) {
+	return PatchDaemonSetObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchDaemonSetObject(ctx context.Context, c kubernetes.Interface, cur, mod *extensions.DaemonSet) (*extensions.DaemonSet, kutil.VerbType, error) {
+func PatchDaemonSetObject(ctx context.Context, c kubernetes.Interface, cur, mod *extensions.DaemonSet, opts metav1.PatchOptions) (*extensions.DaemonSet, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,11 +75,11 @@ func PatchDaemonSetObject(ctx context.Context, c kubernetes.Interface, cur, mod 
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching DaemonSet %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateDaemonSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet) (result *extensions.DaemonSet, err error) {
+func TryUpdateDaemonSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.DaemonSet) *extensions.DaemonSet, opts metav1.UpdateOptions) (result *extensions.DaemonSet, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -84,7 +87,7 @@ func TryUpdateDaemonSet(ctx context.Context, c kubernetes.Interface, meta metav1
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.ExtensionsV1beta1().DaemonSets(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update DaemonSet %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)

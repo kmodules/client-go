@@ -224,7 +224,7 @@ func RemoveOwnerReferenceForItems(
 		if _, _, err := Patch(ctx, c, gvr, item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.RemoveOwnerReference(in, owner)
 			return in
-		}); err != nil && !kerr.IsNotFound(err) {
+		}, metav1.PatchOptions{}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
 		}
 	}
@@ -256,7 +256,7 @@ func RemoveOwnerReferenceForSelector(
 		if _, _, err := Patch(ctx, c, gvr, &item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.RemoveOwnerReference(in, owner)
 			return in
-		}); err != nil && !kerr.IsNotFound(err) {
+		}, metav1.PatchOptions{}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
 		}
 	}
@@ -290,7 +290,7 @@ func EnsureOwnerReferenceForItems(
 		if _, _, err := Patch(ctx, c, gvr, item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.EnsureOwnerReference(in, owner)
 			return in
-		}); err != nil && !kerr.IsNotFound(err) {
+		}, metav1.PatchOptions{}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
 		}
 	}
@@ -321,7 +321,7 @@ func EnsureOwnerReferenceForSelector(
 		if _, _, err := Patch(ctx, c, gvr, &item, func(in *unstructured.Unstructured) *unstructured.Unstructured {
 			v1.EnsureOwnerReference(in, owner)
 			return in
-		}); err != nil && !kerr.IsNotFound(err) {
+		}, metav1.PatchOptions{}); err != nil && !kerr.IsNotFound(err) {
 			errs = append(errs, err)
 		}
 	}

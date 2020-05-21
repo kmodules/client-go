@@ -31,7 +31,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (*extensions.Ingress, kutil.VerbType, error) {
+func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
 	cur, err := c.ExtensionsV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Ingress %s/%s.", meta.Namespace, meta.Name)
@@ -41,19 +41,22 @@ func CreateOrPatchIngress(ctx context.Context, c kubernetes.Interface, meta meta
 				APIVersion: extensions.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchIngress(ctx, c, cur, transform)
+	return PatchIngress(ctx, c, cur, transform, opts)
 }
 
-func PatchIngress(ctx context.Context, c kubernetes.Interface, cur *extensions.Ingress, transform func(*extensions.Ingress) *extensions.Ingress) (*extensions.Ingress, kutil.VerbType, error) {
-	return PatchIngressObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchIngress(ctx context.Context, c kubernetes.Interface, cur *extensions.Ingress, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
+	return PatchIngressObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *extensions.Ingress) (*extensions.Ingress, kutil.VerbType, error) {
+func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *extensions.Ingress, opts metav1.PatchOptions) (*extensions.Ingress, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,11 +75,11 @@ func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *e
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Ingress %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.ExtensionsV1beta1().Ingresses(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.ExtensionsV1beta1().Ingresses(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress) (result *extensions.Ingress, err error) {
+func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*extensions.Ingress) *extensions.Ingress, opts metav1.UpdateOptions) (result *extensions.Ingress, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -84,7 +87,7 @@ func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.O
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.ExtensionsV1beta1().Ingresses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.ExtensionsV1beta1().Ingresses(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Ingress %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)

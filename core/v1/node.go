@@ -38,7 +38,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchNode(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node) (*core.Node, kutil.VerbType, error) {
+func CreateOrPatchNode(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node, opts metav1.PatchOptions) (*core.Node, kutil.VerbType, error) {
 	cur, err := c.CoreV1().Nodes().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating Node %s", meta.Name)
@@ -48,19 +48,22 @@ func CreateOrPatchNode(ctx context.Context, c kubernetes.Interface, meta metav1.
 				APIVersion: core.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchNode(ctx, c, cur, transform)
+	return PatchNode(ctx, c, cur, transform, opts)
 }
 
-func PatchNode(ctx context.Context, c kubernetes.Interface, cur *core.Node, transform func(*core.Node) *core.Node) (*core.Node, kutil.VerbType, error) {
-	return PatchNodeObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchNode(ctx context.Context, c kubernetes.Interface, cur *core.Node, transform func(*core.Node) *core.Node, opts metav1.PatchOptions) (*core.Node, kutil.VerbType, error) {
+	return PatchNodeObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchNodeObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.Node) (*core.Node, kutil.VerbType, error) {
+func PatchNodeObject(ctx context.Context, c kubernetes.Interface, cur, mod *core.Node, opts metav1.PatchOptions) (*core.Node, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -79,11 +82,11 @@ func PatchNodeObject(ctx context.Context, c kubernetes.Interface, cur, mod *core
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching Node %s with %s", cur.Name, string(patch))
-	out, err := c.CoreV1().Nodes().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.CoreV1().Nodes().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateNode(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node) (result *core.Node, err error) {
+func TryUpdateNode(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*core.Node) *core.Node, opts metav1.UpdateOptions) (result *core.Node, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -91,7 +94,7 @@ func TryUpdateNode(ctx context.Context, c kubernetes.Interface, meta metav1.Obje
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.CoreV1().Nodes().Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.CoreV1().Nodes().Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update Node %s due to %v.", attempt, cur.Name, e2)
