@@ -39,7 +39,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+func CreateOrPatchValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration, opts metav1.PatchOptions) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
 	cur, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Get(ctx, name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ValidatingWebhookConfiguration %s.", name)
@@ -51,19 +51,22 @@ func CreateOrPatchValidatingWebhookConfiguration(ctx context.Context, c kubernet
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchValidatingWebhookConfiguration(ctx, c, cur, transform)
+	return PatchValidatingWebhookConfiguration(ctx, c, cur, transform, opts)
 }
 
-func PatchValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, cur *reg.ValidatingWebhookConfiguration, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
-	return PatchValidatingWebhookConfigurationObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, cur *reg.ValidatingWebhookConfiguration, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration, opts metav1.PatchOptions) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+	return PatchValidatingWebhookConfigurationObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchValidatingWebhookConfigurationObject(ctx context.Context, c kubernetes.Interface, cur, mod *reg.ValidatingWebhookConfiguration) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
+func PatchValidatingWebhookConfigurationObject(ctx context.Context, c kubernetes.Interface, cur, mod *reg.ValidatingWebhookConfiguration, opts metav1.PatchOptions) (*reg.ValidatingWebhookConfiguration, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -82,11 +85,11 @@ func PatchValidatingWebhookConfigurationObject(ctx context.Context, c kubernetes
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching ValidatingWebhookConfiguration %s with %s.", cur.Name, string(patch))
-	out, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration) (result *reg.ValidatingWebhookConfiguration, err error) {
+func TryUpdateValidatingWebhookConfiguration(ctx context.Context, c kubernetes.Interface, name string, transform func(*reg.ValidatingWebhookConfiguration) *reg.ValidatingWebhookConfiguration, opts metav1.UpdateOptions) (result *reg.ValidatingWebhookConfiguration, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -94,7 +97,7 @@ func TryUpdateValidatingWebhookConfiguration(ctx context.Context, c kubernetes.I
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.AdmissionregistrationV1beta1().ValidatingWebhookConfigurations().Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update ValidatingWebhookConfiguration %s due to %v.", attempt, cur.Name, e2)
@@ -143,7 +146,7 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, webhookConfigName stri
 						in.Webhooks[i].ClientConfig.CABundle = config.CAData
 					}
 					return in
-				})
+				}, metav1.PatchOptions{})
 				if err != nil {
 					glog.Warning(err)
 				}
@@ -203,7 +206,7 @@ func SyncValidatingWebhookCABundle(config *rest.Config, webhookConfigName string
 							in.Webhooks[i].ClientConfig.CABundle = config.CAData
 						}
 						return in
-					})
+					}, metav1.PatchOptions{})
 					if err != nil {
 						glog.Warning(err)
 					}

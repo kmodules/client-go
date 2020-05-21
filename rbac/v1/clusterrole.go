@@ -31,7 +31,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchClusterRole(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRole) *rbac.ClusterRole) (*rbac.ClusterRole, kutil.VerbType, error) {
+func CreateOrPatchClusterRole(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRole) *rbac.ClusterRole, opts metav1.PatchOptions) (*rbac.ClusterRole, kutil.VerbType, error) {
 	cur, err := c.RbacV1().ClusterRoles().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating ClusterRole %s.", meta.Name)
@@ -41,19 +41,22 @@ func CreateOrPatchClusterRole(ctx context.Context, c kubernetes.Interface, meta 
 				APIVersion: rbac.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchClusterRole(ctx, c, cur, transform)
+	return PatchClusterRole(ctx, c, cur, transform, opts)
 }
 
-func PatchClusterRole(ctx context.Context, c kubernetes.Interface, cur *rbac.ClusterRole, transform func(*rbac.ClusterRole) *rbac.ClusterRole) (*rbac.ClusterRole, kutil.VerbType, error) {
-	return PatchClusterRoleObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchClusterRole(ctx context.Context, c kubernetes.Interface, cur *rbac.ClusterRole, transform func(*rbac.ClusterRole) *rbac.ClusterRole, opts metav1.PatchOptions) (*rbac.ClusterRole, kutil.VerbType, error) {
+	return PatchClusterRoleObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchClusterRoleObject(ctx context.Context, c kubernetes.Interface, cur, mod *rbac.ClusterRole) (*rbac.ClusterRole, kutil.VerbType, error) {
+func PatchClusterRoleObject(ctx context.Context, c kubernetes.Interface, cur, mod *rbac.ClusterRole, opts metav1.PatchOptions) (*rbac.ClusterRole, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -72,11 +75,11 @@ func PatchClusterRoleObject(ctx context.Context, c kubernetes.Interface, cur, mo
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching ClusterRole %s with %s.", cur.Name, string(patch))
-	out, err := c.RbacV1().ClusterRoles().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.RbacV1().ClusterRoles().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateClusterRole(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRole) *rbac.ClusterRole) (result *rbac.ClusterRole, err error) {
+func TryUpdateClusterRole(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*rbac.ClusterRole) *rbac.ClusterRole, opts metav1.UpdateOptions) (result *rbac.ClusterRole, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -84,7 +87,7 @@ func TryUpdateClusterRole(ctx context.Context, c kubernetes.Interface, meta meta
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.RbacV1().ClusterRoles().Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.RbacV1().ClusterRoles().Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update ClusterRole %s due to %v.", attempt, cur.Name, e2)
@@ -92,7 +95,7 @@ func TryUpdateClusterRole(ctx context.Context, c kubernetes.Interface, meta meta
 	})
 
 	if err != nil {
-		err = errors.Errorf("failed to update ClusterRole %s after %d attempts due to %v", meta.Name, attempt, err)
+		err = errors.Errorf("failed to update Role %s after %d attempts due to %v", meta.Name, attempt, err)
 	}
 	return
 }

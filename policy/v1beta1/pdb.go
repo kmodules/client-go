@@ -34,7 +34,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
+func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget, opts metav1.PatchOptions) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
 	cur, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating PodDisruptionBudget %s/%s.", meta.Namespace, meta.Name)
@@ -44,7 +44,10 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 				APIVersion: policy.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -54,7 +57,7 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 	if !reflect.DeepEqual(cur.Spec, mod.Spec) {
 		// ref: https://github.com/kubernetes/kubernetes/issues/45398
 		if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.15"); err == nil && ok {
-			return PatchPodDisruptionBudget(ctx, c, cur, transform)
+			return PatchPodDisruptionBudget(ctx, c, cur, transform, opts)
 		}
 		// PDBs dont have the specs, Specs can't be modified once created, so we have to delete first, then recreate with correct  spec
 		glog.Warningf("Spec of PodDisruptionBudget %s/%s is modified, deleting existing one first.", meta.Namespace, meta.Name)
@@ -69,7 +72,10 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 				APIVersion: policy.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
@@ -78,11 +84,11 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 	return cur, kutil.VerbUnchanged, nil
 }
 
-func PatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, cur *policy.PodDisruptionBudget, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
-	return PatchPodDisruptionBudgetObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, cur *policy.PodDisruptionBudget, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget, opts metav1.PatchOptions) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
+	return PatchPodDisruptionBudgetObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchPodDisruptionBudgetObject(ctx context.Context, c kubernetes.Interface, cur, mod *policy.PodDisruptionBudget) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
+func PatchPodDisruptionBudgetObject(ctx context.Context, c kubernetes.Interface, cur, mod *policy.PodDisruptionBudget, opts metav1.PatchOptions) (*policy.PodDisruptionBudget, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -101,11 +107,11 @@ func PatchPodDisruptionBudgetObject(ctx context.Context, c kubernetes.Interface,
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching PodDisruptionBudget %s with %s.", cur.Name, string(patch))
-	out, err := c.PolicyV1beta1().PodDisruptionBudgets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.PolicyV1beta1().PodDisruptionBudgets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget) (result *policy.PodDisruptionBudget, err error) {
+func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policy.PodDisruptionBudget) *policy.PodDisruptionBudget, opts metav1.UpdateOptions) (result *policy.PodDisruptionBudget, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -113,7 +119,7 @@ func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, m
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update PodDisruptionBudget %s due to %v.", attempt, cur.Name, e2)

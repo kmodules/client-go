@@ -35,7 +35,7 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (*apps.StatefulSet, kutil.VerbType, error) {
+func CreateOrPatchStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet, opts metav1.PatchOptions) (*apps.StatefulSet, kutil.VerbType, error) {
 	cur, err := c.AppsV1().StatefulSets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating StatefulSet %s/%s.", meta.Namespace, meta.Name)
@@ -45,19 +45,22 @@ func CreateOrPatchStatefulSet(ctx context.Context, c kubernetes.Interface, meta 
 				APIVersion: apps.SchemeGroupVersion.String(),
 			},
 			ObjectMeta: meta,
-		}), metav1.CreateOptions{})
+		}), metav1.CreateOptions{
+			DryRun:       opts.DryRun,
+			FieldManager: opts.FieldManager,
+		})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchStatefulSet(ctx, c, cur, transform)
+	return PatchStatefulSet(ctx, c, cur, transform, opts)
 }
 
-func PatchStatefulSet(ctx context.Context, c kubernetes.Interface, cur *apps.StatefulSet, transform func(*apps.StatefulSet) *apps.StatefulSet) (*apps.StatefulSet, kutil.VerbType, error) {
-	return PatchStatefulSetObject(ctx, c, cur, transform(cur.DeepCopy()))
+func PatchStatefulSet(ctx context.Context, c kubernetes.Interface, cur *apps.StatefulSet, transform func(*apps.StatefulSet) *apps.StatefulSet, opts metav1.PatchOptions) (*apps.StatefulSet, kutil.VerbType, error) {
+	return PatchStatefulSetObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
 }
 
-func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mod *apps.StatefulSet) (*apps.StatefulSet, kutil.VerbType, error) {
+func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mod *apps.StatefulSet, opts metav1.PatchOptions) (*apps.StatefulSet, kutil.VerbType, error) {
 	curJson, err := json.Marshal(cur)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
@@ -76,11 +79,11 @@ func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mo
 		return cur, kutil.VerbUnchanged, nil
 	}
 	glog.V(3).Infof("Patching StatefulSet %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.AppsV1().StatefulSets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
+	out, err := c.AppsV1().StatefulSets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
-func TryUpdateStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet) (result *apps.StatefulSet, err error) {
+func TryUpdateStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*apps.StatefulSet) *apps.StatefulSet, opts metav1.UpdateOptions) (result *apps.StatefulSet, err error) {
 	attempt := 0
 	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
 		attempt++
@@ -88,7 +91,7 @@ func TryUpdateStatefulSet(ctx context.Context, c kubernetes.Interface, meta meta
 		if kerr.IsNotFound(e2) {
 			return false, e2
 		} else if e2 == nil {
-			result, e2 = c.AppsV1().StatefulSets(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), metav1.UpdateOptions{})
+			result, e2 = c.AppsV1().StatefulSets(cur.Namespace).Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
 		glog.Errorf("Attempt %d failed to update StatefulSet %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
@@ -124,7 +127,7 @@ func DeleteStatefulSet(ctx context.Context, c kubernetes.Interface, meta metav1.
 	_, _, err = PatchStatefulSet(ctx, c, statefulSet, func(in *apps.StatefulSet) *apps.StatefulSet {
 		in.Spec.Replicas = atypes.Int32P(0)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		return err
 	}

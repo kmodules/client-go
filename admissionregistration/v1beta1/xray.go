@@ -220,7 +220,7 @@ func (d ValidatingWebhookXray) updateAPIService(ctx context.Context, apireg apir
 	LastAppliedConfig:
 		in.Annotations = fn(in.Annotations)
 		return in
-	})
+	}, metav1.PatchOptions{})
 	return e3
 }
 
