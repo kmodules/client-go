@@ -18,7 +18,6 @@ package v1beta1
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -109,5 +108,5 @@ func WaitForCRDReady(restClient rest.Interface, crds []*crd_api.CustomResourceDe
 		return true, nil
 	})
 
-	return errors.Wrap(err, fmt.Sprintf("timed out waiting for CRD"))
+	return errors.Wrap(err, "timed out waiting for CRD")
 }
