@@ -46,6 +46,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 
 	for _, crd := range crds {
 		// Use crd v1 for k8s >= 1.16, if available
+		// ref: https://github.com/kubernetes/kubernetes/issues/91395
 		if major == 1 && minor >= 16 && crd.V1 != nil {
 			_, _, err := v1.CreateOrPatchCustomResourceDefinition(
 				context.TODO(),
