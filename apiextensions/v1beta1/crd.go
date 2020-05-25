@@ -25,26 +25,24 @@ import (
 	cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	kutil "kmodules.xyz/client-go"
 )
 
-func CreateOrPatchCustomResourceDefinition(
+func CreateOrUpdateCustomResourceDefinition(
 	ctx context.Context,
 	c cs.Interface,
 	name string,
 	transform func(in *api.CustomResourceDefinition) *api.CustomResourceDefinition,
-	opts metav1.PatchOptions,
+	opts metav1.UpdateOptions,
 ) (*api.CustomResourceDefinition, kutil.VerbType, error) {
-	cur, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Get(ctx, name, metav1.GetOptions{})
+	_, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Get(ctx, name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		glog.V(3).Infof("Creating CustomResourceDefinition %s.", name)
 		out, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Create(ctx, transform(&api.CustomResourceDefinition{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "CustomResourceDefinition",
 				APIVersion: api.SchemeGroupVersion.String(),
+				Kind:       "CustomResourceDefinition",
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
@@ -57,45 +55,11 @@ func CreateOrPatchCustomResourceDefinition(
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return PatchCustomResourceDefinition(ctx, c, cur, transform, opts)
-}
-
-func PatchCustomResourceDefinition(
-	ctx context.Context,
-	c cs.Interface,
-	cur *api.CustomResourceDefinition,
-	transform func(*api.CustomResourceDefinition) *api.CustomResourceDefinition,
-	opts metav1.PatchOptions,
-) (*api.CustomResourceDefinition, kutil.VerbType, error) {
-	return PatchCustomResourceDefinitionObject(ctx, c, cur, transform(cur.DeepCopy()), opts)
-}
-
-func PatchCustomResourceDefinitionObject(
-	ctx context.Context,
-	c cs.Interface,
-	cur, mod *api.CustomResourceDefinition,
-	opts metav1.PatchOptions,
-) (*api.CustomResourceDefinition, kutil.VerbType, error) {
-	curJson, err := json.Marshal(cur)
+	cur, err := TryUpdateCustomResourceDefinition(ctx, c, name, transform, opts)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-
-	modJson, err := json.Marshal(mod)
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
-	}
-
-	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, api.CustomResourceDefinition{})
-	if err != nil {
-		return nil, kutil.VerbUnchanged, err
-	}
-	if len(patch) == 0 || string(patch) == "{}" {
-		return cur, kutil.VerbUnchanged, nil
-	}
-	glog.V(3).Infof("Patching CustomResourceDefinition %s with %s.", cur.Name, string(patch))
-	out, err := c.ApiextensionsV1beta1().CustomResourceDefinitions().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
-	return out, kutil.VerbPatched, err
+	return cur, kutil.VerbUpdated, nil
 }
 
 func TryUpdateCustomResourceDefinition(

@@ -43,12 +43,13 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 	if err != nil {
 		return err
 	}
+	k116OrLater := major > 1 || (major == 1 && minor >= 16)
 
 	for _, crd := range crds {
 		// Use crd v1 for k8s >= 1.16, if available
 		// ref: https://github.com/kubernetes/kubernetes/issues/91395
-		if major == 1 && minor >= 16 && crd.V1 != nil {
-			_, _, err := v1.CreateOrPatchCustomResourceDefinition(
+		if k116OrLater && crd.V1 != nil {
+			_, _, err := v1.CreateOrUpdateCustomResourceDefinition(
 				context.TODO(),
 				client,
 				crd.V1.Name,
@@ -59,7 +60,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 					in.Spec = crd.V1.Spec
 					return crd.V1
 				},
-				metav1.PatchOptions{},
+				metav1.UpdateOptions{},
 			)
 			if err != nil {
 				return err
@@ -75,7 +76,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 				crd.V1beta1.Spec.Validation.OpenAPIV3Schema.Type = ""
 			}
 
-			_, _, err := v1beta1.CreateOrPatchCustomResourceDefinition(
+			_, _, err := v1beta1.CreateOrUpdateCustomResourceDefinition(
 				context.TODO(),
 				client,
 				crd.V1beta1.Name,
@@ -86,7 +87,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 					in.Spec = crd.V1beta1.Spec
 					return crd.V1beta1
 				},
-				metav1.PatchOptions{},
+				metav1.UpdateOptions{},
 			)
 			if err != nil {
 				return err
