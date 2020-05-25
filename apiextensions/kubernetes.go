@@ -125,8 +125,9 @@ func removeDefaults(schema *crdv1beta1.JSONSchemaProps) {
 	if schema.Not != nil {
 		removeDefaults(schema.Not)
 	}
-	for _, prop := range schema.Properties {
+	for key, prop := range schema.Properties {
 		removeDefaults(&prop)
+		schema.Properties[key] = prop
 	}
 	if schema.AdditionalProperties != nil {
 		removeDefaults(schema.AdditionalProperties.Schema)
