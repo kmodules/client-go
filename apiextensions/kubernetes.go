@@ -58,7 +58,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 					in.Annotations = meta_util.MergeKeys(in.Annotations, crd.V1.Annotations)
 
 					in.Spec = crd.V1.Spec
-					return crd.V1
+					return in
 				},
 				metav1.UpdateOptions{},
 			)
@@ -85,7 +85,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 					in.Annotations = meta_util.MergeKeys(in.Annotations, crd.V1beta1.Annotations)
 
 					in.Spec = crd.V1beta1.Spec
-					return crd.V1beta1
+					return in
 				},
 				metav1.UpdateOptions{},
 			)
