@@ -300,7 +300,7 @@ func TestValidNameWithSuffix(t *testing.T) {
 	}
 }
 
-func TestValidNameWithPefixNSuffix(t *testing.T) {
+func TestValidNameWithPrefixNSuffix(t *testing.T) {
 	testCases := []struct {
 		title    string
 		prefix   string
@@ -365,8 +365,83 @@ func TestValidNameWithPefixNSuffix(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.title, func(t *testing.T) {
-			if got := meta.ValidNameWithPefixNSuffix(tt.prefix, tt.name, tt.suffix, tt.maxLen...); got != tt.expected {
-				t.Errorf("ValidNameWithPefixNSuffix() = %v, want %v", got, tt.expected)
+			if got := meta.ValidNameWithPrefixNSuffix(tt.prefix, tt.name, tt.suffix, tt.maxLen...); got != tt.expected {
+				t.Errorf("ValidNameWithPrefixNSuffix() = %v, want %v", got, tt.expected)
+			}
+		})
+	}
+}
+
+func TestNameWithSuffix(t *testing.T) {
+	type args struct {
+		name         string
+		suffix       string
+		customLength int
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "long suffix",
+			args: args{
+				name:         "vault",
+				suffix:       "auth-controller",
+				customLength: 11,
+			},
+			want: "controller",
+		},
+		{
+			name: "suffix matched length",
+			args: args{
+				name:         "vault",
+				suffix:       "controller",
+				customLength: 10,
+			},
+			want: "controller",
+		},
+		{
+			name: "starts with -",
+			args: args{
+				name:         "vault",
+				suffix:       "controller",
+				customLength: 11,
+			},
+			want: "controller",
+		},
+		{
+			name: "trim name",
+			args: args{
+				name:         "vault",
+				suffix:       "controller",
+				customLength: 12,
+			},
+			want: "v-controller",
+		},
+		{
+			name: "name-suffix matches length",
+			args: args{
+				name:         "vault",
+				suffix:       "controller",
+				customLength: 16,
+			},
+			want: "vault-controller",
+		},
+		{
+			name: "name-suffix > length",
+			args: args{
+				name:         "vault",
+				suffix:       "controller",
+				customLength: 20,
+			},
+			want: "vault-controller",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := meta.NameWithSuffix(tt.args.name, tt.args.suffix, tt.args.customLength); got != tt.want {
+				t.Errorf("NameWithSuffix() = %v, want %v", got, tt.want)
 			}
 		})
 	}
