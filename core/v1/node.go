@@ -29,11 +29,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/tools/pager"
 	kutil "kmodules.xyz/client-go"
 )
@@ -199,12 +202,10 @@ func (t Topology) convertWeightedPodAffinityTerm(terms []core.WeightedPodAffinit
 	}
 }
 
-func DetectTopology(ctx context.Context, kc kubernetes.Interface) (*Topology, error) {
-	// TODO: Use https://github.com/kubernetes/client-go/blob/kubernetes-1.17.0/metadata/interface.go once upgraded to 1.17
-
+func DetectTopology(ctx context.Context, kc discovery.ServerVersionInterface, mc metadata.Interface) (*Topology, error) {
 	var topology Topology
 
-	info, err := kc.Discovery().ServerVersion()
+	info, err := kc.ServerVersion()
 	if err != nil {
 		return nil, err
 	}
@@ -214,9 +215,9 @@ func DetectTopology(ctx context.Context, kc kubernetes.Interface) (*Topology, er
 	}
 	ver = ver.ToMutator().ResetPrerelease().ResetMetadata().Done()
 	if ver.Major() >= 1 && ver.Minor() >= 17 {
-		topology.LabelZone = "topology.kubernetes.io/zone"
-		topology.LabelRegion = "topology.kubernetes.io/region"
-		topology.LabelInstanceType = "node.kubernetes.io/instance-type"
+		topology.LabelZone = core.LabelZoneFailureDomainStable
+		topology.LabelRegion = core.LabelZoneRegionStable
+		topology.LabelInstanceType = core.LabelInstanceTypeStable
 	} else {
 		topology.LabelZone = core.LabelZoneFailureDomain
 		topology.LabelRegion = core.LabelZoneRegion
@@ -227,10 +228,14 @@ func DetectTopology(ctx context.Context, kc kubernetes.Interface) (*Topology, er
 	mapRegion := make(map[string]sets.String)
 	instances := make(map[string]int)
 
+	nc := mc.Resource(schema.GroupVersionResource{
+		Version:  "v1",
+		Resource: "nodes",
+	})
 	lister := pager.New(pager.SimplePageFunc(func(opts metav1.ListOptions) (runtime.Object, error) {
-		return kc.CoreV1().Nodes().List(ctx, opts)
+		return nc.List(ctx, opts)
 	}))
-	err = lister.EachListItem(context.Background(), metav1.ListOptions{Limit: 100}, func(obj runtime.Object) error {
+	err = lister.EachListItem(context.Background(), metav1.ListOptions{}, func(obj runtime.Object) error {
 		topology.TotalNodes++
 
 		m, err := meta.Accessor(obj)
@@ -238,25 +243,25 @@ func DetectTopology(ctx context.Context, kc kubernetes.Interface) (*Topology, er
 			return err
 		}
 
-		annotations := m.GetAnnotations()
+		labels := m.GetLabels()
 
-		os, _ := meta_util.GetStringValueForKeys(annotations, "kubernetes.io/os", "beta.kubernetes.io/os")
+		os, _ := meta_util.GetStringValueForKeys(labels, core.LabelOSStable, "beta.kubernetes.io/os")
 		if os != "linux" {
 			return nil
 		}
-		arch, _ := meta_util.GetStringValueForKeys(annotations, "kubernetes.io/arch", "beta.kubernetes.io/arch")
+		arch, _ := meta_util.GetStringValueForKeys(labels, core.LabelArchStable, "beta.kubernetes.io/arch")
 		if arch != "amd64" {
 			return nil
 		}
 
-		region, _ := meta_util.GetStringValueForKeys(annotations, "topology.kubernetes.io/region", "failure-domain.beta.kubernetes.io/region")
-		zone, _ := meta_util.GetStringValueForKeys(annotations, "topology.kubernetes.io/zone", "failure-domain.beta.kubernetes.io/zone")
+		region, _ := meta_util.GetStringValueForKeys(labels, topology.LabelRegion)
+		zone, _ := meta_util.GetStringValueForKeys(labels, topology.LabelZone)
 		if _, ok := mapRegion[region]; !ok {
 			mapRegion[region] = sets.NewString()
 		}
 		mapRegion[region].Insert(zone)
 
-		instance, _ := meta_util.GetStringValueForKeys(annotations, "node.kubernetes.io/instance-type", "beta.kubernetes.io/instance-type")
+		instance, _ := meta_util.GetStringValueForKeys(labels, topology.LabelInstanceType)
 		if n, ok := instances[instance]; ok {
 			instances[instance] = n + 1
 		} else {
