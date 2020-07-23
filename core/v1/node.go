@@ -23,7 +23,6 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
-	"gomodules.xyz/version"
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -34,7 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/metadata"
 	"k8s.io/client-go/tools/pager"
@@ -202,31 +200,13 @@ func (t Topology) convertWeightedPodAffinityTerm(terms []core.WeightedPodAffinit
 	}
 }
 
-func DetectTopology(ctx context.Context, kc discovery.ServerVersionInterface, mc metadata.Interface) (*Topology, error) {
+func DetectTopology(ctx context.Context, mc metadata.Interface) (*Topology, error) {
 	var topology Topology
-
-	info, err := kc.ServerVersion()
-	if err != nil {
-		return nil, err
-	}
-	ver, err := version.NewVersion(info.GitVersion)
-	if err != nil {
-		return nil, err
-	}
-	ver = ver.ToMutator().ResetPrerelease().ResetMetadata().Done()
-	if ver.Major() >= 1 && ver.Minor() >= 17 {
-		topology.LabelZone = core.LabelZoneFailureDomainStable
-		topology.LabelRegion = core.LabelZoneRegionStable
-		topology.LabelInstanceType = core.LabelInstanceTypeStable
-	} else {
-		topology.LabelZone = core.LabelZoneFailureDomain
-		topology.LabelRegion = core.LabelZoneRegion
-		topology.LabelInstanceType = core.LabelInstanceType
-	}
 	topology.TotalNodes = 0
 
 	mapRegion := make(map[string]sets.String)
 	instances := make(map[string]int)
+	first := true
 
 	nc := mc.Resource(schema.GroupVersionResource{
 		Version:  "v1",
@@ -235,7 +215,7 @@ func DetectTopology(ctx context.Context, kc discovery.ServerVersionInterface, mc
 	lister := pager.New(pager.SimplePageFunc(func(opts metav1.ListOptions) (runtime.Object, error) {
 		return nc.List(ctx, opts)
 	}))
-	err = lister.EachListItem(context.Background(), metav1.ListOptions{}, func(obj runtime.Object) error {
+	err := lister.EachListItem(context.Background(), metav1.ListOptions{}, func(obj runtime.Object) error {
 		topology.TotalNodes++
 
 		m, err := meta.Accessor(obj)
@@ -244,6 +224,28 @@ func DetectTopology(ctx context.Context, kc discovery.ServerVersionInterface, mc
 		}
 
 		labels := m.GetLabels()
+
+		if first {
+			if _, ok := labels[core.LabelZoneRegionStable]; ok {
+				topology.LabelRegion = core.LabelZoneRegionStable
+			} else {
+				topology.LabelRegion = core.LabelZoneRegion
+			}
+
+			if _, ok := labels[core.LabelZoneFailureDomainStable]; ok {
+				topology.LabelZone = core.LabelZoneFailureDomainStable
+			} else {
+				topology.LabelZone = core.LabelZoneFailureDomain
+			}
+
+			if _, ok := labels[core.LabelInstanceTypeStable]; ok {
+				topology.LabelInstanceType = core.LabelInstanceTypeStable
+			} else {
+				topology.LabelInstanceType = core.LabelInstanceType
+			}
+
+			first = false
+		}
 
 		os, _ := meta_util.GetStringValueForKeys(labels, core.LabelOSStable, "beta.kubernetes.io/os")
 		if os != "linux" {
