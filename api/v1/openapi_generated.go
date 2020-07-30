@@ -44,7 +44,7 @@ func schema_kmodulesxyz_client_go_api_v1_CertificateSpec(ref common.ReferenceCal
 				Properties: map[string]spec.Schema{
 					"alias": {
 						SchemaProps: spec.SchemaProps{
-							Description: "Alias represents the identifier of the certificate. This will be used as `sourceHost` and `targetHosts` or will be used to generate them.",
+							Description: "Alias represents the identifier of the certificate.",
 							Type:        []string{"string"},
 							Format:      "",
 						},
@@ -131,6 +131,7 @@ func schema_kmodulesxyz_client_go_api_v1_CertificateSpec(ref common.ReferenceCal
 						},
 					},
 				},
+				Required: []string{"alias"},
 			},
 		},
 		Dependencies: []string{

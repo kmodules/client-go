@@ -18,14 +18,12 @@ type TLSConfig struct {
 
 type CertificateSpec struct {
 	// Alias represents the identifier of the certificate.
-	// This will be used as `sourceHost` and `targetHosts` or will be used to generate them.
-	// +optional
-	Alias string `json:"alias,omitempty" protobuf:"bytes,1,opt,name=alias"`
+	Alias string `json:"alias" protobuf:"bytes,1,opt,name=alias"`
 
 	// Specifies the k8s secret name that holds the certificates.
 	// Default to <resource-name>-<cert-alias>-cert.
 	// +optional
-	SecretName *string `json:"secretName,omitempty" protobuf:"bytes,2,opt,name=secretName"`
+	SecretName string `json:"secretName,omitempty" protobuf:"bytes,2,opt,name=secretName"`
 
 	// Full X509 name specification (https://golang.org/pkg/crypto/x509/pkix/#Name).
 	// +optional

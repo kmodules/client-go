@@ -29,8 +29,6 @@ option go_package = "v1";
 
 message CertificateSpec {
   // Alias represents the identifier of the certificate.
-  // This will be used as `sourceHost` and `targetHosts` or will be used to generate them.
-  // +optional
   optional string alias = 1;
 
   // Specifies the k8s secret name that holds the certificates.
