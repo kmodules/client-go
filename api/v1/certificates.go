@@ -105,14 +105,30 @@ func GetCertificate(certificates []CertificateSpec, alias string) (int, *Certifi
 	return -1, nil
 }
 
-// SetCertificate add/update the desired certificate to the certificate list. It does nothing if the certificate is already in
-// its desired state.
+// SetCertificate add/update the desired certificate to the certificate list.
 func SetCertificate(certificates []CertificateSpec, newCertificate CertificateSpec) []CertificateSpec {
 	idx, _ := GetCertificate(certificates, newCertificate.Alias)
 	if idx != -1 {
 		certificates[idx] = newCertificate
 	} else {
 		certificates = append(certificates, newCertificate)
+	}
+	return certificates
+}
+
+// SetMissingSecretNameForCertificate sets the missing secret name for a certificate.
+// If the certificate does not exist, it will add a new certificate with the desired secret name.
+func SetMissingSecretNameForCertificate(certificates []CertificateSpec, alias, secretName string) []CertificateSpec {
+	idx, _ := GetCertificate(certificates, alias)
+	if idx != -1 {
+		if certificates[idx].SecretName == "" {
+			certificates[idx].SecretName = secretName
+		}
+	} else {
+		certificates = append(certificates, CertificateSpec{
+			Alias:      alias,
+			SecretName: secretName,
+		})
 	}
 	return certificates
 }
