@@ -123,6 +123,15 @@ func SetCertificate(certificates []CertificateSpec, newCertificate CertificateSp
 	return certificates
 }
 
+// GetCertificateSecretName returns the name of secret for a certificate alias.
+func GetCertificateSecretName(certificates []CertificateSpec, alias string) (string, bool) {
+	idx, cert := GetCertificate(certificates, alias)
+	if idx == -1 {
+		return "", false
+	}
+	return cert.SecretName, cert.SecretName != ""
+}
+
 // SetMissingSecretNameForCertificate sets the missing secret name for a certificate.
 // If the certificate does not exist, it will add a new certificate with the desired secret name.
 func SetMissingSecretNameForCertificate(certificates []CertificateSpec, alias, secretName string) []CertificateSpec {
