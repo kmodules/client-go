@@ -149,6 +149,22 @@ func SetMissingSecretNameForCertificate(certificates []CertificateSpec, alias, s
 	return certificates
 }
 
+// SetSecretNameForCertificate sets the secret name for a certificate.
+// If the certificate does not exist, it will add a new certificate with the desired secret name.
+// Otherwise, the secret name will be overwritten.
+func SetSecretNameForCertificate(certificates []CertificateSpec, alias, secretName string) []CertificateSpec {
+	idx, _ := GetCertificate(certificates, alias)
+	if idx != -1 {
+		certificates[idx].SecretName = secretName
+	} else {
+		certificates = append(certificates, CertificateSpec{
+			Alias:      alias,
+			SecretName: secretName,
+		})
+	}
+	return certificates
+}
+
 // RemoveCertificate remove a certificate from the certificate list referred by "aliaS" parameter.
 func RemoveCertificate(certificates []CertificateSpec, alias string) []CertificateSpec {
 	idx, _ := GetCertificate(certificates, alias)
