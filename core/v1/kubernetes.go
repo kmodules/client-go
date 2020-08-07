@@ -301,6 +301,9 @@ func IsOwnedBy(dependent metav1.Object, owner metav1.Object) (owned bool, contro
 }
 
 func IsOwnerOfGroupKind(ctrl *metav1.OwnerReference, group, kind string) (bool, error) {
+	if ctrl == nil {
+		return false, nil
+	}
 	gv, err := schema.ParseGroupVersion(ctrl.APIVersion)
 	if err != nil {
 		return false, err
