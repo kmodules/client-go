@@ -26,9 +26,9 @@ require (
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	gomodules.xyz/jsonpatch/v2 v2.1.0
 	gomodules.xyz/version v0.1.0
-	k8s.io/api v0.18.3
+	k8s.io/api v0.18.6
 	k8s.io/apiextensions-apiserver v0.18.3
-	k8s.io/apimachinery v0.18.3
+	k8s.io/apimachinery v0.18.6
 	k8s.io/apiserver v0.18.3
 	k8s.io/cli-runtime v0.18.3
 	k8s.io/client-go v0.18.3
@@ -38,3 +38,5 @@ require (
 	k8s.io/utils v0.0.0-20200324210504-a9aa75ae1b89
 	sigs.k8s.io/yaml v1.2.0
 )
+
+replace k8s.io/client-go => github.com/kmodules/k8s-client-go v0.18.6-shared-informer

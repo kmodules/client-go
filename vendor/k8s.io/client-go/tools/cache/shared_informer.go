@@ -350,6 +350,7 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 		ShouldResync:     s.processor.shouldResync,
 
 		Process: s.HandleDeltas,
+		Clock:   s.clock,
 	}
 
 	func() {
@@ -357,7 +358,6 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 		defer s.startedLock.Unlock()
 
 		s.controller = New(cfg)
-		s.controller.(*controller).clock = s.clock
 		s.started = true
 	}()
 

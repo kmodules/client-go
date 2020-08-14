@@ -69,6 +69,9 @@ type Config struct {
 	//       question to this interface as a parameter.  This is probably moot
 	//       now that this functionality appears at a higher level.
 	RetryOnError bool
+
+	// Clock allows for testability
+	Clock clock.Clock
 }
 
 // ShouldResyncFunc is a type of function that indicates if a reflector should perform a
@@ -110,7 +113,10 @@ type Controller interface {
 func New(c *Config) Controller {
 	ctlr := &controller{
 		config: *c,
-		clock:  &clock.RealClock{},
+		clock:  c.Clock,
+	}
+	if ctlr.clock == nil {
+		ctlr.clock = &clock.RealClock{}
 	}
 	return ctlr
 }
