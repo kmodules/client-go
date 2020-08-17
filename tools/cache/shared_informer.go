@@ -44,7 +44,7 @@ import (
 // `minimumResyncPeriod` defined in this file.
 func NewSharedInformer(lw cache.ListerWatcher, exampleObject runtime.Object, defaultEventHandlerResyncPeriod time.Duration) cache.SharedInformer {
 	realClock := &clock.RealClock{}
-	sharedIndexInformer := &sharedIndexInformer{
+	sharedIndexInformer := &sharedInformer{
 		processor: &sharedProcessor{clock: realClock},
 		// indexer:                         NewIndexer(DeletionHandlingMetaNamespaceKeyFunc, indexers),
 		listerWatcher:                   lw,
@@ -62,20 +62,20 @@ const (
 	initialBufferSize = 1024
 )
 
-// `*sharedIndexInformer` implements SharedIndexInformer and has three
+// `*sharedInformer` implements SharedIndexInformer and has three
 // main components.  One is an indexed local cache, `indexer Indexer`.
 // The second main component is a Controller that pulls
 // objects/notifications using the ListerWatcher and pushes them into
 // a DeltaFIFO --- whose knownObjects is the informer's local cache
 // --- while concurrently Popping Deltas values from that fifo and
-// processing them with `sharedIndexInformer::HandleDeltas`.  Each
+// processing them with `sharedInformer::HandleDeltas`.  Each
 // invocation of HandleDeltas, which is done with the fifo's lock
 // held, processes each Delta in turn.  For each Delta this both
 // updates the local cache and stuffs the relevant notification into
 // the sharedProcessor.  The third main component is that
 // sharedProcessor, which is responsible for relaying those
 // notifications to each of the informer's clients.
-type sharedIndexInformer struct {
+type sharedInformer struct {
 	controller cache.Controller
 
 	processor             *sharedProcessor
@@ -113,7 +113,7 @@ type sharedIndexInformer struct {
 // Because returning information back is always asynchronous, the legacy callers shouldn't
 // notice any change in behavior.
 type dummyController struct {
-	informer *sharedIndexInformer
+	informer *sharedInformer
 }
 
 func (v *dummyController) Run(stopCh <-chan struct{}) {
@@ -127,7 +127,7 @@ func (v *dummyController) LastSyncResourceVersion() string {
 	return ""
 }
 
-func (s *sharedIndexInformer) GetStore() cache.Store {
+func (s *sharedInformer) GetStore() cache.Store {
 	return nil
 }
 
@@ -144,7 +144,7 @@ type deleteNotification struct {
 	oldObj interface{}
 }
 
-func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
+func (s *sharedInformer) Run(stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
 
 	fifo := cache.NewDeltaFIFOWithOptions(cache.DeltaFIFOOptions{
@@ -188,7 +188,7 @@ func (s *sharedIndexInformer) Run(stopCh <-chan struct{}) {
 	s.controller.Run(stopCh)
 }
 
-func (s *sharedIndexInformer) HasSynced() bool {
+func (s *sharedInformer) HasSynced() bool {
 	s.startedLock.Lock()
 	defer s.startedLock.Unlock()
 
@@ -198,7 +198,7 @@ func (s *sharedIndexInformer) HasSynced() bool {
 	return s.controller.HasSynced()
 }
 
-func (s *sharedIndexInformer) LastSyncResourceVersion() string {
+func (s *sharedInformer) LastSyncResourceVersion() string {
 	s.startedLock.Lock()
 	defer s.startedLock.Unlock()
 
@@ -208,11 +208,11 @@ func (s *sharedIndexInformer) LastSyncResourceVersion() string {
 	return s.controller.LastSyncResourceVersion()
 }
 
-func (s *sharedIndexInformer) GetController() cache.Controller {
+func (s *sharedInformer) GetController() cache.Controller {
 	return &dummyController{informer: s}
 }
 
-func (s *sharedIndexInformer) AddEventHandler(handler cache.ResourceEventHandler) {
+func (s *sharedInformer) AddEventHandler(handler cache.ResourceEventHandler) {
 	s.AddEventHandlerWithResyncPeriod(handler, s.defaultEventHandlerResyncPeriod)
 }
 
@@ -233,7 +233,7 @@ func determineResyncPeriod(desired, check time.Duration) time.Duration {
 
 const minimumResyncPeriod = 1 * time.Second
 
-func (s *sharedIndexInformer) AddEventHandlerWithResyncPeriod(handler cache.ResourceEventHandler, resyncPeriod time.Duration) {
+func (s *sharedInformer) AddEventHandlerWithResyncPeriod(handler cache.ResourceEventHandler, resyncPeriod time.Duration) {
 	s.startedLock.Lock()
 	defer s.startedLock.Unlock()
 
@@ -280,7 +280,7 @@ func (s *sharedIndexInformer) AddEventHandlerWithResyncPeriod(handler cache.Reso
 	s.processor.addListener(listener)
 }
 
-func (s *sharedIndexInformer) HandleDeltas(obj interface{}) error {
+func (s *sharedInformer) HandleDeltas(obj interface{}) error {
 	s.blockDeltas.Lock()
 	defer s.blockDeltas.Unlock()
 
@@ -429,11 +429,11 @@ type processorListener struct {
 	requestedResyncPeriod time.Duration
 	// resyncPeriod is the threshold that will be used in the logic
 	// for this listener.  This value differs from
-	// requestedResyncPeriod only when the sharedIndexInformer does
+	// requestedResyncPeriod only when the sharedInformer does
 	// not do resyncs, in which case the value here is zero.  The
 	// actual time between resyncs depends on when the
 	// sharedProcessor's `shouldResync` function is invoked and when
-	// the sharedIndexInformer processes `Sync` type Delta objects.
+	// the sharedInformer processes `Sync` type Delta objects.
 	resyncPeriod time.Duration
 	// nextResync is the earliest time the listener should get a full resync
 	nextResync time.Time
