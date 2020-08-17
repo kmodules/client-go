@@ -289,7 +289,7 @@ func (s *sharedIndexInformer) HandleDeltas(obj interface{}) error {
 		switch d.Type {
 		case cache.Sync, cache.Replaced, cache.Added, cache.Updated:
 			s.cacheMutationDetector.AddObject(d.Object)
-			s.processor.distribute(addNotification{newObj: d.Object}, false)
+			s.processor.distribute(addNotification{newObj: d.Object}, d.Type == cache.Sync)
 		case cache.Deleted:
 			s.processor.distribute(deleteNotification{oldObj: d.Object}, false)
 		}
