@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"github.com/imdario/mergo"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -131,6 +132,34 @@ func GetCertificateSecretName(certificates []CertificateSpec, alias string) (str
 		return "", false
 	}
 	return cert.SecretName, cert.SecretName != ""
+}
+
+// SetMissingSpecForCertificate sets the missing spec fields for a certificate.
+// If the certificate does not exist, it will add a new certificate with the desired spec.
+func SetMissingSpecForCertificate(certificates []CertificateSpec, spec CertificateSpec) []CertificateSpec {
+	idx, _ := GetCertificate(certificates, spec.Alias)
+	if idx != -1 {
+		err := mergo.Merge(&certificates[idx], spec, mergo.WithAppendSlice)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		certificates = append(certificates, spec)
+	}
+	return certificates
+}
+
+// SetSpecForCertificate sets the spec for a certificate.
+// If the certificate does not exist, it will add a new certificate with the desired spec.
+// Otherwise, the spec will be overwritten.
+func SetSpecForCertificate(certificates []CertificateSpec, spec CertificateSpec) []CertificateSpec {
+	idx, _ := GetCertificate(certificates, spec.Alias)
+	if idx != -1 {
+		certificates[idx] = spec
+	} else {
+		certificates = append(certificates, spec)
+	}
+	return certificates
 }
 
 // SetMissingSecretNameForCertificate sets the missing secret name for a certificate.
