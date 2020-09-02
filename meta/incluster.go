@@ -93,3 +93,14 @@ func APIServerCertificate(cfg *rest.Config) (*x509.Certificate, error) {
 	}
 	return nil, fmt.Errorf("no cert found")
 }
+
+func ClusterDomain() (string, error) {
+	domain, err := net.LookupCNAME("kubernetes.default")
+	if err != nil {
+		return "", err
+	}
+
+	domain = strings.TrimPrefix(domain, "kubernetes.default.svc.")
+
+	return strings.TrimSuffix(domain, "."), nil
+}
