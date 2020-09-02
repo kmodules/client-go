@@ -49,6 +49,7 @@ func Namespace() string {
 }
 
 // PossiblyInCluster returns true if loading an inside-kubernetes-cluster is possible.
+// ref: https://github.com/kubernetes/kubernetes/blob/v1.18.3/staging/src/k8s.io/client-go/tools/clientcmd/client_config.go#L537
 func PossiblyInCluster() bool {
 	fi, err := os.Stat("/var/run/secrets/kubernetes.io/serviceaccount/token")
 	return os.Getenv("KUBERNETES_SERVICE_HOST") != "" &&
@@ -94,13 +95,22 @@ func APIServerCertificate(cfg *rest.Config) (*x509.Certificate, error) {
 	return nil, fmt.Errorf("no cert found")
 }
 
-func ClusterDomain() (string, error) {
-	domain, err := net.LookupCNAME("kubernetes.default")
-	if err != nil {
-		return "", err
+func ClusterDomain() string {
+	defaultDomain := func() string {
+		if v, ok := os.LookupEnv("KUBE_CLUSTER_DOMAIN"); ok {
+			return v
+		}
+		return "cluster.local"
 	}
 
-	domain = strings.TrimPrefix(domain, "kubernetes.default.svc.")
+	if !PossiblyInCluster() {
+		return defaultDomain()
+	}
 
-	return strings.TrimSuffix(domain, "."), nil
+	const k8sService = "kubernetes.default.svc"
+	domain, err := net.LookupCNAME(k8sService)
+	if err != nil {
+		return defaultDomain()
+	}
+	return strings.Trim(strings.TrimPrefix(domain, k8sService), ".")
 }
