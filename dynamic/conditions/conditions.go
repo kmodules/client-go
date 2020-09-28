@@ -127,7 +127,7 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	config := &mapstructure.DecoderConfig{
 		Metadata:   nil,
 		Result:     &conditions,
-		DecodeHook: StringToTimeHookFunc(time.RFC3339),
+		DecodeHook: stringToTimeHookFunc(time.RFC3339),
 	}
 	decoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
@@ -140,9 +140,9 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	return resp, conditions, err
 }
 
-// StringToTimeHookFunc returns a DecodeHookFunc that converts
+// stringToTimeHookFunc returns a DecodeHookFunc that converts
 // strings to time.Time.
-func StringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
+func stringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
 	return func(
 		f reflect.Type,
 		t reflect.Type,
