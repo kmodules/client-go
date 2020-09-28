@@ -18,10 +18,12 @@ package conditions
 
 import (
 	"context"
-	"encoding/json"
+	"reflect"
+	"time"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
 
+	"github.com/mitchellh/mapstructure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -113,15 +115,49 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	if err != nil {
 		return nil, nil, err
 	}
-	unstrConds, _, err := unstructured.NestedSlice(resp.Object, "status", "conditions")
+	unstrConds, ok, err := unstructured.NestedFieldNoCopy(resp.Object, "status", "conditions")
 	if err != nil {
 		return nil, nil, err
+	}
+	if !ok {
+		return resp, nil, nil
 	}
 	var conditions []kmapi.Condition
-	data, err := json.Marshal(unstrConds)
+
+	config := &mapstructure.DecoderConfig{
+		Metadata:   nil,
+		Result:     &conditions,
+		DecodeHook: StringToTimeHookFunc(time.RFC3339),
+	}
+	decoder, err := mapstructure.NewDecoder(config)
 	if err != nil {
 		return nil, nil, err
 	}
-	err = json.Unmarshal(data, &conditions)
+	err = decoder.Decode(unstrConds)
+	if err != nil {
+		return nil, nil, err
+	}
 	return resp, conditions, err
+}
+
+// StringToTimeHookFunc returns a DecodeHookFunc that converts
+// strings to time.Time.
+func StringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
+	return func(
+		f reflect.Type,
+		t reflect.Type,
+		data interface{}) (interface{}, error) {
+		if f.Kind() != reflect.String {
+			return data, nil
+		}
+		if t != reflect.TypeOf(metav1.Time{}) {
+			return data, nil
+		}
+		// Convert it by parsing
+		out, err := time.Parse(layout, data.(string))
+		if err != nil {
+			return nil, err
+		}
+		return metav1.NewTime(out), nil
+	}
 }
