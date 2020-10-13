@@ -119,7 +119,7 @@ func AlreadyReconciled(o interface{}) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return observedGeneration != generation, nil
+	return observedGeneration == generation, nil
 }
 
 func extractGenerationFromUnstructured(obj *unstructured.Unstructured) (int64, int64, error) {
