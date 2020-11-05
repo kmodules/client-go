@@ -4,8 +4,8 @@ import (
 	gtx "context"
 	"fmt"
 
-	"github.com/appscode/go/context"
 	"github.com/golang/glog"
+	"gomodules.xyz/x/context"
 )
 
 // Type logger enables logging with context with glog

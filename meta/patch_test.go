@@ -19,7 +19,7 @@ package meta
 import (
 	"testing"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,7 +33,7 @@ func newObj() apps.Deployment {
 			Namespace: "bar",
 		},
 		Spec: apps.DeploymentSpec{
-			Replicas: types.Int32P(3),
+			Replicas: pointer.Int32P(3),
 			Template: core.PodTemplateSpec{
 				Spec: core.PodSpec{
 					Containers: []core.Container{
@@ -69,7 +69,7 @@ func getPreconditionFuncs() []mergepatch.PreconditionFunc {
 func TestCreateStrategicPatch_Conditions(t *testing.T) {
 	obj, validMod, badMod, badArrayMod := newObj(), newObj(), newObj(), newObj()
 	validMod.Spec.Template.Spec.Hostname = "NewHostName"
-	badMod.Spec.Replicas = types.Int32P(2)
+	badMod.Spec.Replicas = pointer.Int32P(2)
 	badArrayMod.Spec.Template.Spec.Containers[0].Image = "newImage"
 
 	preconditions := getPreconditionFuncs()
@@ -106,7 +106,7 @@ func TestCreateStrategicPatch_Conditions(t *testing.T) {
 func TestCreateJSONMergePatch_Conditions(t *testing.T) {
 	obj, validMod, badMod, badArrayMod := newObj(), newObj(), newObj(), newObj()
 	validMod.Spec.Template.Spec.Hostname = "NewHostName"
-	badMod.Spec.Replicas = types.Int32P(2)
+	badMod.Spec.Replicas = pointer.Int32P(2)
 	badArrayMod.Spec.Template.Spec.Containers[0].Image = "newImage"
 
 	preconditions := getPreconditionFuncs()

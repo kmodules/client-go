@@ -1,4 +1,4 @@
-package types
+package pointer
 
 import "time"
 
@@ -193,23 +193,23 @@ func IntMap(src map[string]*int) map[string]int {
 	return dst
 }
 
-// UIntP returns a pointer to the uint value passed in.
-func UIntP(v uint) *uint {
+// UintP returns a pointer to the uint value passed in.
+func UintP(v uint) *uint {
 	return &v
 }
 
-// UInt returns the value of the uint pointer passed in or
+// Uint returns the value of the uint pointer passed in or
 // 0 if the pointer is nil.
-func UInt(v *uint) uint {
+func Uint(v *uint) uint {
 	if v != nil {
 		return *v
 	}
 	return 0
 }
 
-// UIntPSlice converts a slice of uint values into a slice of
+// UintPSlice converts a slice of uint values uinto a slice of
 // uint pointers
-func UIntPSlice(src []uint) []*uint {
+func UintPSlice(src []uint) []*uint {
 	dst := make([]*uint, len(src))
 	for i := 0; i < len(src); i++ {
 		dst[i] = &(src[i])
@@ -217,9 +217,9 @@ func UIntPSlice(src []uint) []*uint {
 	return dst
 }
 
-// UIntSlice converts a slice of uint pointers into a slice of
+// UintSlice converts a slice of uint pointers uinto a slice of
 // uint values
-func UIntSlice(src []*uint) []uint {
+func UintSlice(src []*uint) []uint {
 	dst := make([]uint, len(src))
 	for i := 0; i < len(src); i++ {
 		if src[i] != nil {
@@ -229,9 +229,9 @@ func UIntSlice(src []*uint) []uint {
 	return dst
 }
 
-// UIntPMap converts a string map of uint values into a string
+// UintPMap converts a string map of uint values uinto a string
 // map of uint pointers
-func UIntPMap(src map[string]uint) map[string]*uint {
+func UintPMap(src map[string]uint) map[string]*uint {
 	dst := make(map[string]*uint)
 	for k, val := range src {
 		v := val
@@ -240,10 +240,128 @@ func UIntPMap(src map[string]uint) map[string]*uint {
 	return dst
 }
 
-// UIntMap converts a string map of uint pointers into a string
+// UintMap converts a string map of uint pointers uinto a string
 // map of uint values
-func UIntMap(src map[string]*uint) map[string]uint {
+func UintMap(src map[string]*uint) map[string]uint {
 	dst := make(map[string]uint)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Int8P returns a pointer to the int8 value passed in.
+func Int8P(v int8) *int8 {
+	return &v
+}
+
+// Int8 returns the value of the int8 pointer passed in or
+// 0 if the pointer is nil.
+func Int8(v *int8) int8 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Int8PSlice converts a slice of int8 values into a slice of
+// int8 pointers
+func Int8PSlice(src []int8) []*int8 {
+	dst := make([]*int8, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Int8Slice converts a slice of int8 pointers into a slice of
+// int8 values
+func Int8Slice(src []*int8) []int8 {
+	dst := make([]int8, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Int8PMap converts a string map of int8 values into a string
+// map of int8 pointers
+func Int8PMap(src map[string]int8) map[string]*int8 {
+	dst := make(map[string]*int8)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Int8Map converts a string map of int8 pointers into a string
+// map of int8 values
+func Int8Map(src map[string]*int8) map[string]int8 {
+	dst := make(map[string]int8)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Int16P returns a pointer to the int16 value passed in.
+func Int16P(v int16) *int16 {
+	return &v
+}
+
+// Int16 returns the value of the int16 pointer passed in or
+// 0 if the pointer is nil.
+func Int16(v *int16) int16 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Int16PSlice converts a slice of int16 values into a slice of
+// int16 pointers
+func Int16PSlice(src []int16) []*int16 {
+	dst := make([]*int16, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Int16Slice converts a slice of int16 pointers into a slice of
+// int16 values
+func Int16Slice(src []*int16) []int16 {
+	dst := make([]int16, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Int16PMap converts a string map of int16 values into a string
+// map of int16 pointers
+func Int16PMap(src map[string]int16) map[string]*int16 {
+	dst := make(map[string]*int16)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Int16Map converts a string map of int16 pointers into a string
+// map of int16 values
+func Int16Map(src map[string]*int16) map[string]int16 {
+	dst := make(map[string]int16)
 	for k, val := range src {
 		if val != nil {
 			dst[k] = *val
@@ -370,6 +488,301 @@ func Int64Map(src map[string]*int64) map[string]int64 {
 	return dst
 }
 
+// Uint8P returns a pointer to the uint8 value passed in.
+func Uint8P(v uint8) *uint8 {
+	return &v
+}
+
+// Uint8 returns the value of the uint8 pointer passed in or
+// 0 if the pointer is nil.
+func Uint8(v *uint8) uint8 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint8PSlice converts a slice of uint8 values into a slice of
+// uint8 pointers
+func Uint8PSlice(src []uint8) []*uint8 {
+	dst := make([]*uint8, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint8Slice converts a slice of uint8 pointers into a slice of
+// uint8 values
+func Uint8Slice(src []*uint8) []uint8 {
+	dst := make([]uint8, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint8PMap converts a string map of uint8 values into a string
+// map of uint8 pointers
+func Uint8PMap(src map[string]uint8) map[string]*uint8 {
+	dst := make(map[string]*uint8)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint8Map converts a string map of uint8 pointers into a string
+// map of uint8 values
+func Uint8Map(src map[string]*uint8) map[string]uint8 {
+	dst := make(map[string]uint8)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Uint16P returns a pointer to the uint16 value passed in.
+func Uint16P(v uint16) *uint16 {
+	return &v
+}
+
+// Uint16 returns the value of the uint16 pointer passed in or
+// 0 if the pointer is nil.
+func Uint16(v *uint16) uint16 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint16PSlice converts a slice of uint16 values into a slice of
+// uint16 pointers
+func Uint16PSlice(src []uint16) []*uint16 {
+	dst := make([]*uint16, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint16Slice converts a slice of uint16 pointers into a slice of
+// uint16 values
+func Uint16Slice(src []*uint16) []uint16 {
+	dst := make([]uint16, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint16PMap converts a string map of uint16 values into a string
+// map of uint16 pointers
+func Uint16PMap(src map[string]uint16) map[string]*uint16 {
+	dst := make(map[string]*uint16)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint16Map converts a string map of uint16 pointers into a string
+// map of uint16 values
+func Uint16Map(src map[string]*uint16) map[string]uint16 {
+	dst := make(map[string]uint16)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Uint32P returns a pointer to the uint32 value passed in.
+func Uint32P(v uint32) *uint32 {
+	return &v
+}
+
+// Uint32 returns the value of the uint32 pointer passed in or
+// 0 if the pointer is nil.
+func Uint32(v *uint32) uint32 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint32PSlice converts a slice of uint32 values into a slice of
+// uint32 pointers
+func Uint32PSlice(src []uint32) []*uint32 {
+	dst := make([]*uint32, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint32Slice converts a slice of uint32 pointers into a slice of
+// uint32 values
+func Uint32Slice(src []*uint32) []uint32 {
+	dst := make([]uint32, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint32PMap converts a string map of uint32 values into a string
+// map of uint32 pointers
+func Uint32PMap(src map[string]uint32) map[string]*uint32 {
+	dst := make(map[string]*uint32)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint32Map converts a string map of uint32 pointers into a string
+// map of uint32 values
+func Uint32Map(src map[string]*uint32) map[string]uint32 {
+	dst := make(map[string]uint32)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Uint64P returns a pointer to the uint64 value passed in.
+func Uint64P(v uint64) *uint64 {
+	return &v
+}
+
+// Uint64 returns the value of the uint64 pointer passed in or
+// 0 if the pointer is nil.
+func Uint64(v *uint64) uint64 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Uint64PSlice converts a slice of uint64 values into a slice of
+// uint64 pointers
+func Uint64PSlice(src []uint64) []*uint64 {
+	dst := make([]*uint64, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Uint64Slice converts a slice of uint64 pointers into a slice of
+// uint64 values
+func Uint64Slice(src []*uint64) []uint64 {
+	dst := make([]uint64, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Uint64PMap converts a string map of uint64 values into a string
+// map of uint64 pointers
+func Uint64PMap(src map[string]uint64) map[string]*uint64 {
+	dst := make(map[string]*uint64)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Uint64Map converts a string map of uint64 pointers into a string
+// map of uint64 values
+func Uint64Map(src map[string]*uint64) map[string]uint64 {
+	dst := make(map[string]uint64)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
+// Float32P returns a pointer to the float32 value passed in.
+func Float32P(v float32) *float32 {
+	return &v
+}
+
+// Float32 returns the value of the float32 pointer passed in or
+// 0 if the pointer is nil.
+func Float32(v *float32) float32 {
+	if v != nil {
+		return *v
+	}
+	return 0
+}
+
+// Float32PSlice converts a slice of float32 values into a slice of
+// float32 pointers
+func Float32PSlice(src []float32) []*float32 {
+	dst := make([]*float32, len(src))
+	for i := 0; i < len(src); i++ {
+		dst[i] = &(src[i])
+	}
+	return dst
+}
+
+// Float32Slice converts a slice of float32 pointers into a slice of
+// float32 values
+func Float32Slice(src []*float32) []float32 {
+	dst := make([]float32, len(src))
+	for i := 0; i < len(src); i++ {
+		if src[i] != nil {
+			dst[i] = *(src[i])
+		}
+	}
+	return dst
+}
+
+// Float32PMap converts a string map of float32 values into a string
+// map of float32 pointers
+func Float32PMap(src map[string]float32) map[string]*float32 {
+	dst := make(map[string]*float32)
+	for k, val := range src {
+		v := val
+		dst[k] = &v
+	}
+	return dst
+}
+
+// Float32Map converts a string map of float32 pointers into a string
+// map of float32 values
+func Float32Map(src map[string]*float32) map[string]float32 {
+	dst := make(map[string]float32)
+	for k, val := range src {
+		if val != nil {
+			dst[k] = *val
+		}
+	}
+	return dst
+}
+
 // Float64P returns a pointer to the float64 value passed in.
 func Float64P(v float64) *float64 {
 	return &v
@@ -443,9 +856,27 @@ func Time(v *time.Time) time.Time {
 	return time.Time{}
 }
 
+// SecondsTime converts an int64 pointer to a time.Time value
+// representing seconds since Epoch or time.Time{} if the pointer is nil.
+func SecondsTime(v *int64) time.Time {
+	if v != nil {
+		return time.Unix((*v / 1000), 0)
+	}
+	return time.Time{}
+}
+
+// MillisecondsTime converts an int64 pointer to a time.Time value
+// representing milliseconds sinch Epoch or time.Time{} if the pointer is nil.
+func MillisecondsTime(v *int64) time.Time {
+	if v != nil {
+		return time.Unix(0, (*v * 1000000))
+	}
+	return time.Time{}
+}
+
 // TimeUnixMilli returns a Unix timestamp in milliseconds from "January 1, 1970 UTC".
 // The result is undefined if the Unix time cannot be represented by an int64.
-// Which includes calling TimeUnixMilli on a zero Time is undefined.
+// Which includes calling TimeUnixMilli on a zero TimeP is undefined.
 //
 // This utility is useful for service API's such as CloudWatch Logs which require
 // their unix time values to be in milliseconds.

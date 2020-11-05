@@ -23,7 +23,7 @@ import (
 
 	"kmodules.xyz/client-go/discovery"
 
-	"github.com/appscode/go/log"
+	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batch_v1 "k8s.io/api/batch/v1"
