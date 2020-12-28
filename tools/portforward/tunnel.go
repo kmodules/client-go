@@ -34,7 +34,9 @@ type Tunnel struct {
 	Local     int
 	Remote    int
 	Namespace string
-	PodName   string
+	Resource  string
+	Name      string
+	PodName   string // Deprecated: Use "Name" field instead.
 	Out       io.Writer
 	stopChan  chan struct{}
 	readyChan chan struct{}
@@ -43,11 +45,16 @@ type Tunnel struct {
 }
 
 func NewTunnel(client rest.Interface, config *rest.Config, namespace, podName string, remote int) *Tunnel {
+	return NewTunnelForResource(client, config, "pods", namespace, podName, remote)
+}
+
+func NewTunnelForResource(client rest.Interface, config *rest.Config, resource, namespace, name string, remote int) *Tunnel {
 	return &Tunnel{
 		config:    config,
 		client:    client,
 		Namespace: namespace,
-		PodName:   podName,
+		Resource:  resource,
+		Name:      name,
 		Remote:    remote,
 		stopChan:  make(chan struct{}, 1),
 		readyChan: make(chan struct{}, 1),
@@ -57,9 +64,9 @@ func NewTunnel(client rest.Interface, config *rest.Config, namespace, podName st
 
 func (t *Tunnel) ForwardPort() error {
 	u := t.client.Post().
-		Resource("pods").
+		Resource(t.Resource).
 		Namespace(t.Namespace).
-		Name(t.PodName).
+		Name(t.Name).
 		SubResource("portforward").URL()
 
 	transport, upgrader, err := spdy.RoundTripperFor(t.config)
