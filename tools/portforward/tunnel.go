@@ -36,7 +36,6 @@ type Tunnel struct {
 	Namespace string
 	Resource  string
 	Name      string
-	PodName   string // Deprecated: Use "Name" field instead.
 	Out       io.Writer
 	stopChan  chan struct{}
 	readyChan chan struct{}
@@ -44,11 +43,7 @@ type Tunnel struct {
 	client    rest.Interface
 }
 
-func NewTunnel(client rest.Interface, config *rest.Config, namespace, podName string, remote int) *Tunnel {
-	return NewTunnelForResource(client, config, "pods", namespace, podName, remote)
-}
-
-func NewTunnelForResource(client rest.Interface, config *rest.Config, resource, namespace, name string, remote int) *Tunnel {
+func NewTunnel(client rest.Interface, config *rest.Config, resource, namespace, name string, remote int) *Tunnel {
 	return &Tunnel{
 		config:    config,
 		client:    client,
