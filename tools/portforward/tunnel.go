@@ -49,14 +49,23 @@ type Tunnel struct {
 	client    rest.Interface
 }
 
-func NewTunnel(client rest.Interface, config *rest.Config, resource, namespace, name string, remote int) *Tunnel {
+type TunnelOptions struct {
+	Client    rest.Interface
+	Config    *rest.Config
+	Resource  string
+	Name      string
+	Namespace string
+	Remote    int
+}
+
+func NewTunnel(opt TunnelOptions) *Tunnel {
 	return &Tunnel{
-		config:    config,
-		client:    client,
-		Namespace: namespace,
-		Resource:  resource,
-		Name:      name,
-		Remote:    remote,
+		config:    opt.Config,
+		client:    opt.Client,
+		Resource:  opt.Resource,
+		Name:      opt.Name,
+		Namespace: opt.Namespace,
+		Remote:    opt.Remote,
 		stopChan:  make(chan struct{}, 1),
 		readyChan: make(chan struct{}, 1),
 		Out:       ioutil.Discard,
@@ -228,11 +237,17 @@ func (t *Tunnel) translateRemotePort(k8sClient kubernetes.Interface, pod *core.P
 	// find the port in Pod
 	for _, c := range pod.Spec.Containers {
 		for _, cp := range c.Ports {
-			if (sp.TargetPort.IntVal == 0 && sp.Port == cp.ContainerPort) || // targetPort hasn't been specified
-				(sp.TargetPort.Type == intstr.String && sp.TargetPort.StrVal == cp.Name) || // port name has been used in targetPort
-				(sp.TargetPort.Type == intstr.Int && sp.TargetPort.IntVal == cp.ContainerPort) { // port number has been used in targetPort
-				t.Remote = int(cp.ContainerPort)
-				return nil
+			if sp.TargetPort.Type == intstr.String {
+				if sp.TargetPort.StrVal == cp.Name {
+					t.Remote = int(cp.ContainerPort)
+					return nil
+				}
+			} else {
+				if sp.TargetPort.IntVal == cp.ContainerPort || (sp.TargetPort.IntVal == 0 && sp.Port == cp.ContainerPort) {
+					t.Remote = int(cp.ContainerPort)
+					return nil
+
+				}
 			}
 		}
 	}

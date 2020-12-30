@@ -83,7 +83,14 @@ func Test_getFirstSelectedPod(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.title, func(t *testing.T) {
-			tunnel := NewTunnel(nil, nil, tc.resource, "default", tc.resourceName, 1234)
+			tunnel := NewTunnel(TunnelOptions{
+				Client:    nil,
+				Config:    nil,
+				Resource:  tc.resource,
+				Name:      tc.resourceName,
+				Namespace: "default",
+				Remote:    1234,
+			})
 			fakeClient := fake.NewSimpleClientset(newSamplePod(), tc.sampleResource)
 
 			pod, err := tunnel.getFirstSelectedPod(fakeClient)
@@ -168,7 +175,14 @@ func Test_translateRemotePort(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.title, func(t *testing.T) {
-			tunnel := NewTunnel(nil, nil, "services", "default", "foo-svc", tc.remotePort)
+			tunnel := NewTunnel(TunnelOptions{
+				Client:    nil,
+				Config:    nil,
+				Resource:  "services",
+				Namespace: "default",
+				Name:      "foo-svc",
+				Remote:    tc.remotePort,
+			})
 			fakeClient := fake.NewSimpleClientset(tc.sampleResource)
 
 			err := tunnel.translateRemotePort(fakeClient, newSamplePod())
