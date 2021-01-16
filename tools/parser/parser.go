@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"sort"
 
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	ylib "k8s.io/apimachinery/pkg/util/yaml"
@@ -57,4 +59,28 @@ func ProcessDir(dir string, fn ResourceFn) error {
 
 		return ProcessResources(data, fn)
 	})
+}
+
+func ListResources(data []byte) ([]*unstructured.Unstructured, error) {
+	var resources []*unstructured.Unstructured
+
+	err := ProcessResources(data, func(obj *unstructured.Unstructured) error {
+		if obj.GetNamespace() == "" {
+			obj.SetNamespace(core.NamespaceDefault)
+		}
+		resources = append(resources, obj)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Slice(resources, func(i, j int) bool {
+		if resources[i].GetAPIVersion() == resources[j].GetAPIVersion() {
+			return resources[i].GetKind() < resources[j].GetKind()
+		}
+		return resources[i].GetAPIVersion() < resources[j].GetAPIVersion()
+	})
+
+	return resources, nil
 }
