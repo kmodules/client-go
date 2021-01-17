@@ -10,8 +10,10 @@ import (
 	"sort"
 
 	core "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ylib "k8s.io/apimachinery/pkg/util/yaml"
 )
 
@@ -83,4 +85,36 @@ func ListResources(data []byte) ([]*unstructured.Unstructured, error) {
 	})
 
 	return resources, nil
+}
+
+var empty = struct{}{}
+
+func ExtractComponents(data []byte) (map[metav1.GroupKind]struct{}, map[string]string, error) {
+	components := map[metav1.GroupKind]struct{}{}
+	commonLabels := map[string]string{}
+	init := false
+
+	err := ProcessResources(data, func(obj *unstructured.Unstructured) error {
+		gv, err := schema.ParseGroupVersion(obj.GetAPIVersion())
+		if err != nil {
+			return err
+		}
+		components[metav1.GroupKind{Group: gv.Group, Kind: obj.GetKind()}] = empty
+
+		if !init {
+			commonLabels = obj.GetLabels()
+			init = true
+		} else {
+			for k, v := range obj.GetLabels() {
+				if existing, found := commonLabels[k]; found && existing != v {
+					delete(commonLabels, k)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+	return components, commonLabels, err
 }
