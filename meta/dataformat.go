@@ -23,6 +23,8 @@ func DecodeObject(in map[string]interface{}, out interface{}) error {
 type DataFormat string
 
 const (
+	// Do not change format
+	KeepFormat DataFormat = ""
 	JsonFormat DataFormat = "json"
 	YAMLFormat DataFormat = "yaml"
 )
