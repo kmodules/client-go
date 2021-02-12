@@ -2,7 +2,6 @@ package parser
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -53,7 +52,6 @@ func ProcessDir(dir string, fn ResourceFn) error {
 			return nil
 		}
 
-		fmt.Println(">>> ", path)
 		data, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
