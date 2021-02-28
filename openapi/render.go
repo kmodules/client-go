@@ -85,7 +85,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 		&metav1.APIResourceList{},
 	)
 
-	recommendedOptions := genericoptions.NewRecommendedOptions("/registry/foo.com", cfg.Codecs.LegacyCodec(), &genericoptions.ProcessInfo{})
+	recommendedOptions := genericoptions.NewRecommendedOptions("/registry/foo.com", cfg.Codecs.LegacyCodec())
 	recommendedOptions.SecureServing.BindPort = 8443
 	recommendedOptions.Etcd = nil
 	recommendedOptions.Authentication = nil
