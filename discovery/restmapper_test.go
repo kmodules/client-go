@@ -34,7 +34,6 @@ import (
 	networking "k8s.io/api/networking/v1"
 	policy "k8s.io/api/policy/v1beta1"
 	rbac "k8s.io/api/rbac/v1"
-	settings "k8s.io/api/settings/v1alpha1"
 	storage "k8s.io/api/storage/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -103,7 +102,6 @@ func TestRestMapper(t *testing.T) {
 		{&rbac.ClusterRole{}, rbac.SchemeGroupVersion.WithResource("clusterroles")},
 		{&rbac.RoleBinding{}, rbac.SchemeGroupVersion.WithResource("rolebindings")},
 		{&rbac.Role{}, rbac.SchemeGroupVersion.WithResource("roles")},
-		{&settings.PodPreset{}, settings.SchemeGroupVersion.WithResource("podpresets")},
 		{&storage.StorageClass{}, storage.SchemeGroupVersion.WithResource("storageclasses")},
 	}
 
