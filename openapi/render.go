@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/go-openapi/spec"
 	"github.com/golang/glog"
@@ -31,6 +32,9 @@ import (
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
+	clientgoinformers "k8s.io/client-go/informers"
+	clientgoclientset "k8s.io/client-go/kubernetes"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
 )
@@ -99,6 +103,12 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(cfg.Codecs)
+	serverConfig.ClientConfig = &restclient.Config{}
+	clientgoExternalClient, err := clientgoclientset.NewForConfig(serverConfig.ClientConfig)
+	if err != nil {
+		return "", fmt.Errorf("failed to create Kubernetes clientset: %v", err)
+	}
+	serverConfig.SharedInformerFactory = clientgoinformers.NewSharedInformerFactory(clientgoExternalClient, 10*time.Minute)
 	if err := recommendedOptions.ApplyTo(serverConfig); err != nil {
 		return "", err
 	}
