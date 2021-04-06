@@ -8,9 +8,9 @@ require (
 	github.com/evanphx/json-patch v4.9.0+incompatible
 	github.com/fatih/structs v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/gabriel-vasile/mimetype v1.1.2
-	github.com/go-openapi/spec v0.19.3
-	github.com/gogo/protobuf v1.3.1
+	github.com/gabriel-vasile/mimetype v1.2.0
+	github.com/go-openapi/spec v0.19.5
+	github.com/gogo/protobuf v1.3.2
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.5.2
 	github.com/imdario/mergo v0.3.5
@@ -19,7 +19,6 @@ require (
 	github.com/k0kubun/colorstring v0.0.0-20150214042306-9440f1994b88 // indirect
 	github.com/mitchellh/mapstructure v1.1.2
 	github.com/pkg/errors v0.9.1
-	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.6.1
@@ -30,15 +29,15 @@ require (
 	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
 	gomodules.xyz/version v0.1.0
 	gomodules.xyz/x v0.0.0-20201105065653-91c568df6331
-	k8s.io/api v0.20.4
-	k8s.io/apiextensions-apiserver v0.20.4
-	k8s.io/apimachinery v0.20.4
-	k8s.io/apiserver v0.20.4
-	k8s.io/cli-runtime v0.20.4
-	k8s.io/client-go v0.20.4
-	k8s.io/klog/v2 v2.4.0
-	k8s.io/kube-aggregator v0.20.4
-	k8s.io/kube-openapi v0.0.0-20201113171705-d219536bb9fd
+	k8s.io/api v0.21.0-rc.0
+	k8s.io/apiextensions-apiserver v0.21.0-rc.0
+	k8s.io/apimachinery v0.21.0-rc.0
+	k8s.io/apiserver v0.21.0-rc.0
+	k8s.io/cli-runtime v0.21.0-rc.0
+	k8s.io/client-go v0.21.0-rc.0
+	k8s.io/klog/v2 v2.8.0
+	k8s.io/kube-aggregator v0.21.0-rc.0
+	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7
 	sigs.k8s.io/yaml v1.2.0
 )
 
