@@ -13,10 +13,7 @@ func IPv6Enabled(kc kubernetes.Interface) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	clusterIPs := svc.Spec.ClusterIPs
-	if len(clusterIPs) == 0 {
-		clusterIPs = []string{svc.Spec.ClusterIP}
-	}
+	clusterIPs := []string{svc.Spec.ClusterIP}
 	for _, ip := range clusterIPs {
 		if strings.ContainsRune(ip, ':') {
 			return true, nil
