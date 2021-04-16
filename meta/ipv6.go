@@ -28,8 +28,5 @@ func IPv6EnabledInKernel() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if strings.TrimSpace(string(content)) == "0" {
-		return true, err
-	}
-	return false, nil
+	return strings.TrimSpace(string(content)) == "0", nil
 }
