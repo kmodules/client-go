@@ -51,3 +51,11 @@ func NewFilteredCached(dc dynamic.Interface, defaultResync time.Duration, namesp
 		listers: map[schema.GroupVersionResource]dynamiclister.Lister{},
 	}
 }
+
+func NewSharedCached(factory dynamicinformer.DynamicSharedInformerFactory, stopCh <-chan struct{}) Factory {
+	return &cachedImpl{
+		factory: factory,
+		stopCh:  stopCh,
+		listers: map[schema.GroupVersionResource]dynamiclister.Lister{},
+	}
+}
