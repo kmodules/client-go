@@ -19,7 +19,6 @@ package v1
 import (
 	"context"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	storage "k8s.io/api/storage/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -28,13 +27,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchStorageClass(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*storage.StorageClass) *storage.StorageClass, opts metav1.PatchOptions) (*storage.StorageClass, kutil.VerbType, error) {
 	cur, err := c.StorageV1().StorageClasses().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating StorageClass %s.", meta.Name)
+		klog.V(3).Infof("Creating StorageClass %s.", meta.Name)
 		out, err := c.StorageV1().StorageClasses().Create(ctx, transform(&storage.StorageClass{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "StorageClass",
@@ -74,7 +74,7 @@ func PatchStorageClassObject(ctx context.Context, c kubernetes.Interface, cur, m
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching StorageClass %s with %s.", cur.Name, string(patch))
+	klog.V(3).Infof("Patching StorageClass %s with %s.", cur.Name, string(patch))
 	out, err := c.StorageV1().StorageClasses().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
@@ -90,7 +90,7 @@ func TryUpdateStorageClass(ctx context.Context, c kubernetes.Interface, meta met
 			result, e2 = c.StorageV1().StorageClasses().Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update StorageClass %s due to %v.", attempt, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update StorageClass %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
 

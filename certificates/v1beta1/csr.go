@@ -19,7 +19,6 @@ package v1beta1
 import (
 	"context"
 
-	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	certificates "k8s.io/api/certificates/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -28,13 +27,14 @@ import (
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )
 
 func CreateOrPatchCSR(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*certificates.CertificateSigningRequest) *certificates.CertificateSigningRequest, opts metav1.PatchOptions) (*certificates.CertificateSigningRequest, kutil.VerbType, error) {
 	cur, err := c.CertificatesV1beta1().CertificateSigningRequests().Get(ctx, meta.Name, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
-		glog.V(3).Infof("Creating CertificateSigningRequest %s/%s.", meta.Namespace, meta.Name)
+		klog.V(3).Infof("Creating CertificateSigningRequest %s/%s.", meta.Namespace, meta.Name)
 		out, err := c.CertificatesV1beta1().CertificateSigningRequests().Create(ctx, transform(&certificates.CertificateSigningRequest{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       "CertificateSigningRequest",
@@ -74,7 +74,7 @@ func PatchCSRObject(ctx context.Context, c kubernetes.Interface, cur, mod *certi
 	if len(patch) == 0 || string(patch) == "{}" {
 		return cur, kutil.VerbUnchanged, nil
 	}
-	glog.V(3).Infof("Patching CertificateSigningRequest %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
+	klog.V(3).Infof("Patching CertificateSigningRequest %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
 	out, err := c.CertificatesV1beta1().CertificateSigningRequests().Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
@@ -90,7 +90,7 @@ func TryUpdateCSR(ctx context.Context, c kubernetes.Interface, meta metav1.Objec
 			result, e2 = c.CertificatesV1beta1().CertificateSigningRequests().Update(ctx, transform(cur.DeepCopy()), opts)
 			return e2 == nil, nil
 		}
-		glog.Errorf("Attempt %d failed to update CertificateSigningRequest %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
+		klog.Errorf("Attempt %d failed to update CertificateSigningRequest %s/%s due to %v.", attempt, cur.Namespace, cur.Name, e2)
 		return false, nil
 	})
 

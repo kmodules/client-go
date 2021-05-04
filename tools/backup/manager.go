@@ -28,7 +28,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
@@ -37,6 +36,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/yaml"
 )
 
@@ -168,7 +168,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 				continue
 			}
 
-			glog.V(3).Infof("Taking backup of %s apiVersion:%s kind:%s", list.GroupVersion, r.Name, r.Kind)
+			klog.V(3).Infof("Taking backup of %s apiVersion:%s kind:%s", list.GroupVersion, r.Name, r.Kind)
 			mgr.config.GroupVersion = &gv
 			mgr.config.APIPath = "/apis"
 			if gv.Group == core.GroupName {

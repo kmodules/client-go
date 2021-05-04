@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/go-openapi/spec"
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -35,6 +34,7 @@ import (
 	clientgoinformers "k8s.io/client-go/informers"
 	clientgoclientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
 )
@@ -99,7 +99,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 
 	// TODO have a "real" external address
 	if err := recommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
-		glog.Fatal(fmt.Errorf("error creating self-signed certificates: %v", err))
+		klog.Fatal(fmt.Errorf("error creating self-signed certificates: %v", err))
 	}
 
 	serverConfig := genericapiserver.NewRecommendedConfig(cfg.Codecs)

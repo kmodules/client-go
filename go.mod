@@ -11,7 +11,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.2.0
 	github.com/go-openapi/spec v0.19.5
 	github.com/gogo/protobuf v1.3.2
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/google/go-cmp v0.5.4
 	github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7
 	github.com/imdario/mergo v0.3.6

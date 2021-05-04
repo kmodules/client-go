@@ -22,10 +22,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/discovery"
+	"k8s.io/klog/v2"
 )
 
 type APIResource struct {
@@ -83,12 +83,12 @@ func (rm *ResourceMap) GetKind(apiVersion, kind string) (result *APIResource) {
 func (rm *ResourceMap) refresh() {
 	// Fetch all API Group-Versions and their resources from the server.
 	// We do this before acquiring the lock so we don't block readers.
-	glog.V(7).Info("Refreshing API discovery info")
+	klog.V(7).Info("Refreshing API discovery info")
 	_, groups, err := rm.discoveryClient.ServerGroupsAndResources()
 	if discovery.IsGroupDiscoveryFailedError(err) {
-		glog.Errorf("Skipping failed API Groups: %v", err)
+		klog.Errorf("Skipping failed API Groups: %v", err)
 	} else if err != nil {
-		glog.Errorf("Failed to fetch discovery info: %v", err)
+		klog.Errorf("Failed to fetch discovery info: %v", err)
 		return
 	}
 
