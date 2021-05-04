@@ -23,7 +23,6 @@ import (
 
 	"kmodules.xyz/client-go/discovery"
 
-	"gomodules.xyz/x/log"
 	apps "k8s.io/api/apps/v1"
 	autoscaling "k8s.io/api/autoscaling/v1"
 	batch_v1 "k8s.io/api/batch/v1"
@@ -40,6 +39,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
+	"k8s.io/klog/v2"
 )
 
 func skipIfNoMinikube(t *testing.T) {
@@ -56,7 +56,7 @@ func TestRestMapper(t *testing.T) {
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
-		log.Fatalf("Could not get Kubernetes config: %s", err)
+		klog.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 
 	kc := kubernetes.NewForConfigOrDie(config)
@@ -124,7 +124,7 @@ func TestResourceForGVK(t *testing.T) {
 
 	config, err := clientcmd.BuildConfigFromFlags(masterURL, kubeconfigPath)
 	if err != nil {
-		log.Fatalf("Could not get Kubernetes config: %s", err)
+		klog.Fatalf("Could not get Kubernetes config: %s", err)
 	}
 	kc := kubernetes.NewForConfigOrDie(config)
 
