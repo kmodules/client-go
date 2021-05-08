@@ -109,8 +109,6 @@ func SetCondition(conditions []Condition, newCondition Condition) []Condition {
 	// If the current condition is in its desired state, we have nothing to do. Just return the original condition list.
 	if curCond != nil &&
 		curCond.Status == newCondition.Status &&
-		curCond.Reason == newCondition.Reason &&
-		curCond.Message == newCondition.Message &&
 		curCond.ObservedGeneration == newCondition.ObservedGeneration {
 		return conditions
 	}
