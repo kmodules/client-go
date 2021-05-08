@@ -234,7 +234,16 @@ func statusEqual(old, new interface{}) bool {
 	oldStatus, oldExists := extractStatusFromObject(old)
 	newStatus, newExists := extractStatusFromObject(new)
 	if oldExists && newExists {
-		return reflect.DeepEqual(oldStatus, newStatus)
+		result := reflect.DeepEqual(oldStatus, newStatus)
+		if !result {
+			diff, err := meta_util.JsonDiff(oldStatus, newStatus)
+			if err == nil {
+				fmt.Println(diff)
+			} else {
+				panic(err)
+			}
+		}
+		return result
 	}
 	return !oldExists && !newExists
 }
