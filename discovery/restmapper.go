@@ -64,7 +64,7 @@ func APIResourceForGVK(client discovery.DiscoveryInterface, gvk schema.GroupVers
 }
 
 func ResourceForGVK(client discovery.DiscoveryInterface, gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
-	return GVR(NewRestMapper(client), gvk)
+	return NewResourceMapper(NewRestMapper(client)).GVR(gvk)
 }
 
 func FilterAPISubResources(resources []metav1.APIResource) []metav1.APIResource {
@@ -91,16 +91,35 @@ func NewRestMapper(client discovery.DiscoveryInterface) meta.RESTMapper {
 	return restmapper.NewDeferredDiscoveryRESTMapper(memory.NewMemCacheClient(client))
 }
 
-func GVR(mapper meta.RESTMapper, gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
-	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+type ResourceMapper interface {
+	GVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error)
+	TypeMeta(gvr schema.GroupVersionResource) (metav1.TypeMeta, error)
+	GVK(gvr schema.GroupVersionResource) (schema.GroupVersionKind, error)
+	IsNamespaced(gvr schema.GroupVersionResource) (bool, error)
+	IsPreferred(gvr schema.GroupVersionResource) (bool, error)
+	Preferred(gvr schema.GroupVersionResource) (schema.GroupVersionResource, error)
+}
+
+type resourcemapper struct {
+	mapper meta.RESTMapper
+}
+
+var _ ResourceMapper = &resourcemapper{}
+
+func NewResourceMapper(mapper meta.RESTMapper) ResourceMapper {
+	return &resourcemapper{mapper: mapper}
+}
+
+func (m *resourcemapper) GVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
+	mapping, err := m.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
 	return mapping.Resource, nil
 }
 
-func TypeMeta(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (metav1.TypeMeta, error) {
-	gvk, err := mapper.KindFor(gvr)
+func (m *resourcemapper) TypeMeta(gvr schema.GroupVersionResource) (metav1.TypeMeta, error) {
+	gvk, err := m.mapper.KindFor(gvr)
 	if err != nil {
 		return metav1.TypeMeta{}, err
 	}
@@ -110,36 +129,36 @@ func TypeMeta(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (metav1.T
 	}, nil
 }
 
-func GVK(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (schema.GroupVersionKind, error) {
-	gvk, err := mapper.KindFor(gvr)
+func (m *resourcemapper) GVK(gvr schema.GroupVersionResource) (schema.GroupVersionKind, error) {
+	gvk, err := m.mapper.KindFor(gvr)
 	if err != nil {
 		return schema.GroupVersionKind{}, err
 	}
 	return gvk, nil
 }
 
-func IsNamespaced(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (bool, error) {
-	gvk, err := mapper.KindFor(gvr)
+func (m *resourcemapper) IsNamespaced(gvr schema.GroupVersionResource) (bool, error) {
+	gvk, err := m.mapper.KindFor(gvr)
 	if err != nil {
 		return false, err
 	}
-	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	mapping, err := m.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
 	if err != nil {
 		return false, err
 	}
 	return mapping.Scope == meta.RESTScopeNamespace, nil
 }
 
-func IsPreferred(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (bool, error) {
-	gvrs, err := mapper.ResourcesFor(gvr.GroupResource().WithVersion(""))
+func (m *resourcemapper) IsPreferred(gvr schema.GroupVersionResource) (bool, error) {
+	gvrs, err := m.mapper.ResourcesFor(gvr.GroupResource().WithVersion(""))
 	if err != nil {
 		return false, err
 	}
 	return gvrs[0] == gvr, nil
 }
 
-func Preferred(mapper meta.RESTMapper, gvr schema.GroupVersionResource) (schema.GroupVersionResource, error) {
-	gvrs, err := mapper.ResourcesFor(gvr.GroupResource().WithVersion(""))
+func (m *resourcemapper) Preferred(gvr schema.GroupVersionResource) (schema.GroupVersionResource, error) {
+	gvrs, err := m.mapper.ResourcesFor(gvr.GroupResource().WithVersion(""))
 	if err != nil {
 		return schema.GroupVersionResource{}, err
 	}
