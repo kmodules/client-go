@@ -98,6 +98,8 @@ type ResourceMapper interface {
 	IsNamespaced(gvr schema.GroupVersionResource) (bool, error)
 	IsPreferred(gvr schema.GroupVersionResource) (bool, error)
 	Preferred(gvr schema.GroupVersionResource) (schema.GroupVersionResource, error)
+	ExistsGVR(gvr schema.GroupVersionResource) (bool, error)
+	ExistsGVK(gvk schema.GroupVersionKind) (bool, error)
 }
 
 type resourcemapper struct {
@@ -163,4 +165,24 @@ func (m *resourcemapper) Preferred(gvr schema.GroupVersionResource) (schema.Grou
 		return schema.GroupVersionResource{}, err
 	}
 	return gvrs[0], nil
+}
+
+func (m *resourcemapper) ExistsGVR(gvr schema.GroupVersionResource) (bool, error) {
+	_, err := m.mapper.ResourceFor(gvr)
+	if meta.IsNoMatchError(err) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (m *resourcemapper) ExistsGVK(gvk schema.GroupVersionKind) (bool, error) {
+	_, err := m.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if meta.IsNoMatchError(err) {
+		return false, nil
+	} else if err != nil {
+		return false, err
+	}
+	return true, nil
 }
