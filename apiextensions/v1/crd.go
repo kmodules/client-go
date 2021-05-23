@@ -24,7 +24,7 @@ import (
 	cs "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
+	"gomodules.xyz/wait"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 )

@@ -30,6 +30,7 @@ require (
 	gomodules.xyz/kglog v0.0.1
 	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
 	gomodules.xyz/version v0.1.0
+	gomodules.xyz/wait v0.0.0-20210218105358-639bd9211545
 	gomodules.xyz/x v0.0.3
 	google.golang.org/appengine v1.6.5 // indirect
 	k8s.io/api v0.21.0
