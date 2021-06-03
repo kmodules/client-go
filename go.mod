@@ -3,6 +3,7 @@ module kmodules.xyz/client-go
 go 1.12
 
 require (
+	github.com/Masterminds/semver/v3 v3.1.1
 	github.com/cubewise-code/go-mime v0.0.0-20200519001935-8c5762b177d8
 	github.com/davecgh/go-spew v1.1.1
 	github.com/evanphx/json-patch v4.9.0+incompatible
@@ -27,10 +28,9 @@ require (
 	github.com/yudai/golcs v0.0.0-20170316035057-ecda9a501e82 // indirect
 	github.com/yudai/pp v2.0.1+incompatible // indirect
 	gomodules.xyz/jsonpatch/v2 v2.1.0
-	gomodules.xyz/kglog v0.0.1
+	gomodules.xyz/kglog v0.0.3
 	gomodules.xyz/pointer v0.0.0-20201105071923-daf60fa55209
-	gomodules.xyz/version v0.1.0
-	gomodules.xyz/x v0.0.3
+	gomodules.xyz/x v0.0.5
 	google.golang.org/appengine v1.6.5 // indirect
 	k8s.io/api v0.21.0
 	k8s.io/apiextensions-apiserver v0.21.0
