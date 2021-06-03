@@ -17,8 +17,10 @@ limitations under the License.
 package doctor
 
 import (
+	"fmt"
+
+	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
-	"gomodules.xyz/version"
 )
 
 func (d *Doctor) extractVersion(info *ClusterInfo) error {
@@ -34,13 +36,23 @@ func (d *Doctor) extractVersion(info *ClusterInfo) error {
 		Platform:   v.Platform,
 	}
 
-	gv, err := version.NewVersion(v.GitVersion)
+	gvPtr, err := semver.NewVersion(v.GitVersion)
 	if err != nil {
 		return errors.Wrapf(err, "invalid version %s", v.GitVersion)
 	}
-	mv := gv.ToMutator().ResetMetadata().ResetPrerelease()
-	info.Version.Patch = mv.String()
-	info.Version.Minor = mv.ResetPatch().String()
+	gv := *gvPtr
+	gv, _ = gv.SetPrerelease("")
+	gv, _ = gv.SetMetadata("")
+	info.Version.Patch = gv.Original()
+	info.Version.Minor = fmt.Sprintf("%s%d.%d.0", originalVPrefix(gv), gv.Major(), gv.Minor())
 
 	return err
+}
+
+func originalVPrefix(v semver.Version) string {
+	// Note, only lowercase v is supported as a prefix by the parser.
+	if v.Original() != "" && v.Original()[:1] == "v" {
+		return v.Original()[:1]
+	}
+	return ""
 }

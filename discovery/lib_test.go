@@ -19,7 +19,7 @@ package discovery
 import (
 	"testing"
 
-	"gomodules.xyz/version"
+	"github.com/Masterminds/semver/v3"
 )
 
 func TestDefaultSupportedVersion(t *testing.T) {
@@ -44,7 +44,7 @@ func TestDefaultSupportedVersion(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		v, err := version.NewVersion(tc.version)
+		v, err := semver.NewVersion(tc.version)
 		if err != nil {
 			t.Fatalf("failed parse version for input %s: %s", tc.version, err)
 		}
