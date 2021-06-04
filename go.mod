@@ -149,6 +149,4 @@ replace k8s.io/kubernetes => github.com/kmodules/kubernetes v1.22.0-alpha.0.0.20
 
 replace k8s.io/utils => k8s.io/utils v0.0.0-20201110183641-67b214c5f920
 
-replace kmodules.xyz/resource-metadata => kmodules.xyz/resource-metadata v0.5.0
-
 replace sigs.k8s.io/application => github.com/kmodules/application v0.8.4-0.20210427030912-90eeee3bc4ad
