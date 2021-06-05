@@ -19,6 +19,9 @@ package discovery
 import (
 	"fmt"
 	"strings"
+	"sync"
+
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -92,6 +95,8 @@ func NewRestMapper(client discovery.DiscoveryInterface) meta.RESTMapper {
 }
 
 type ResourceMapper interface {
+	ResourceIDForGVK(gvk schema.GroupVersionKind) (*kmapi.ResourceID, error)
+	ResourceIDForGVR(gvr schema.GroupVersionResource) (*kmapi.ResourceID, error)
 	GVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error)
 	TypeMeta(gvr schema.GroupVersionResource) (metav1.TypeMeta, error)
 	GVK(gvr schema.GroupVersionResource) (schema.GroupVersionKind, error)
@@ -104,12 +109,79 @@ type ResourceMapper interface {
 
 type resourcemapper struct {
 	mapper meta.RESTMapper
+
+	// Keeping this cache unbounded, since the # of unique GVKs will be at most few thousands
+	cache map[schema.GroupVersionKind]*kmapi.ResourceID
+	lock  sync.RWMutex
 }
 
 var _ ResourceMapper = &resourcemapper{}
 
 func NewResourceMapper(mapper meta.RESTMapper) ResourceMapper {
-	return &resourcemapper{mapper: mapper}
+	return &resourcemapper{mapper: mapper, cache: map[schema.GroupVersionKind]*kmapi.ResourceID{}}
+}
+
+func (m *resourcemapper) ResourceIDForGVK(gvk schema.GroupVersionKind) (*kmapi.ResourceID, error) {
+	m.lock.RLocker()
+	rid, ok := m.cache[gvk]
+	m.lock.RUnlock()
+	if ok {
+		return rid, nil
+	}
+
+	mapping, err := m.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, err
+	}
+	scope := kmapi.ClusterScoped
+	if mapping.Scope == meta.RESTScopeNamespace {
+		scope = kmapi.NamespaceScoped
+	}
+	rid = &kmapi.ResourceID{
+		Group:   gvk.Group,
+		Version: gvk.Version,
+		Name:    mapping.Resource.Resource,
+		Kind:    gvk.Kind,
+		Scope:   scope,
+	}
+	m.lock.Lock()
+	m.cache[gvk] = rid
+	m.lock.Unlock()
+	return rid, nil
+}
+
+func (m *resourcemapper) ResourceIDForGVR(gvr schema.GroupVersionResource) (*kmapi.ResourceID, error) {
+	gvk, err := m.mapper.KindFor(gvr)
+	if err != nil {
+		return nil, err
+	}
+
+	m.lock.RLocker()
+	rid, ok := m.cache[gvk]
+	m.lock.RUnlock()
+	if ok {
+		return rid, nil
+	}
+
+	mapping, err := m.mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		return nil, err
+	}
+	scope := kmapi.ClusterScoped
+	if mapping.Scope == meta.RESTScopeNamespace {
+		scope = kmapi.NamespaceScoped
+	}
+	rid = &kmapi.ResourceID{
+		Group:   gvr.Group,
+		Version: gvr.Version,
+		Name:    gvr.Resource,
+		Kind:    gvk.Kind,
+		Scope:   scope,
+	}
+	m.lock.Lock()
+	m.cache[gvk] = rid
+	m.lock.Unlock()
+	return rid, nil
 }
 
 func (m *resourcemapper) GVR(gvk schema.GroupVersionKind) (schema.GroupVersionResource, error) {
