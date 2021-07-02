@@ -19,8 +19,8 @@ package v1
 import (
 	"sort"
 
-	"github.com/imdario/mergo"
 	jsoniter "github.com/json-iterator/go"
+	"gomodules.xyz/mergo"
 	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -102,11 +102,10 @@ func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
 	upsert := func(v core.Volume) {
 		for i, vol := range volumes {
 			if vol.Name == v.Name {
-				err := mergo.Merge(&vol, v, mergo.WithOverride)
+				err := mergo.Merge(&volumes[i], v, mergo.WithOverride)
 				if err != nil {
 					panic(err)
 				}
-				volumes[i] = vol
 				return
 			}
 		}
@@ -124,7 +123,9 @@ func UpsertVolumeClaim(volumeClaims []core.PersistentVolumeClaim, upsert core.Pe
 		if vc.Name == upsert.Name {
 			volumeClaims[i].Labels = upsert.Labels
 			volumeClaims[i].Annotations = upsert.Annotations
-			volumeClaims[i].Spec = upsert.Spec
+			if err := mergo.Merge(&volumeClaims[i].Spec, upsert.Spec, mergo.WithOverride); err != nil {
+				panic(err)
+			}
 			return volumeClaims
 		}
 	}
