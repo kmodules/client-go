@@ -20,6 +20,8 @@ import (
 	"reflect"
 	"testing"
 
+	"gomodules.xyz/pointer"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -85,6 +87,98 @@ func TestRemoveOwnerReference(t *testing.T) {
 			RemoveOwnerReference(&c.objMeta, &c.owner)
 			if !reflect.DeepEqual(c.objMeta, c.newMeta) {
 				t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", c.newMeta, c.objMeta)
+			}
+		})
+	}
+}
+
+func TestUpsertVolume(t *testing.T) {
+	type args struct {
+		volumes []core.Volume
+		nv      []core.Volume
+	}
+	tests := []struct {
+		name string
+		args args
+		want []core.Volume
+	}{
+		{
+			name: "secret volume",
+			args: args{
+				volumes: []core.Volume{
+					{
+						Name: "auth",
+						VolumeSource: core.VolumeSource{
+							Secret: &core.SecretVolumeSource{
+								SecretName: "db-auth",
+								Items: []core.KeyToPath{
+									{
+										Key:  "password",
+										Path: "/etc/password",
+										Mode: nil,
+									},
+								},
+								DefaultMode: pointer.Int32P(0420),
+								Optional:    nil,
+							},
+						},
+					},
+				},
+				nv: []core.Volume{
+					{
+						Name: "auth",
+						VolumeSource: core.VolumeSource{
+							Secret: &core.SecretVolumeSource{
+								SecretName: "db-auth",
+								Items: []core.KeyToPath{
+									{
+										Key:  "username",
+										Path: "/etc/username",
+										Mode: nil,
+									},
+									{
+										Key:  "password",
+										Path: "/etc/password",
+										Mode: nil,
+									},
+								},
+								DefaultMode: nil,
+								Optional:    nil,
+							},
+						},
+					},
+				},
+			},
+			want: []core.Volume{
+				{
+					Name: "auth",
+					VolumeSource: core.VolumeSource{
+						Secret: &core.SecretVolumeSource{
+							SecretName: "db-auth",
+							Items: []core.KeyToPath{
+								{
+									Key:  "username",
+									Path: "/etc/username",
+									Mode: nil,
+								},
+								{
+									Key:  "password",
+									Path: "/etc/password",
+									Mode: nil,
+								},
+							},
+							DefaultMode: pointer.Int32P(0420),
+							Optional:    nil,
+						},
+					},
+				},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := UpsertVolume(tt.args.volumes, tt.args.nv...); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("UpsertVolume() = %v, want %v", got, tt.want)
 			}
 		})
 	}
