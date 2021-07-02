@@ -102,7 +102,11 @@ func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
 	upsert := func(v core.Volume) {
 		for i, vol := range volumes {
 			if vol.Name == v.Name {
-				volumes[i] = v
+				err := mergo.Merge(&vol, v, mergo.WithOverride)
+				if err != nil {
+					panic(err)
+				}
+				volumes[i] = vol
 				return
 			}
 		}
@@ -113,13 +117,14 @@ func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
 		upsert(volume)
 	}
 	return volumes
-
 }
 
 func UpsertVolumeClaim(volumeClaims []core.PersistentVolumeClaim, upsert core.PersistentVolumeClaim) []core.PersistentVolumeClaim {
 	for i, vc := range volumeClaims {
 		if vc.Name == upsert.Name {
-			volumeClaims[i] = upsert
+			volumeClaims[i].Labels = upsert.Labels
+			volumeClaims[i].Annotations = upsert.Annotations
+			volumeClaims[i].Spec = upsert.Spec
 			return volumeClaims
 		}
 	}
