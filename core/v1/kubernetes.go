@@ -82,6 +82,14 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 			// TODO: should this be done for all the []string type fields (eg, EnvFrom etc.)?
 			container.Command = upsert.Command
 			container.Args = upsert.Args
+			for i, env := range upsert.Env {
+				if env.ValueFrom != nil &&
+					env.ValueFrom.FieldRef != nil &&
+					env.ValueFrom.FieldRef.APIVersion == "" {
+					env.ValueFrom.FieldRef.APIVersion = "v1"
+				}
+				upsert.Env[i] = env
+			}
 			container.Env = upsert.Env
 			container.VolumeMounts = upsert.VolumeMounts
 			container.VolumeDevices = upsert.VolumeDevices
