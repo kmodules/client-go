@@ -19,6 +19,8 @@ package v1
 import (
 	"sort"
 
+	meta_util "kmodules.xyz/client-go/meta"
+
 	jsoniter "github.com/json-iterator/go"
 	"gomodules.xyz/mergo"
 	core "k8s.io/api/core/v1"
@@ -116,6 +118,39 @@ func UpsertVolume(volumes []core.Volume, nv ...core.Volume) []core.Volume {
 		upsert(volume)
 	}
 	return volumes
+}
+
+func ReplaceVolumes(existing []core.Volume, desired ...core.Volume) ([]core.Volume, error) {
+	merge := func(cur core.Volume) error {
+		for i, v := range desired {
+			if v.Name == cur.Name {
+				if err := mergo.Merge(&cur, v, mergo.WithOverride); err != nil {
+					return err
+				}
+				desired[i] = cur
+				break
+			}
+		}
+		return nil
+	}
+
+	for _, cur := range existing {
+		if err := merge(cur); err != nil {
+			return nil, err
+		}
+	}
+	sort.Slice(desired, func(i, j int) bool {
+		return desired[i].Name < desired[j].Name
+	})
+	return desired, nil
+}
+
+func MustReplaceVolumes(existing []core.Volume, desired ...core.Volume) []core.Volume {
+	result, err := ReplaceVolumes(existing, desired...)
+	if err != nil {
+		panic(err)
+	}
+	return result
 }
 
 func UpsertVolumeClaim(volumeClaims []core.PersistentVolumeClaim, upsert core.PersistentVolumeClaim) []core.PersistentVolumeClaim {
@@ -217,14 +252,9 @@ func EnsureEnvVarDeleted(vars []core.EnvVar, name string) []core.EnvVar {
 	return vars
 }
 
+// Deprecated use meta_util.OverwriteKeys()
 func UpsertMap(maps, upsert map[string]string) map[string]string {
-	if maps == nil {
-		maps = make(map[string]string)
-	}
-	for k, v := range upsert {
-		maps[k] = v
-	}
-	return maps
+	return meta_util.OverwriteKeys(maps, upsert)
 }
 
 func MergeLocalObjectReferences(l1, l2 []core.LocalObjectReference) []core.LocalObjectReference {
