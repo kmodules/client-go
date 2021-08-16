@@ -36,58 +36,63 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
+const (
+	// NamespaceDemo means the object is in the demo namespace
+	NamespaceDemo string = "demo"
+)
+
 // QueueingEventHandler queues the key for the object on add and update events
 type QueueingEventHandler struct {
-	queue            workqueue.RateLimitingInterface
-	enqueueAdd       func(obj interface{}) bool
-	enqueueUpdate    func(oldObj, newObj interface{}) bool
-	enqueueDelete    bool
-	watchOnlyDefault bool
+	queue               workqueue.RateLimitingInterface
+	enqueueAdd          func(obj interface{}) bool
+	enqueueUpdate       func(oldObj, newObj interface{}) bool
+	enqueueDelete       bool
+	restrictToNamespace string
 }
 
 var _ cache.ResourceEventHandler = &QueueingEventHandler{}
 
-func DefaultEventHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func DefaultEventHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
-		queue:            queue,
-		enqueueAdd:       nil,
-		enqueueUpdate:    nil,
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		queue:               queue,
+		enqueueAdd:          nil,
+		enqueueUpdate:       nil,
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
-		queue:            queue,
-		enqueueAdd:       nil,
-		enqueueUpdate:    enqueueUpdate,
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		queue:               queue,
+		enqueueAdd:          nil,
+		enqueueUpdate:       enqueueUpdate,
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewUpsertHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewUpsertHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
-		queue:            queue,
-		enqueueAdd:       nil,
-		enqueueUpdate:    nil,
-		enqueueDelete:    false,
-		watchOnlyDefault: watchOnlyDefault,
+		queue:               queue,
+		enqueueAdd:          nil,
+		enqueueUpdate:       nil,
+		enqueueDelete:       false,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewDeleteHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewDeleteHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
-		queue:            queue,
-		enqueueAdd:       func(_ interface{}) bool { return false },
-		enqueueUpdate:    func(_, _ interface{}) bool { return false },
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		queue:               queue,
+		enqueueAdd:          func(_ interface{}) bool { return false },
+		enqueueUpdate:       func(_, _ interface{}) bool { return false },
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewReconcilableHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewReconcilableHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue: queue,
 		enqueueAdd: func(o interface{}) bool {
@@ -96,12 +101,12 @@ func NewReconcilableHandler(queue workqueue.RateLimitingInterface, watchOnlyDefa
 		enqueueUpdate: func(old, nu interface{}) bool {
 			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil || !meta_util.MustAlreadyReconciled(nu)
 		},
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewChangeHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewChangeHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:      queue,
 		enqueueAdd: nil,
@@ -114,12 +119,12 @@ func NewChangeHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bo
 				!reflect.DeepEqual(oldObj.GetAnnotations(), nuObj.GetAnnotations()) ||
 				!meta_util.StatusConditionAwareEqual(old, nu)
 		},
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
-func NewSpecStatusChangeHandler(queue workqueue.RateLimitingInterface, watchOnlyDefault bool) cache.ResourceEventHandler {
+func NewSpecStatusChangeHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:      queue,
 		enqueueAdd: nil,
@@ -129,8 +134,8 @@ func NewSpecStatusChangeHandler(queue workqueue.RateLimitingInterface, watchOnly
 				!meta_util.MustAlreadyReconciled(nu) ||
 				!meta_util.StatusConditionAwareEqual(old, nu)
 		},
-		enqueueDelete:    true,
-		watchOnlyDefault: watchOnlyDefault,
+		enqueueDelete:       true,
+		restrictToNamespace: restrictToNamespace,
 	}
 }
 
@@ -155,13 +160,13 @@ func EnqueueAfter(queue workqueue.RateLimitingInterface, obj interface{}, durati
 func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 	klog.V(6).Infof("Add event for %+v\n", obj)
 	if h.enqueueAdd == nil || h.enqueueAdd(obj) {
-		if h.watchOnlyDefault {
+		if h.restrictToNamespace != core.NamespaceAll {
 			o, ok := obj.(client.Object)
 			if !ok {
 				return
 			}
-			if o.GetNamespace() != core.NamespaceDefault {
-				klog.Info("Skipping %v %s/%s. Only default namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName())
+			if o.GetNamespace() != h.restrictToNamespace {
+				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
 		}
@@ -173,13 +178,13 @@ func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 	klog.V(6).Infof("Update event for %+v\n", newObj)
 	if h.enqueueUpdate == nil || h.enqueueUpdate(oldObj, newObj) {
-		if h.watchOnlyDefault {
+		if h.restrictToNamespace != core.NamespaceAll {
 			o, ok := newObj.(client.Object)
 			if !ok {
 				return
 			}
-			if o.GetNamespace() != core.NamespaceDefault {
-				klog.Info("Skipping %v %s/%s. Only default namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName())
+			if o.GetNamespace() != h.restrictToNamespace {
+				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
 		}
@@ -191,7 +196,7 @@ func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 	klog.V(6).Infof("Delete event for %+v\n", obj)
 	if h.enqueueDelete {
-		if h.watchOnlyDefault {
+		if h.restrictToNamespace != core.NamespaceAll {
 			var o client.Object
 			var ok bool
 			if o, ok = obj.(client.Object); !ok {
@@ -207,8 +212,8 @@ func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 				}
 				klog.V(5).Infof("Recovered deleted object '%v' from tombstone", tombstone.Obj.(metav1.Object).GetName())
 			}
-			if o.GetNamespace() != core.NamespaceDefault {
-				klog.Info("Skipping %v %s/%s. Only default namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName())
+			if o.GetNamespace() != h.restrictToNamespace {
+				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
 		}
