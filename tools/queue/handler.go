@@ -165,7 +165,7 @@ func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 			if !ok {
 				return
 			}
-			if o.GetNamespace() != h.restrictToNamespace {
+			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
 				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
@@ -183,7 +183,7 @@ func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 			if !ok {
 				return
 			}
-			if o.GetNamespace() != h.restrictToNamespace {
+			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
 				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
@@ -212,7 +212,7 @@ func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 				}
 				klog.V(5).Infof("Recovered deleted object '%v' from tombstone", tombstone.Obj.(metav1.Object).GetName())
 			}
-			if o.GetNamespace() != h.restrictToNamespace {
+			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
 				klog.Info("Skipping %v %s/%s. Only %s namespace is supported for Community Edition. Please upgrade to Enterprise to use any namespace.", o.GetObjectKind().GroupVersionKind(), o.GetNamespace(), o.GetName(), h.restrictToNamespace)
 				return
 			}
