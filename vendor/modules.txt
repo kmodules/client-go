@@ -269,7 +269,7 @@ gomodules.xyz/jsonpatch/v2
 gomodules.xyz/mergo
 # gomodules.xyz/pointer v0.1.0
 gomodules.xyz/pointer
-# gomodules.xyz/x v0.0.6
+# gomodules.xyz/x v0.0.7
 gomodules.xyz/x/analytics
 # google.golang.org/appengine v1.6.7
 google.golang.org/appengine
