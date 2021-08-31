@@ -17,8 +17,6 @@ limitations under the License.
 package v1
 
 // ObjectReference contains enough information to let you inspect or modify the referred object.
-//
-// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type ObjectReference struct {
 	// Namespace of the referent.
 	// More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/namespaces/
