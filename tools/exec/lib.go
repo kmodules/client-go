@@ -115,14 +115,14 @@ func execIntoPod(config *rest.Config, kc kubernetes.Interface, pod *core.Pod, op
 	if opts.CheckForRunningContainer {
 		for _, status := range pod.Status.ContainerStatuses {
 			if status.Name == opts.PodExecOptions.Container {
-				if status.State.Running != nil {
+				if status.State.Running == nil {
 					return "", NotRunning
 				}
 			}
 		}
 		for _, status := range pod.Status.InitContainerStatuses {
 			if status.Name == opts.PodExecOptions.Container {
-				if status.State.Running != nil {
+				if status.State.Running == nil {
 					return "", NotRunning
 				}
 			}
