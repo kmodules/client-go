@@ -190,6 +190,7 @@ func (h *QueueingEventHandler) OnAdd(obj interface{}) {
 				return
 			}
 			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
+				// WARNING: o.GetObjectKind().GroupVersionKind() is not set and can't be used to detect GVK
 				if gvks, _, _ := clientsetscheme.Scheme.ObjectKinds(o); len(gvks) > 0 {
 					klog.
 						V(logLevel(gvks[0].Group)).
@@ -212,6 +213,7 @@ func (h *QueueingEventHandler) OnUpdate(oldObj, newObj interface{}) {
 				return
 			}
 			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
+				// WARNING: o.GetObjectKind().GroupVersionKind() is not set and can't be used to detect GVK
 				if gvks, _, _ := clientsetscheme.Scheme.ObjectKinds(o); len(gvks) > 0 {
 					klog.
 						V(logLevel(gvks[0].Group)).
@@ -245,6 +247,7 @@ func (h *QueueingEventHandler) OnDelete(obj interface{}) {
 				klog.V(5).Infof("Recovered deleted object '%v' from tombstone", tombstone.Obj.(metav1.Object).GetName())
 			}
 			if o.GetNamespace() != "" && o.GetNamespace() != h.restrictToNamespace {
+				// WARNING: o.GetObjectKind().GroupVersionKind() is not set and can't be used to detect GVK
 				if gvks, _, _ := clientsetscheme.Scheme.ObjectKinds(o); len(gvks) > 0 {
 					klog.
 						V(logLevel(gvks[0].Group)).
