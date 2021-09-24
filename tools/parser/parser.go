@@ -147,10 +147,10 @@ func ListResources(data []byte) ([]ResourceInfo, error) {
 	return resources, nil
 }
 
-func ListDirResources(path string) ([]ResourceInfo, error) {
+func ListPathResources(root string) ([]ResourceInfo, error) {
 	var resources []ResourceInfo
 
-	err := ProcessPath(path, func(ri ResourceInfo) error {
+	err := ProcessPath(root, func(ri ResourceInfo) error {
 		if ri.Object.GetNamespace() == "" {
 			ri.Object.SetNamespace(core.NamespaceDefault)
 		}
