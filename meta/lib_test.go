@@ -18,12 +18,12 @@ package meta_test
 
 import (
 	"fmt"
-	"reflect"
 	"testing"
 
 	"kmodules.xyz/client-go/meta"
 
 	core "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
@@ -180,7 +180,7 @@ func TestFilterKeys(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			result := meta.FilterKeys(domainKey, nil, c.in)
-			if !reflect.DeepEqual(c.out, result) {
+			if !apiequality.Semantic.DeepEqual(c.out, result) {
 				t.Errorf("Failed filterTag test for '%v': expected %+v, got %+v", c.in, c.out, result)
 			}
 		})

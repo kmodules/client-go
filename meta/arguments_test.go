@@ -17,8 +17,9 @@ limitations under the License.
 package meta
 
 import (
-	"reflect"
 	"testing"
+
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 )
 
 func TestUpsertArgumentList(t *testing.T) {
@@ -83,7 +84,7 @@ func TestUpsertArgumentList(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			result := UpsertArgumentList(c.x, c.y, c.z...)
-			if !reflect.DeepEqual(c.r, result) {
+			if !apiequality.Semantic.DeepEqual(c.r, result) {
 				t.Errorf("Failed UpsertArgumentList test for ('%v', '%v'): expected %+v, got %+v", c.x, c.y, c.r, result)
 			}
 		})

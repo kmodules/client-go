@@ -17,10 +17,10 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/imdario/mergo"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 )
 
 type Team struct {
@@ -102,7 +102,7 @@ func Test_StringSetMerger(t1 *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			if !reflect.DeepEqual(tt.args.dst, tt.want) {
+			if !apiequality.Semantic.DeepEqual(tt.args.dst, tt.want) {
 				t.Errorf("StringSetMerger() got = %v, want %v", tt.args.dst, tt.want)
 			}
 		})

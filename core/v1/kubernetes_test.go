@@ -17,11 +17,11 @@ limitations under the License.
 package v1
 
 import (
-	"reflect"
 	"testing"
 
 	"gomodules.xyz/pointer"
 	core "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -85,7 +85,7 @@ func TestRemoveOwnerReference(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.testName, func(t *testing.T) {
 			RemoveOwnerReference(&c.objMeta, &c.owner)
-			if !reflect.DeepEqual(c.objMeta, c.newMeta) {
+			if !apiequality.Semantic.DeepEqual(c.objMeta, c.newMeta) {
 				t.Errorf("Remove of owner Reference is not successful, expected: %v. But Got: %v", c.newMeta, c.objMeta)
 			}
 		})
@@ -177,7 +177,7 @@ func TestUpsertVolume(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := UpsertVolume(tt.args.volumes, tt.args.nv...); !reflect.DeepEqual(got, tt.want) {
+			if got := UpsertVolume(tt.args.volumes, tt.args.nv...); !apiequality.Semantic.DeepEqual(got, tt.want) {
 				t.Errorf("UpsertVolume() = %v, want %v", got, tt.want)
 			}
 		})
