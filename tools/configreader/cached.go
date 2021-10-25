@@ -38,9 +38,16 @@ type cachedImpl struct {
 var _ ConfigReader = &cachedImpl{}
 
 func (i *cachedImpl) ConfigMaps(namespace string) v1.ConfigMapNamespaceLister {
-	getLister := func() v1.ConfigMapLister {
-		i.lock.RLock()
-		defer i.lock.RUnlock()
+	i.lock.RLock()
+	if i.cfgLister != nil {
+		i.lock.RUnlock()
+		return i.cfgLister.ConfigMaps(namespace)
+	}
+	i.lock.RUnlock()
+
+	createLister := func() v1.ConfigMapLister {
+		i.lock.Lock()
+		defer i.lock.Unlock()
 		if i.cfgLister != nil {
 			return i.cfgLister
 		}
@@ -54,13 +61,20 @@ func (i *cachedImpl) ConfigMaps(namespace string) v1.ConfigMapNamespaceLister {
 		i.cfgLister = v1.NewConfigMapLister(informerDep.Informer().GetIndexer())
 		return i.cfgLister
 	}
-	return getLister().ConfigMaps(namespace)
+	return createLister().ConfigMaps(namespace)
 }
 
 func (i *cachedImpl) Secrets(namespace string) v1.SecretNamespaceLister {
-	getLister := func() v1.SecretLister {
-		i.lock.RLock()
-		defer i.lock.RUnlock()
+	i.lock.RLock()
+	if i.secretLister != nil {
+		i.lock.RUnlock()
+		return i.secretLister.Secrets(namespace)
+	}
+	i.lock.RUnlock()
+
+	createLister := func() v1.SecretLister {
+		i.lock.Lock()
+		defer i.lock.Unlock()
 		if i.secretLister != nil {
 			return i.secretLister
 		}
@@ -74,5 +88,5 @@ func (i *cachedImpl) Secrets(namespace string) v1.SecretNamespaceLister {
 		i.secretLister = v1.NewSecretLister(informerDep.Informer().GetIndexer())
 		return i.secretLister
 	}
-	return getLister().Secrets(namespace)
+	return createLister().Secrets(namespace)
 }
