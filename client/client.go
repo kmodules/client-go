@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	kerr "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
@@ -68,4 +70,28 @@ func CreateOrPatch(c client.Client, obj client.Object, transform TransformFunc, 
 
 func isOfficialTypes(group string) bool {
 	return !strings.ContainsRune(group, '.')
+}
+
+func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.NamespacedName) (client.Object, error) {
+	o, err := c.Scheme().New(gvk)
+	if err != nil {
+		return nil, err
+	}
+	obj := o.(client.Object)
+	err = c.Get(context.TODO(), ref, obj)
+	return obj, err
+}
+
+func GetForGK(c client.Client, mapper meta.RESTMapper, gk schema.GroupKind, ref types.NamespacedName) (client.Object, error) {
+	mapping, err := mapper.RESTMapping(gk)
+	if err != nil {
+		return nil, err
+	}
+	o, err := c.Scheme().New(mapping.GroupVersionKind)
+	if err != nil {
+		return nil, err
+	}
+	obj := o.(client.Object)
+	err = c.Get(context.TODO(), ref, obj)
+	return obj, err
 }
