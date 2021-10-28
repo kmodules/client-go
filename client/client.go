@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -82,8 +81,8 @@ func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.Namespace
 	return obj, err
 }
 
-func GetForGK(c client.Client, mapper meta.RESTMapper, gk schema.GroupKind, ref types.NamespacedName) (client.Object, error) {
-	mapping, err := mapper.RESTMapping(gk)
+func GetForGK(c client.Client, gk schema.GroupKind, ref types.NamespacedName) (client.Object, error) {
+	mapping, err := c.RESTMapper().RESTMapping(gk)
 	if err != nil {
 		return nil, err
 	}
