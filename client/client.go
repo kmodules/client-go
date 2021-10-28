@@ -71,7 +71,11 @@ func isOfficialTypes(group string) bool {
 	return !strings.ContainsRune(group, '.')
 }
 
-func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.NamespacedName) (client.Object, error) {
+func GetForGVR(c client.Client, gvr schema.GroupVersionResource, ref types.NamespacedName) (client.Object, error) {
+	gvk, err := c.RESTMapper().KindFor(gvr)
+	if err != nil {
+		return nil, err
+	}
 	o, err := c.Scheme().New(gvk)
 	if err != nil {
 		return nil, err
@@ -81,12 +85,15 @@ func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.Namespace
 	return obj, err
 }
 
-func GetForGK(c client.Client, gk schema.GroupKind, ref types.NamespacedName) (client.Object, error) {
-	mapping, err := c.RESTMapper().RESTMapping(gk)
-	if err != nil {
-		return nil, err
+func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.NamespacedName) (client.Object, error) {
+	if gvk.Version == "" {
+		mapping, err := c.RESTMapper().RESTMapping(gvk.GroupKind())
+		if err != nil {
+			return nil, err
+		}
+		gvk = mapping.GroupVersionKind
 	}
-	o, err := c.Scheme().New(mapping.GroupVersionKind)
+	o, err := c.Scheme().New(gvk)
 	if err != nil {
 		return nil, err
 	}
