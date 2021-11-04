@@ -20,7 +20,9 @@ import (
 	"context"
 	"strings"
 
+	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/klog/v2"
@@ -100,4 +102,13 @@ func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.Namespace
 	obj := o.(client.Object)
 	err = c.Get(context.TODO(), ref, obj)
 	return obj, err
+}
+
+func ClusterUID(c client.Client) (string, error) {
+	var ns core.Namespace
+	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	if err != nil {
+		return "", err
+	}
+	return string(ns.UID), nil
 }
