@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type TransformFunc func(client.Object) client.Object
+type TransformFunc func(obj client.Object, createOp bool) client.Object
 
 func CreateOrPatch(c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
 	key := types.NamespacedName{
@@ -47,7 +47,7 @@ func CreateOrPatch(c client.Client, obj client.Object, transform TransformFunc, 
 				createOpts = append(createOpts, opt)
 			}
 		}
-		obj = transform(obj.DeepCopyObject().(client.Object))
+		obj = transform(obj.DeepCopyObject().(client.Object), true)
 		err := c.Create(context.TODO(), obj, createOpts...)
 		return obj, kutil.VerbCreated, err
 	} else if err != nil {
@@ -61,7 +61,7 @@ func CreateOrPatch(c client.Client, obj client.Object, transform TransformFunc, 
 		patch = client.MergeFrom(obj)
 	}
 
-	obj = transform(obj.DeepCopyObject().(client.Object))
+	obj = transform(obj.DeepCopyObject().(client.Object), false)
 	err = c.Patch(context.TODO(), obj, patch, opts...)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
