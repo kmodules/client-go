@@ -20,9 +20,7 @@ import (
 	"k8s.io/kube-openapi/pkg/common"
 )
 
-type GetDefinitionsFunc func(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition
-
-func GetDefinitions(first GetDefinitionsFunc, rest ...GetDefinitionsFunc) GetDefinitionsFunc {
+func GetDefinitions(first common.GetOpenAPIDefinitions, rest ...common.GetOpenAPIDefinitions) common.GetOpenAPIDefinitions {
 	return func(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 		n := len(first(ref))
 		for _, fn := range rest {
