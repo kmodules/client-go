@@ -104,7 +104,7 @@ func GetForGVK(c client.Client, gvk schema.GroupVersionKind, ref types.Namespace
 	return obj, err
 }
 
-func ClusterUID(c client.Client) (string, error) {
+func ClusterUID(c client.Reader) (string, error) {
 	var ns core.Namespace
 	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
 	if err != nil {
