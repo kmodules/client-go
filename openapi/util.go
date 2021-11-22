@@ -1,0 +1,43 @@
+/*
+Copyright AppsCode Inc. and Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+package openapi
+
+import (
+	"k8s.io/kube-openapi/pkg/common"
+)
+
+type GetDefinitionsFunc func(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition
+
+func GetDefinitions(first GetDefinitionsFunc, rest ...GetDefinitionsFunc) GetDefinitionsFunc {
+	return func(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
+		n := len(first(ref))
+		for _, fn := range rest {
+			n += len(fn(ref))
+		}
+
+		defs := make(map[string]common.OpenAPIDefinition, n)
+		for k, v := range first(ref) {
+			defs[k] = v
+		}
+		for _, fn := range rest {
+			for k, v := range fn(ref) {
+				defs[k] = v
+			}
+		}
+		return defs
+	}
+}
