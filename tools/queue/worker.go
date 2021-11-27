@@ -82,7 +82,7 @@ func (w *Worker) processNextEntry() bool {
 	defer w.queue.Done(key)
 
 	// Invoke the method containing the business logic
-	paniced, err := w.panicSafeReconcile(key)
+	paniced, err := w.panicSafeReconcile(key.(string))
 	if err == nil {
 		// Forget about the #AddRateLimited history of the key on every successful synchronization.
 		// This ensures that future processing of updates for this key is not delayed because of
@@ -111,7 +111,7 @@ func (w *Worker) processNextEntry() bool {
 	return true
 }
 
-func (w *Worker) panicSafeReconcile(key interface{}) (paniced bool, err error) {
+func (w *Worker) panicSafeReconcile(key string) (paniced bool, err error) {
 	// xref: https://github.com/kubernetes-sigs/controller-runtime/blob/v0.10.0/pkg/internal/controller/controller.go#L102-L111
 	defer func() {
 		if r := recover(); r != nil {
@@ -122,7 +122,7 @@ func (w *Worker) panicSafeReconcile(key interface{}) (paniced bool, err error) {
 			err = fmt.Errorf("panic: %v [recovered]", r)
 		}
 	}()
-	err = w.reconcile(key.(string))
+	err = w.reconcile(key)
 
 	return
 }
