@@ -60,3 +60,43 @@ func (r ResourceID) GroupVersionResource() schema.GroupVersionResource {
 func (r ResourceID) GroupVersionKind() schema.GroupVersionKind {
 	return schema.GroupVersionKind{Group: r.Group, Version: r.Version, Kind: r.Kind}
 }
+
+func (r ResourceID) MetaGVR() metav1.GroupVersionResource {
+	return metav1.GroupVersionResource{Group: r.Group, Version: r.Version, Resource: r.Name}
+}
+
+func (r ResourceID) MetaGVK() metav1.GroupVersionKind {
+	return metav1.GroupVersionKind{Group: r.Group, Version: r.Version, Kind: r.Kind}
+}
+
+func ToGVR(in metav1.GroupVersionResource) schema.GroupVersionResource {
+	return schema.GroupVersionResource{
+		Group:    in.Group,
+		Version:  in.Version,
+		Resource: in.Resource,
+	}
+}
+
+func FromGVR(in schema.GroupVersionResource) metav1.GroupVersionResource {
+	return metav1.GroupVersionResource{
+		Group:    in.Group,
+		Version:  in.Version,
+		Resource: in.Resource,
+	}
+}
+
+func ToGVK(in metav1.GroupVersionKind) schema.GroupVersionKind {
+	return schema.GroupVersionKind{
+		Group:   in.Group,
+		Version: in.Version,
+		Kind:    in.Kind,
+	}
+}
+
+func FromGVK(in schema.GroupVersionKind) metav1.GroupVersionKind {
+	return metav1.GroupVersionKind{
+		Group:   in.Group,
+		Version: in.Version,
+		Kind:    in.Kind,
+	}
+}
