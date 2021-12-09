@@ -100,3 +100,13 @@ func ToMetaGVK(in schema.GroupVersionKind) metav1.GroupVersionKind {
 		Kind:    in.Kind,
 	}
 }
+
+// FromAPIVersionAndKind returns a GVK representing the provided fields for types that
+// do not use TypeMeta. This method exists to support test types and legacy serializations
+// that have a distinct group and kind.
+func FromAPIVersionAndKind(apiVersion, kind string) metav1.GroupVersionKind {
+	if gv, err := schema.ParseGroupVersion(apiVersion); err == nil {
+		return metav1.GroupVersionKind{Group: gv.Group, Version: gv.Version, Kind: kind}
+	}
+	return metav1.GroupVersionKind{Kind: kind}
+}
