@@ -110,3 +110,15 @@ func FromAPIVersionAndKind(apiVersion, kind string) metav1.GroupVersionKind {
 	}
 	return metav1.GroupVersionKind{Kind: kind}
 }
+
+func EqualsGVK(a schema.GroupVersionKind, b metav1.GroupVersionKind) bool {
+	return a.Group == b.Group &&
+		a.Version == b.Version &&
+		a.Kind == b.Kind
+}
+
+func EqualsGVR(a schema.GroupVersionResource, b metav1.GroupVersionResource) bool {
+	return a.Group == b.Group &&
+		a.Version == b.Version &&
+		a.Resource == b.Resource
+}
