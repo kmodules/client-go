@@ -69,6 +69,31 @@ func CreateOrPatch(c client.Client, obj client.Object, transform TransformFunc, 
 	return obj, kutil.VerbPatched, nil
 }
 
+func PatchStatus(c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
+	key := types.NamespacedName{
+		Namespace: obj.GetNamespace(),
+		Name:      obj.GetName(),
+	}
+	err := c.Get(context.TODO(), key, obj)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+
+	var patch client.Patch
+	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
+		patch = client.StrategicMergeFrom(obj)
+	} else {
+		patch = client.MergeFrom(obj)
+	}
+
+	obj = transform(obj.DeepCopyObject().(client.Object), false)
+	err = c.Status().Patch(context.TODO(), obj, patch, opts...)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+	return obj, kutil.VerbPatched, nil
+}
+
 func isOfficialTypes(group string) bool {
 	return !strings.ContainsRune(group, '.')
 }
