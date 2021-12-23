@@ -79,7 +79,12 @@ func PatchStatus(c client.Client, obj client.Object, transform TransformFunc, op
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch := client.MergeFrom(obj)
+	var patch client.Patch
+	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
+		patch = client.StrategicMergeFrom(obj)
+	} else {
+		patch = client.MergeFrom(obj)
+	}
 
 	obj = transform(obj.DeepCopyObject().(client.Object), false)
 	err = c.Status().Patch(context.TODO(), obj, patch, opts...)
