@@ -19,7 +19,6 @@ package apiextensions
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	v1 "kmodules.xyz/client-go/apiextensions/v1"
@@ -35,7 +34,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/client-go/rest"
 )
 
 func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) error {
@@ -99,7 +97,7 @@ func RegisterCRDs(client crd_cs.Interface, crds []*CustomResourceDefinition) err
 			}
 		}
 	}
-	return WaitForCRDReady(client.ApiextensionsV1beta1().RESTClient(), crds)
+	return WaitForCRDReady(client, crds)
 }
 
 func removeDefaults(schema *crdv1beta1.JSONSchemaProps) {
@@ -153,7 +151,7 @@ func removeDefaults(schema *crdv1beta1.JSONSchemaProps) {
 	}
 }
 
-func WaitForCRDReady(restClient rest.Interface, crds []*CustomResourceDefinition) error {
+func WaitForCRDReady(client crd_cs.Interface, crds []*CustomResourceDefinition) error {
 	err := wait.Poll(3*time.Second, 5*time.Minute, func() (bool, error) {
 		for _, crd := range crds {
 			var gvr schema.GroupVersionResource
@@ -171,28 +169,29 @@ func WaitForCRDReady(restClient rest.Interface, crds []*CustomResourceDefinition
 				}
 			}
 
-			res := restClient.Get().AbsPath("apis", gvr.Group, gvr.Version, gvr.Resource).Do(context.TODO())
-			err := res.Error()
+			objc, err := client.ApiextensionsV1().CustomResourceDefinitions().Get(context.TODO(), gvr.GroupResource().String(), metav1.GetOptions{})
 			if err != nil {
-				// RESTClient returns *apierrors.StatusError for any status codes < 200 or > 206
-				// and http.Client.Do errors are returned directly.
-				if se, ok := err.(*kerr.StatusError); ok {
-					if se.Status().Code == http.StatusNotFound {
-						return false, nil
-					}
+				if kerr.IsNotFound(err) {
+					return false, nil
 				}
 				return false, err
 			}
 
-			var statusCode int
-			res.StatusCode(&statusCode)
-			if statusCode != http.StatusOK {
-				return false, errors.Errorf("invalid status code: %d", statusCode)
+			for _, c := range objc.Status.Conditions {
+				if c.Type == "NamesAccepted" && c.Status == crdv1.ConditionFalse {
+					return false, fmt.Errorf("CRD %s %s: %s", gvr.GroupResource(), c.Reason, c.Message)
+				}
+				if c.Type == "Established" {
+					if c.Status == crdv1.ConditionFalse && c.Reason != "Installing" {
+						return false, fmt.Errorf("CRD %s %s: %s", gvr.GroupResource(), c.Reason, c.Message)
+					}
+					if c.Status == crdv1.ConditionTrue {
+						break
+					}
+				}
 			}
 		}
-
-		return true, nil
+		return false, nil
 	})
-
 	return errors.Wrap(err, "timed out waiting for CRD")
 }
