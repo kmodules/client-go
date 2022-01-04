@@ -145,17 +145,7 @@ func (m *resourcemapper) ResourceIDForGVK(gvk schema.GroupVersionKind) (*kmapi.R
 	if err != nil {
 		return nil, err
 	}
-	scope := kmapi.ClusterScoped
-	if mapping.Scope == meta.RESTScopeNamespace {
-		scope = kmapi.NamespaceScoped
-	}
-	rid = &kmapi.ResourceID{
-		Group:   gvk.Group,
-		Version: gvk.Version,
-		Name:    mapping.Resource.Resource,
-		Kind:    gvk.Kind,
-		Scope:   scope,
-	}
+	rid = kmapi.NewResourceID(mapping)
 	m.lock.Lock()
 	m.cache[gvk] = rid
 	m.lock.Unlock()
@@ -179,17 +169,7 @@ func (m *resourcemapper) ResourceIDForGVR(gvr schema.GroupVersionResource) (*kma
 	if err != nil {
 		return nil, err
 	}
-	scope := kmapi.ClusterScoped
-	if mapping.Scope == meta.RESTScopeNamespace {
-		scope = kmapi.NamespaceScoped
-	}
-	rid = &kmapi.ResourceID{
-		Group:   gvr.Group,
-		Version: gvr.Version,
-		Name:    gvr.Resource,
-		Kind:    gvk.Kind,
-		Scope:   scope,
-	}
+	rid = kmapi.NewResourceID(mapping)
 	m.lock.Lock()
 	m.cache[gvk] = rid
 	m.lock.Unlock()

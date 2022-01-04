@@ -17,6 +17,7 @@ limitations under the License.
 package v1
 
 import (
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
@@ -67,6 +68,20 @@ func (r ResourceID) MetaGVR() metav1.GroupVersionResource {
 
 func (r ResourceID) MetaGVK() metav1.GroupVersionKind {
 	return metav1.GroupVersionKind{Group: r.Group, Version: r.Version, Kind: r.Kind}
+}
+
+func NewResourceID(mapping *meta.RESTMapping) *ResourceID {
+	scope := ClusterScoped
+	if mapping.Scope == meta.RESTScopeNamespace {
+		scope = NamespaceScoped
+	}
+	return &ResourceID{
+		Group:   mapping.Resource.Group,
+		Version: mapping.Resource.Version,
+		Name:    mapping.Resource.Resource,
+		Kind:    mapping.GroupVersionKind.Kind,
+		Scope:   scope,
+	}
 }
 
 func FromMetaGVR(in metav1.GroupVersionResource) schema.GroupVersionResource {
