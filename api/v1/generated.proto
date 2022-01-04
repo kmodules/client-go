@@ -141,6 +141,12 @@ message ObjectID {
   optional string name = 4;
 }
 
+message ObjectInfo {
+  optional ResourceID resource = 1;
+
+  optional ObjectReference ref = 2;
+}
+
 // ObjectReference contains enough information to let you inspect or modify the referred object.
 message ObjectReference {
   // Namespace of the referent.
