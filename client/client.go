@@ -20,6 +20,9 @@ import (
 	"context"
 	"strings"
 
+	kmapi "kmodules.xyz/client-go/api/v1"
+	"kmodules.xyz/client-go/tools/clusterid"
+
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -136,4 +139,13 @@ func ClusterUID(c client.Reader) (string, error) {
 		return "", err
 	}
 	return string(ns.UID), nil
+}
+
+func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
+	var ns core.Namespace
+	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	if err != nil {
+		return nil, err
+	}
+	return clusterid.ClusterMetadataForNamespace(&ns)
 }
