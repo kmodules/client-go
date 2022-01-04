@@ -35,8 +35,9 @@ const (
 )
 
 const (
-	ClusterNameKey        string = "cluster.appscode.com/name"
-	ClusterDisplayNameKey string = "cluster.appscode.com/display-name"
+	ClusterNameKey         string = "cluster.appscode.com/name"
+	ClusterDisplayNameKey  string = "cluster.appscode.com/display-name"
+	ClusterProviderNameKey string = "cluster.appscode.com/provider"
 )
 
 type ClusterMetadata struct {
