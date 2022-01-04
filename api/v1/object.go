@@ -37,6 +37,24 @@ type ObjectReference struct {
 	Name string `json:"name" protobuf:"bytes,2,opt,name=name"`
 }
 
+// WithNamespace sets the namespace if original namespace is empty.
+// Never changes the original ObjectReference.
+func (ref *ObjectReference) WithNamespace(fallback string) *ObjectReference {
+	if ref == nil {
+		return nil
+	}
+	if ref.Namespace != "" {
+		return ref
+	}
+	out := *ref
+	out.Namespace = fallback
+	return &out
+}
+
+func (ref ObjectReference) ObjectKey() client.ObjectKey {
+	return client.ObjectKey{Namespace: ref.Namespace, Name: ref.Name}
+}
+
 type OID string
 
 type ObjectID struct {
@@ -48,6 +66,20 @@ type ObjectID struct {
 
 func (oid *ObjectID) OID() OID {
 	return OID(fmt.Sprintf("G=%s,K=%s,NS=%s,N=%s", oid.Group, oid.Kind, oid.Namespace, oid.Name))
+}
+
+// WithNamespace sets the namespace if original namespace is empty.
+// Never changes the original ObjectID.
+func (oid *ObjectID) WithNamespace(fallback string) *ObjectID {
+	if oid == nil {
+		return nil
+	}
+	if oid.Namespace != "" {
+		return oid
+	}
+	out := *oid
+	out.Namespace = fallback
+	return &out
 }
 
 func NewObjectID(obj client.Object) *ObjectID {
