@@ -46,6 +46,10 @@ func (r ResourceID) GroupVersion() schema.GroupVersion {
 	return schema.GroupVersion{Group: r.Group, Version: r.Version}
 }
 
+func (r ResourceID) GroupKind() schema.GroupKind {
+	return schema.GroupKind{Group: r.Group, Kind: r.Kind}
+}
+
 func (r ResourceID) GroupResource() schema.GroupResource {
 	return schema.GroupResource{Group: r.Group, Resource: r.Name}
 }
