@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"fmt"
+
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -140,4 +142,41 @@ func EqualsGVR(a schema.GroupVersionResource, b metav1.GroupVersionResource) boo
 	return a.Group == b.Group &&
 		a.Version == b.Version &&
 		a.Resource == b.Resource
+}
+
+func ExtractResourceID(mapper meta.RESTMapper, in ResourceID) (*ResourceID, error) {
+	kindFound := in.Kind != ""
+	resFOund := in.Name != ""
+	if kindFound {
+		if resFOund {
+			return &in, nil
+		} else {
+			var versions []string
+			if in.Version != "" {
+				versions = append(versions, in.Version)
+			}
+			mapping, err := mapper.RESTMapping(schema.GroupKind{
+				Group: in.Group,
+				Kind:  in.Kind,
+			}, versions...)
+			if err != nil {
+				return nil, err
+			}
+			return NewResourceID(mapping), nil
+		}
+	} else {
+		if resFOund {
+			gvk, err := mapper.KindFor(in.GroupVersionResource())
+			if err != nil {
+				return nil, err
+			}
+			mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+			if err != nil {
+				return nil, err
+			}
+			return NewResourceID(mapping), nil
+		} else {
+			return nil, fmt.Errorf("missing both Kind and Resource name for %+v", in)
+		}
+	}
 }
