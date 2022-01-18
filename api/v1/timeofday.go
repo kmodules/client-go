@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/golang/protobuf/jsonpb"
 	fuzz "github.com/google/gofuzz"
 )
 
@@ -164,14 +163,6 @@ func (t TimeOfDay) ToUnstructured() interface{} {
 	buf := make([]byte, 0, len(time.Kitchen))
 	buf = t.UTC().AppendFormat(buf, time.Kitchen)
 	return string(buf)
-}
-
-func (t TimeOfDay) MarshalJSONPB(_ *jsonpb.Marshaler) ([]byte, error) {
-	return t.MarshalJSON()
-}
-
-func (t *TimeOfDay) UnmarshalJSONPB(_ *jsonpb.Unmarshaler, jstr []byte) error {
-	return t.UnmarshalJSON(jstr)
 }
 
 // OpenAPISchemaType is used by the kube-openapi generator when constructing
