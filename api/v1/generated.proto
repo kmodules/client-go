@@ -187,6 +187,16 @@ message TLSConfig {
   repeated CertificateSpec certificates = 2;
 }
 
+// TimeOfDay is a wrapper around time.Time which supports correct
+// marshaling to YAML and JSON.  Wrappers are provided for many
+// of the factory methods that the time package offers.
+//
+// +protobuf.options.marshal=false
+// +protobuf.as=Timestamp
+// +protobuf.options.(gogoproto.goproto_stringer)=false
+message TimeOfDay {
+}
+
 // TypedObjectReference represents an typed namespaced object.
 message TypedObjectReference {
   optional string apiGroup = 1;
