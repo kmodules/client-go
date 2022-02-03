@@ -26,12 +26,40 @@ import (
 	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 	kutil "kmodules.xyz/client-go"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
+
+func NewUncachedClient(cfg *rest.Config, funcs ...func(*runtime.Scheme) error) (client.Client, error) {
+	mapper, err := apiutil.NewDynamicRESTMapper(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	builder := runtime.NewSchemeBuilder(funcs...)
+	builder.Register(clientgoscheme.AddToScheme)
+	scheme := runtime.NewScheme()
+	err = builder.AddToScheme(scheme)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.New(cfg, client.Options{
+		Scheme: scheme,
+		Mapper: mapper,
+		//Opts: client.WarningHandlerOptions{
+		//	SuppressWarnings:   false,
+		//	AllowDuplicateLogs: false,
+		//},
+	})
+}
 
 type TransformFunc func(obj client.Object, createOp bool) client.Object
 
