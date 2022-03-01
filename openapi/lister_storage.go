@@ -30,10 +30,12 @@ type ListerStorage struct {
 	cfg ResourceInfo
 }
 
-var _ rest.GroupVersionKindProvider = &ListerStorage{}
-var _ rest.Scoper = &ListerStorage{}
-var _ rest.Lister = &ListerStorage{}
-var _ rest.Getter = &ListerStorage{}
+var (
+	_ rest.GroupVersionKindProvider = &ListerStorage{}
+	_ rest.Scoper                   = &ListerStorage{}
+	_ rest.Lister                   = &ListerStorage{}
+	_ rest.Getter                   = &ListerStorage{}
+)
 
 func NewListerStorage(cfg ResourceInfo) *ListerStorage {
 	return &ListerStorage{cfg}

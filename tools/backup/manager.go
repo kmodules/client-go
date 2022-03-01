@@ -76,17 +76,17 @@ func (mgr BackupManager) BackupToDir(backupDir string) (string, error) {
 	p := func(relPath string, data []byte) error {
 		absPath := filepath.Join(backupDir, snapshotDir, relPath)
 		dir := filepath.Dir(absPath)
-		err := os.MkdirAll(dir, 0777)
+		err := os.MkdirAll(dir, 0o777)
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(absPath, data, 0644)
+		return ioutil.WriteFile(absPath, data, 0o644)
 	}
 	return snapshotDir, mgr.Backup(p)
 }
 
 func (mgr BackupManager) BackupToTar(backupDir string) (string, error) {
-	err := os.MkdirAll(backupDir, 0777)
+	err := os.MkdirAll(backupDir, 0o777)
 	if err != nil {
 		return "", err
 	}
@@ -111,7 +111,7 @@ func (mgr BackupManager) BackupToTar(backupDir string) (string, error) {
 		header := new(tar.Header)
 		header.Name = relPath
 		header.Size = int64(len(data))
-		header.Mode = 0666
+		header.Mode = 0o666
 		header.ModTime = t
 		// write the header to the tarball archive
 		if err := tw.WriteHeader(header); err != nil {

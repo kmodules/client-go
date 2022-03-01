@@ -188,7 +188,6 @@ func TestFilterKeys(t *testing.T) {
 }
 
 func TestValidNameWithPrefix(t *testing.T) {
-
 	testCases := []struct {
 		title    string
 		prefix   string

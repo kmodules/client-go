@@ -29,9 +29,11 @@ type GetterStorage struct {
 	cfg ResourceInfo
 }
 
-var _ rest.GroupVersionKindProvider = &GetterStorage{}
-var _ rest.Scoper = &GetterStorage{}
-var _ rest.Getter = &GetterStorage{}
+var (
+	_ rest.GroupVersionKindProvider = &GetterStorage{}
+	_ rest.Scoper                   = &GetterStorage{}
+	_ rest.Getter                   = &GetterStorage{}
+)
 
 func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
 	return &GetterStorage{cfg}

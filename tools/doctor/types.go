@@ -79,9 +79,7 @@ type APIServerConfig struct {
 	ProxySettings       map[string]string `json:"proxySettings,omitempty"`
 }
 
-var (
-	ErrUnknown = errors.New("unknown")
-)
+var ErrUnknown = errors.New("unknown")
 
 type FeatureList struct {
 	Enabled  []string `json:"enabled,omitempty"`

@@ -61,7 +61,7 @@ func getPreconditionFuncs() []mergepatch.PreconditionFunc {
 		mergepatch.RequireKeyUnchanged("status"),
 		// below methods are added in kutil/meta/patch.go
 		RequireChainKeyUnchanged("spec.replicas"),
-		RequireChainKeyUnchanged("spec.template.spec.containers.image"), //here container is array, yet works fine
+		RequireChainKeyUnchanged("spec.template.spec.containers.image"), // here container is array, yet works fine
 	}
 	return preconditions
 }
