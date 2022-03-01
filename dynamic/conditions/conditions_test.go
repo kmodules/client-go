@@ -36,7 +36,8 @@ var conditions = []kmapi.Condition{
 		Reason:             "No reason",
 		Message:            "No msg",
 		ObservedGeneration: 1,
-	}, {
+	},
+	{
 		Type:    "type-2",
 		Status:  "False",
 		Reason:  "No reason",
@@ -335,7 +336,6 @@ func equalCondition(expected, got *kmapi.Condition) bool {
 		expected.Message == got.Message &&
 		expected.ObservedGeneration == got.ObservedGeneration {
 		return true
-
 	}
 	return false
 }

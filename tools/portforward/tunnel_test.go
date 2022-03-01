@@ -120,7 +120,6 @@ func Test_getFirstSelectedPod(t *testing.T) {
 			if pod.Name != tc.selectedPodName {
 				t.Errorf("Expect selected Pod name to be: %v Found: %v", tc.selectedPodName, pod.Name)
 			}
-
 		})
 	}
 }
@@ -212,7 +211,6 @@ func Test_translateRemotePort(t *testing.T) {
 			if tunnel.Remote != tc.translatedPort {
 				t.Errorf("Expect translated port to be: %v Found: %v", tc.translatedPort, tunnel.Remote)
 			}
-
 		})
 	}
 }

@@ -31,9 +31,11 @@ type StandardStorage struct {
 	cfg ResourceInfo
 }
 
-var _ rest.GroupVersionKindProvider = &StandardStorage{}
-var _ rest.Scoper = &StandardStorage{}
-var _ rest.StandardStorage = &StandardStorage{}
+var (
+	_ rest.GroupVersionKindProvider = &StandardStorage{}
+	_ rest.Scoper                   = &StandardStorage{}
+	_ rest.StandardStorage          = &StandardStorage{}
+)
 
 func NewStandardStorage(cfg ResourceInfo) *StandardStorage {
 	return &StandardStorage{cfg}

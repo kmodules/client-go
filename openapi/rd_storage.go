@@ -30,11 +30,13 @@ type RDStorage struct {
 	cfg ResourceInfo
 }
 
-var _ rest.GroupVersionKindProvider = &RDStorage{}
-var _ rest.Scoper = &RDStorage{}
-var _ rest.Lister = &RDStorage{}
-var _ rest.Getter = &RDStorage{}
-var _ rest.GracefulDeleter = &RDStorage{}
+var (
+	_ rest.GroupVersionKindProvider = &RDStorage{}
+	_ rest.Scoper                   = &RDStorage{}
+	_ rest.Lister                   = &RDStorage{}
+	_ rest.Getter                   = &RDStorage{}
+	_ rest.GracefulDeleter          = &RDStorage{}
+)
 
 func NewRDStorage(cfg ResourceInfo) *RDStorage {
 	return &RDStorage{cfg}

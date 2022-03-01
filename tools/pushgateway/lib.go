@@ -22,9 +22,7 @@ import (
 	"kmodules.xyz/client-go/meta"
 )
 
-var (
-	ServiceName string
-)
+var ServiceName string
 
 func URL() string {
 	// called by operator, returning its own namespace. Since pushgateway runs as a side-car with operator, this works!

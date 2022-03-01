@@ -68,8 +68,10 @@ func (i *directImpl) existingForResource(gvr schema.GroupVersionResource) dynami
 	return l
 }
 
-var _ dynamiclister.Lister = &dynamicLister{}
-var _ dynamiclister.NamespaceLister = &dynamicNamespaceLister{}
+var (
+	_ dynamiclister.Lister          = &dynamicLister{}
+	_ dynamiclister.NamespaceLister = &dynamicNamespaceLister{}
+)
 
 // dynamicLister implements the Lister interface.
 type dynamicLister struct {

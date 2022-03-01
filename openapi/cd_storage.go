@@ -29,10 +29,12 @@ type CDStorage struct {
 	cfg ResourceInfo
 }
 
-var _ rest.GroupVersionKindProvider = &CDStorage{}
-var _ rest.Scoper = &CDStorage{}
-var _ rest.Creater = &CDStorage{}
-var _ rest.GracefulDeleter = &CDStorage{}
+var (
+	_ rest.GroupVersionKindProvider = &CDStorage{}
+	_ rest.Scoper                   = &CDStorage{}
+	_ rest.Creater                  = &CDStorage{}
+	_ rest.GracefulDeleter          = &CDStorage{}
+)
 
 func NewCDStorage(cfg ResourceInfo) *CDStorage {
 	return &CDStorage{cfg}
