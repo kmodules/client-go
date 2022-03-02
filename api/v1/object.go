@@ -164,7 +164,7 @@ type ObjectInfo struct {
 	Ref      ObjectReference `json:"ref" protobuf:"bytes,2,opt,name=ref"`
 }
 
-// +kubebuilder:validation:Enum=auth_via;backup_via;catalog;connect_via;exposed_by;monitored_by;offshoot;restore_into;scaled_by;view
+// +kubebuilder:validation:Enum=auth_via;backup_via;catalog;connect_via;exposed_by;monitored_by;offshoot;restore_into;scaled_by;view;cert_issuer;policy
 type EdgeLabel string
 
 const (
@@ -178,4 +178,6 @@ const (
 	EdgeRestoreInto EdgeLabel = "restore_into"
 	EdgeScaledBy    EdgeLabel = "scaled_by"
 	EdgeView        EdgeLabel = "view"
+	EdgeCertIssuer  EdgeLabel = "cert_issuer"
+	EdgePolicy      EdgeLabel = "policy"
 )
