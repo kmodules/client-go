@@ -26,5 +26,5 @@ var ServiceName string
 
 func URL() string {
 	// called by operator, returning its own namespace. Since pushgateway runs as a side-car with operator, this works!
-	return fmt.Sprintf("http://%s.%s.svc:56789", ServiceName, meta.Namespace())
+	return fmt.Sprintf("http://%s.%s.svc:56789", ServiceName, meta.PodNamespace())
 }
