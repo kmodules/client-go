@@ -22,7 +22,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/go-openapi/spec"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -37,6 +36,8 @@ import (
 	"k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
+	"k8s.io/kube-openapi/pkg/common/restfuladapter"
+	"k8s.io/kube-openapi/pkg/validation/spec"
 )
 
 type TypeInfo struct {
@@ -265,11 +266,11 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 		}
 	}
 
-	spec, err := builder.BuildOpenAPISpec(genericServer.Handler.GoRestfulContainer.RegisteredWebServices(), serverConfig.OpenAPIConfig)
+	s, err := builder.BuildOpenAPISpecFromRoutes(restfuladapter.AdaptWebServices(genericServer.Handler.GoRestfulContainer.RegisteredWebServices()), serverConfig.OpenAPIConfig)
 	if err != nil {
 		return "", err
 	}
-	data, err := json.MarshalIndent(spec, "", "  ")
+	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return "", err
 	}
