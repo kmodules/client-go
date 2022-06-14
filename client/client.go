@@ -113,13 +113,12 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	var patch client.Patch
-	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
-		patch = client.StrategicMergeFrom(obj)
-	} else {
-		patch = client.MergeFrom(obj)
-	}
-
+	// The body of the request was in an unknown format -
+	// accepted media types include:
+	//   - application/json-patch+json,
+	//   - application/merge-patch+json,
+	//   - application/apply-patch+yaml
+	patch := client.MergeFrom(obj)
 	obj = transform(obj.DeepCopyObject().(client.Object))
 	err = c.Status().Patch(ctx, obj, patch, opts...)
 	if err != nil {
