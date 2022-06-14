@@ -61,7 +61,10 @@ func NewUncachedClient(cfg *rest.Config, funcs ...func(*runtime.Scheme) error) (
 	})
 }
 
-type TransformFunc func(obj client.Object, createOp bool) client.Object
+type (
+	TransformFunc       func(obj client.Object, createOp bool) client.Object
+	TransformStatusFunc func(obj client.Object) client.Object
+)
 
 func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
 	key := types.NamespacedName{
@@ -100,7 +103,7 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	return obj, kutil.VerbPatched, nil
 }
 
-func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
+func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
 	key := types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
@@ -117,7 +120,7 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 		patch = client.MergeFrom(obj)
 	}
 
-	obj = transform(obj.DeepCopyObject().(client.Object), false)
+	obj = transform(obj.DeepCopyObject().(client.Object))
 	err = c.Status().Patch(ctx, obj, patch, opts...)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
