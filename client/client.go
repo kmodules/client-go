@@ -18,7 +18,6 @@ package client
 
 import (
 	"context"
-	"strings"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/tools/clusterid"
@@ -125,10 +124,6 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 		return nil, kutil.VerbUnchanged, err
 	}
 	return obj, kutil.VerbPatched, nil
-}
-
-func isOfficialTypes(group string) bool {
-	return !strings.ContainsRune(group, '.')
 }
 
 func GetForGVR(ctx context.Context, c client.Client, gvr schema.GroupVersionResource, ref types.NamespacedName) (client.Object, error) {
