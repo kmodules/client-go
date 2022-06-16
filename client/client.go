@@ -88,12 +88,12 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	var patch client.Patch
-	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
-		patch = client.StrategicMergeFrom(obj)
-	} else {
-		patch = client.MergeFrom(obj)
-	}
+	// The body of the request was in an unknown format -
+	// accepted media types include:
+	//   - application/json-patch+json,
+	//   - application/merge-patch+json,
+	//   - application/apply-patch+yaml
+	patch := client.MergeFrom(obj)
 
 	obj = transform(obj.DeepCopyObject().(client.Object), false)
 	err = c.Patch(ctx, obj, patch, opts...)
