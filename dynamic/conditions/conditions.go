@@ -140,6 +140,29 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	return resp, conditions, err
 }
 
+func (do *DynamicOptions) UpdateConditions(conditions []kmapi.Condition) error {
+	obj, err := do.Client.Resource(do.GVR).Namespace(do.Namespace).Get(context.TODO(), do.Name, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	unstrConds := make([]interface{}, len(conditions))
+	for i := range conditions {
+		cond, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&conditions[i])
+		if err != nil {
+			return err
+		}
+		unstrConds[i] = cond
+	}
+
+	err = unstructured.SetNestedField(obj.Object, unstrConds, "status", "conditions")
+	if err != nil {
+		return err
+	}
+	_, err = do.Client.Resource(do.GVR).Namespace(do.Namespace).UpdateStatus(context.TODO(), obj, metav1.UpdateOptions{})
+	return err
+}
+
 // stringToTimeHookFunc returns a DecodeHookFunc that converts
 // strings to time.Time.
 func stringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
