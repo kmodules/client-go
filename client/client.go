@@ -91,8 +91,6 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	}
 
 	var patch client.Patch
-	klog.Info(obj.GetObjectKind().GroupVersionKind().Group, obj.GetObjectKind().GroupVersionKind().Version, obj.GetObjectKind().GroupVersionKind().Kind)
-	klog.Info(gvk.Group, gvk.Version, gvk.Kind)
 	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
 		patch = client.StrategicMergeFrom(obj)
 	} else {
@@ -112,17 +110,19 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	}
+	gvk := obj.GetObjectKind().GroupVersionKind()
 	err := c.Get(ctx, key, obj)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
+	obj.GetObjectKind().SetGroupVersionKind(gvk)
 
-	// The body of the request was in an unknown format -
-	// accepted media types include:
-	//   - application/json-patch+json,
-	//   - application/merge-patch+json,
-	//   - application/apply-patch+yaml
-	patch := client.MergeFrom(obj)
+	var patch client.Patch
+	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
+		patch = client.StrategicMergeFrom(obj)
+	} else {
+		patch = client.MergeFrom(obj)
+	}
 	obj = transform(obj.DeepCopyObject().(client.Object))
 	err = c.Status().Patch(ctx, obj, patch, opts...)
 	if err != nil {
