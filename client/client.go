@@ -73,7 +73,6 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	}
 	gvk := obj.GetObjectKind().GroupVersionKind()
 	err := c.Get(ctx, key, obj)
-	obj.GetObjectKind().SetGroupVersionKind(gvk)
 	if kerr.IsNotFound(err) {
 		klog.V(3).Infof("Creating %+v %s/%s.", obj.GetObjectKind().GroupVersionKind(), key.Namespace, key.Name)
 
@@ -90,6 +89,7 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return nil, kutil.VerbUnchanged, err
 	}
 
+	obj.GetObjectKind().SetGroupVersionKind(gvk)
 	var patch client.Patch
 	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
 		patch = client.StrategicMergeFrom(obj)
