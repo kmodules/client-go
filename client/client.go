@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"strings"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
 	"kmodules.xyz/client-go/tools/clusterid"
@@ -70,7 +71,9 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),
 	}
+	gvk := obj.GetObjectKind().GroupVersionKind()
 	err := c.Get(ctx, key, obj)
+	obj.GetObjectKind().SetGroupVersionKind(gvk)
 	if kerr.IsNotFound(err) {
 		klog.V(3).Infof("Creating %+v %s/%s.", obj.GetObjectKind().GroupVersionKind(), key.Namespace, key.Name)
 
@@ -87,12 +90,14 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	// The body of the request was in an unknown format -
-	// accepted media types include:
-	//   - application/json-patch+json,
-	//   - application/merge-patch+json,
-	//   - application/apply-patch+yaml
-	patch := client.MergeFrom(obj)
+	var patch client.Patch
+	klog.Info(obj.GetObjectKind().GroupVersionKind().Group, obj.GetObjectKind().GroupVersionKind().Version, obj.GetObjectKind().GroupVersionKind().Kind)
+	klog.Info(gvk.Group, gvk.Version, gvk.Kind)
+	if isOfficialTypes(obj.GetObjectKind().GroupVersionKind().Group) {
+		patch = client.StrategicMergeFrom(obj)
+	} else {
+		patch = client.MergeFrom(obj)
+	}
 
 	obj = transform(obj.DeepCopyObject().(client.Object), false)
 	err = c.Patch(ctx, obj, patch, opts...)
@@ -124,6 +129,10 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 		return nil, kutil.VerbUnchanged, err
 	}
 	return obj, kutil.VerbPatched, nil
+}
+
+func isOfficialTypes(group string) bool {
+	return !strings.ContainsRune(group, '.')
 }
 
 func GetForGVR(ctx context.Context, c client.Client, gvr schema.GroupVersionResource, ref types.NamespacedName) (client.Object, error) {
