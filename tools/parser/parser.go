@@ -82,7 +82,7 @@ func processResources(filename string, data []byte, fn ResourceFn) error {
 
 func ProcessPath(root string, fn ResourceFn) error {
 	return filepath.WalkDir(root, func(path string, info os.DirEntry, err error) error {
-		if info.IsDir() || err != nil {
+		if err != nil || info.IsDir() {
 			return err
 		}
 
