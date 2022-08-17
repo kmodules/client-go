@@ -36,6 +36,7 @@ var (
 	_ rest.Lister                   = &RDStorage{}
 	_ rest.Getter                   = &RDStorage{}
 	_ rest.GracefulDeleter          = &RDStorage{}
+	_ rest.Storage                  = &RDStorage{}
 )
 
 func NewRDStorage(cfg ResourceInfo) *RDStorage {
@@ -75,4 +76,7 @@ func (r *RDStorage) ConvertToTable(ctx context.Context, object runtime.Object, t
 // Deleter
 func (r *RDStorage) Delete(ctx context.Context, name string, deleteValidation rest.ValidateObjectFunc, options *metav1.DeleteOptions) (runtime.Object, bool, error) {
 	return r.New(), true, nil
+}
+
+func (r *RDStorage) Destroy() {
 }

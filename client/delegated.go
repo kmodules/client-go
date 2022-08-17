@@ -137,13 +137,13 @@ func (d *delegatingReader) shouldBypassCache(obj runtime.Object) (bool, error) {
 }
 
 // Get retrieves an obj for a given object key from the Kubernetes Cluster.
-func (d *delegatingReader) Get(ctx context.Context, key client.ObjectKey, obj client.Object) error {
+func (d *delegatingReader) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	if isUncached, err := d.shouldBypassCache(obj); err != nil {
 		return err
 	} else if isUncached {
-		return d.ClientReader.Get(ctx, key, obj)
+		return d.ClientReader.Get(ctx, key, obj, opts...)
 	}
-	return d.CacheReader.Get(ctx, key, obj)
+	return d.CacheReader.Get(ctx, key, obj, opts...)
 }
 
 // List retrieves list of objects for a given namespace and list options.

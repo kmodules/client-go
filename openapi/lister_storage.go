@@ -35,6 +35,7 @@ var (
 	_ rest.Scoper                   = &ListerStorage{}
 	_ rest.Lister                   = &ListerStorage{}
 	_ rest.Getter                   = &ListerStorage{}
+	_ rest.Storage                  = &ListerStorage{}
 )
 
 func NewListerStorage(cfg ResourceInfo) *ListerStorage {
@@ -69,4 +70,7 @@ func (r *ListerStorage) List(ctx context.Context, options *metainternalversion.L
 
 func (r *ListerStorage) ConvertToTable(ctx context.Context, object runtime.Object, tableOptions runtime.Object) (*metav1.Table, error) {
 	return new(metav1.Table), nil
+}
+
+func (r *ListerStorage) Destroy() {
 }

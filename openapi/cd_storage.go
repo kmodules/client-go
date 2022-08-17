@@ -34,6 +34,7 @@ var (
 	_ rest.Scoper                   = &CDStorage{}
 	_ rest.Creater                  = &CDStorage{}
 	_ rest.GracefulDeleter          = &CDStorage{}
+	_ rest.Storage                  = &CDStorage{}
 )
 
 func NewCDStorage(cfg ResourceInfo) *CDStorage {
@@ -60,4 +61,7 @@ func (r *CDStorage) Create(ctx context.Context, obj runtime.Object, createValida
 // Deleter
 func (r *CDStorage) Delete(ctx context.Context, name string, deleteValidation rest.ValidateObjectFunc, options *metav1.DeleteOptions) (runtime.Object, bool, error) {
 	return r.New(), true, nil
+}
+
+func (r *CDStorage) Destroy() {
 }

@@ -94,3 +94,6 @@ func (r *StandardStorage) DeleteCollection(ctx context.Context, deleteValidation
 func (r *StandardStorage) Watch(ctx context.Context, options *metainternalversion.ListOptions) (watch.Interface, error) {
 	return nil, nil
 }
+
+func (r *StandardStorage) Destroy() {
+}

@@ -33,6 +33,7 @@ var (
 	_ rest.GroupVersionKindProvider = &GetterStorage{}
 	_ rest.Scoper                   = &GetterStorage{}
 	_ rest.Getter                   = &GetterStorage{}
+	_ rest.Storage                  = &GetterStorage{}
 )
 
 func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
@@ -54,4 +55,7 @@ func (r *GetterStorage) New() runtime.Object {
 
 func (r *GetterStorage) Get(ctx context.Context, name string, options *metav1.GetOptions) (runtime.Object, error) {
 	return r.New(), nil
+}
+
+func (r *GetterStorage) Destroy() {
 }
