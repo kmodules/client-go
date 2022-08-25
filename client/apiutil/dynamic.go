@@ -17,8 +17,8 @@ limitations under the License.
 package apiutil
 
 import (
-	"errors"
 	"sync"
+	"sync/atomic"
 
 	"golang.org/x/time/rate"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -39,7 +39,8 @@ type dynamicCachable struct {
 
 	lazy bool
 	// Used for lazy init.
-	initOnce sync.Once
+	inited  uint32
+	initMtx sync.Mutex
 }
 
 // DynamicCachableOption is a functional option on the dynamicCachable
@@ -122,18 +123,25 @@ func (drm *dynamicCachable) setStaticCachable() error {
 
 // init initializes drm only once if drm is lazy.
 func (drm *dynamicCachable) init() (err error) {
-	drm.initOnce.Do(func() {
-		if drm.lazy {
-			err = drm.setStaticCachable()
+	// skip init if drm is not lazy or has initialized
+	if !drm.lazy || atomic.LoadUint32(&drm.inited) != 0 {
+		return nil
+	}
+
+	drm.initMtx.Lock()
+	defer drm.initMtx.Unlock()
+	if drm.inited == 0 {
+		if err = drm.setStaticCachable(); err == nil {
+			atomic.StoreUint32(&drm.inited, 1)
 		}
-	})
+	}
 	return err
 }
 
 // checkAndReload attempts to call the given callback, which is assumed to be dependent
 // on the data in the restmapper.
 //
-// If the callback returns an error that matches the given error, it will attempt to reload
+// If the callback returns an error matching meta.IsNoMatchErr, it will attempt to reload
 // the Cachable's data and re-call the callback once that's occurred.
 // If the callback returns any other error, the function will return immediately regardless.
 //
@@ -142,7 +150,7 @@ func (drm *dynamicCachable) init() (err error) {
 // the callback.
 // It's thread-safe, and worries about thread-safety for the callback (so the callback does
 // not need to attempt to lock the restmapper).
-func (drm *dynamicCachable) checkAndReload(needsReloadErr error, checkNeedsReload func() error) error {
+func (drm *dynamicCachable) checkAndReload(checkNeedsReload func() error) error {
 	// first, check the common path -- data is fresh enough
 	// (use an IIFE for the lock's defer)
 	err := func() error {
@@ -152,10 +160,7 @@ func (drm *dynamicCachable) checkAndReload(needsReloadErr error, checkNeedsReloa
 		return checkNeedsReload()
 	}()
 
-	// NB(directxman12): `Is` and `As` have a confusing relationship --
-	// `Is` is like `== or does this implement .Is`, whereas `As` says
-	// `can I type-assert into`
-	needsReload := errors.As(err, &needsReloadErr)
+	needsReload := meta.IsNoMatchError(err)
 	if !needsReload {
 		return err
 	}
@@ -166,7 +171,7 @@ func (drm *dynamicCachable) checkAndReload(needsReloadErr error, checkNeedsReloa
 
 	// ... and double-check that we didn't reload in the meantime
 	err = checkNeedsReload()
-	needsReload = errors.As(err, &needsReloadErr)
+	needsReload = meta.IsNoMatchError(err)
 	if !needsReload {
 		return err
 	}
@@ -192,7 +197,7 @@ func (drm *dynamicCachable) GVK(gvk schema.GroupVersionKind) (bool, error) {
 		return false, err
 	}
 	var canCache bool
-	err := drm.checkAndReload(&meta.NoKindMatchError{}, func() error {
+	err := drm.checkAndReload(func() error {
 		var err error
 		canCache, err = drm.staticCachable.GVK(gvk)
 		return err
@@ -205,7 +210,7 @@ func (drm *dynamicCachable) GVR(gvr schema.GroupVersionResource) (bool, error) {
 		return false, err
 	}
 	var canCache bool
-	err := drm.checkAndReload(&meta.NoResourceMatchError{}, func() error {
+	err := drm.checkAndReload(func() error {
 		var err error
 		canCache, err = drm.staticCachable.GVR(gvr)
 		return err
