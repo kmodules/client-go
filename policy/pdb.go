@@ -41,7 +41,9 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 		c,
 		meta,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
-			return convert_v1_to_v1beta1(transform(convert_v1beta1_to_v1(in)))
+			out := convert_v1_to_v1beta1(transform(convert_v1beta1_to_v1(in)))
+			out.Status = in.Status
+			return out
 		},
 		opts,
 	)
