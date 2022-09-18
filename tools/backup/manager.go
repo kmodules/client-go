@@ -22,7 +22,6 @@ import (
 	"compress/gzip"
 	"context"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -80,7 +79,7 @@ func (mgr BackupManager) BackupToDir(backupDir string) (string, error) {
 		if err != nil {
 			return err
 		}
-		return ioutil.WriteFile(absPath, data, 0o644)
+		return os.WriteFile(absPath, data, 0o644)
 	}
 	return snapshotDir, mgr.Backup(p)
 }

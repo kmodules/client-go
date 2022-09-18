@@ -17,7 +17,7 @@ limitations under the License.
 package doctor
 
 import (
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -30,7 +30,7 @@ func (d *Doctor) extractKubeCA(info *ClusterInfo) error {
 	if len(d.config.CAData) > 0 {
 		info.ClientConfig.CAData = strings.TrimSpace(string(d.config.CAData))
 	} else if len(d.config.CAFile) > 0 {
-		data, err := ioutil.ReadFile(d.config.CAFile)
+		data, err := os.ReadFile(d.config.CAFile)
 		if err != nil {
 			return errors.Wrapf(err, "failed to load ca file %s", d.config.CAFile)
 		}

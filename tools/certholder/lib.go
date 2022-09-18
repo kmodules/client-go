@@ -18,7 +18,6 @@ package certholder
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -79,7 +78,7 @@ func (c *ResourceCerts) Save(secret *core.Secret) (*Paths, error) {
 	if !ok {
 		return nil, fmt.Errorf("missing %s in secret %s/%s", core.ServiceAccountRootCAKey, secret.Namespace, secret.Name)
 	}
-	err = ioutil.WriteFile(paths.CACert, caCrt, 0o644)
+	err = os.WriteFile(paths.CACert, caCrt, 0o644)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +87,7 @@ func (c *ResourceCerts) Save(secret *core.Secret) (*Paths, error) {
 	if !ok {
 		return nil, fmt.Errorf("missing %s in secret %s/%s", core.TLSCertKey, secret.Namespace, secret.Name)
 	}
-	err = ioutil.WriteFile(paths.Cert, crt, 0o644)
+	err = os.WriteFile(paths.Cert, crt, 0o644)
 	if err != nil {
 		return nil, err
 	}
@@ -97,14 +96,14 @@ func (c *ResourceCerts) Save(secret *core.Secret) (*Paths, error) {
 	if !ok {
 		return nil, fmt.Errorf("missing %s in secret %s/%s", core.TLSPrivateKeyKey, secret.Namespace, secret.Name)
 	}
-	err = ioutil.WriteFile(paths.Key, key, 0o600)
+	err = os.WriteFile(paths.Key, key, 0o600)
 	if err != nil {
 		return nil, err
 	}
 
 	pem := append(crt[:], []byte("\n")...)
 	pem = append(pem, key...)
-	err = ioutil.WriteFile(paths.Pem, pem, 0o600)
+	err = os.WriteFile(paths.Pem, pem, 0o600)
 	if err != nil {
 		return nil, err
 	}
