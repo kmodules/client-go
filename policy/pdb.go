@@ -31,8 +31,10 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
+const kindPodDisruptionBudget = "PodDisruptionBudget"
+
 func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policyv1.PodDisruptionBudget) *policyv1.PodDisruptionBudget, opts metav1.PatchOptions) (*policyv1.PodDisruptionBudget, kutil.VerbType, error) {
-	if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.21"); err == nil && ok {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
 		return v1.CreateOrPatchPodDisruptionBudget(ctx, c, meta, transform, opts)
 	}
 
@@ -41,7 +43,7 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 		c,
 		meta,
 		func(in *policyv1beta1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
-			out := convert_v1_to_v1beta1(transform(convert_v1beta1_to_v1(in)))
+			out := convert_spec_v1_to_v1beta1(transform(convert_spec_v1beta1_to_v1(in)))
 			out.Status = in.Status
 			return out
 		},
@@ -53,14 +55,55 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 	return convert_v1beta1_to_v1(p), vt, nil
 }
 
+func CreatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, in *policyv1.PodDisruptionBudget) (*policyv1.PodDisruptionBudget, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+		return c.PolicyV1().PodDisruptionBudgets(in.Namespace).Create(ctx, in, metav1.CreateOptions{})
+	}
+	result, err := c.PolicyV1beta1().PodDisruptionBudgets(in.Namespace).Create(ctx, convert_spec_v1_to_v1beta1(in), metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return convert_v1beta1_to_v1(result), nil
+}
+
+func GetPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) (*policyv1.PodDisruptionBudget, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+		return c.PolicyV1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	}
+	result, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return convert_v1beta1_to_v1(result), nil
+}
+
+func ListPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, ns string, opts metav1.ListOptions) (*policyv1.PodDisruptionBudgetList, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+		return c.PolicyV1().PodDisruptionBudgets(ns).List(ctx, opts)
+	}
+	result, err := c.PolicyV1beta1().PodDisruptionBudgets(ns).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := policyv1.PodDisruptionBudgetList{
+		TypeMeta: result.TypeMeta,
+		ListMeta: result.ListMeta,
+		Items:    make([]policyv1.PodDisruptionBudget, 0, len(result.Items)),
+	}
+	for _, item := range result.Items {
+		out.Items = append(out.Items, *convert_v1beta1_to_v1(&item))
+	}
+	return &out, nil
+}
+
 func DeletePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) error {
-	if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.21"); err == nil && ok {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
 		return c.PolicyV1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 	}
 	return c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 }
 
-func convert_v1beta1_to_v1(in *policyv1beta1.PodDisruptionBudget) *policyv1.PodDisruptionBudget {
+func convert_spec_v1beta1_to_v1(in *policyv1beta1.PodDisruptionBudget) *policyv1.PodDisruptionBudget {
 	return &policyv1.PodDisruptionBudget{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       in.Kind,
@@ -72,11 +115,24 @@ func convert_v1beta1_to_v1(in *policyv1beta1.PodDisruptionBudget) *policyv1.PodD
 			Selector:       in.Spec.Selector,
 			MaxUnavailable: in.Spec.MaxUnavailable,
 		},
-		// Status:     policyv1.PodDisruptionBudgetStatus{},
 	}
 }
 
-func convert_v1_to_v1beta1(in *policyv1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
+func convert_v1beta1_to_v1(in *policyv1beta1.PodDisruptionBudget) *policyv1.PodDisruptionBudget {
+	out := convert_spec_v1beta1_to_v1(in)
+	out.Status = policyv1.PodDisruptionBudgetStatus{
+		ObservedGeneration: in.Status.ObservedGeneration,
+		DisruptedPods:      in.Status.DisruptedPods,
+		DisruptionsAllowed: in.Status.DisruptionsAllowed,
+		CurrentHealthy:     in.Status.CurrentHealthy,
+		DesiredHealthy:     in.Status.DesiredHealthy,
+		ExpectedPods:       in.Status.ExpectedPods,
+		Conditions:         in.Status.Conditions,
+	}
+	return out
+}
+
+func convert_spec_v1_to_v1beta1(in *policyv1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
 	return &policyv1beta1.PodDisruptionBudget{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       in.Kind,
@@ -88,6 +144,19 @@ func convert_v1_to_v1beta1(in *policyv1.PodDisruptionBudget) *policyv1beta1.PodD
 			Selector:       in.Spec.Selector,
 			MaxUnavailable: in.Spec.MaxUnavailable,
 		},
-		// Status:     policyv1beta1.PodDisruptionBudgetStatus{},
 	}
+}
+
+func convert_v1_to_v1beta1(in *policyv1.PodDisruptionBudget) *policyv1beta1.PodDisruptionBudget {
+	out := convert_spec_v1_to_v1beta1(in)
+	out.Status = policyv1beta1.PodDisruptionBudgetStatus{
+		ObservedGeneration: in.Status.ObservedGeneration,
+		DisruptedPods:      in.Status.DisruptedPods,
+		DisruptionsAllowed: in.Status.DisruptionsAllowed,
+		CurrentHealthy:     in.Status.CurrentHealthy,
+		DesiredHealthy:     in.Status.DesiredHealthy,
+		ExpectedPods:       in.Status.ExpectedPods,
+		Conditions:         in.Status.Conditions,
+	}
+	return out
 }
