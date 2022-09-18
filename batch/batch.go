@@ -15,8 +15,10 @@ import (
 	kutil "kmodules.xyz/client-go"
 )
 
+const kindCronJob = "CronJob"
+
 func CreateOrPatchCronJob(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*batchv1.CronJob) *batchv1.CronJob, opts metav1.PatchOptions) (*batchv1.CronJob, kutil.VerbType, error) {
-	if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.21"); err == nil && ok {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
 		return v1.CreateOrPatchCronJob(ctx, c, meta, transform, opts)
 	}
 
@@ -25,7 +27,7 @@ func CreateOrPatchCronJob(ctx context.Context, c kubernetes.Interface, meta meta
 		c,
 		meta,
 		func(in *batchv1beta1.CronJob) *batchv1beta1.CronJob {
-			out := convert_v1_to_v1beta1(transform(convert_v1beta1_to_v1(in)))
+			out := convert_spec_v1_to_v1beta1(transform(convert_spec_v1beta1_to_v1(in)))
 			out.Status = in.Status
 			return out
 		},
@@ -37,14 +39,55 @@ func CreateOrPatchCronJob(ctx context.Context, c kubernetes.Interface, meta meta
 	return convert_v1beta1_to_v1(p), vt, nil
 }
 
+func CreateCronJob(ctx context.Context, c kubernetes.Interface, in *batchv1.CronJob) (*batchv1.CronJob, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
+		return c.BatchV1().CronJobs(in.Namespace).Create(ctx, in, metav1.CreateOptions{})
+	}
+	result, err := c.BatchV1beta1().CronJobs(in.Namespace).Create(ctx, convert_spec_v1_to_v1beta1(in), metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return convert_v1beta1_to_v1(result), nil
+}
+
+func GetCronJob(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) (*batchv1.CronJob, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
+		return c.BatchV1().CronJobs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	}
+	result, err := c.BatchV1beta1().CronJobs(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+	return convert_v1beta1_to_v1(result), nil
+}
+
+func ListCronJob(ctx context.Context, c kubernetes.Interface, ns string, opts metav1.ListOptions) (*batchv1.CronJobList, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
+		return c.BatchV1().CronJobs(ns).List(ctx, opts)
+	}
+	result, err := c.BatchV1beta1().CronJobs(ns).List(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+	out := batchv1.CronJobList{
+		TypeMeta: result.TypeMeta,
+		ListMeta: result.ListMeta,
+		Items:    make([]batchv1.CronJob, 0, len(result.Items)),
+	}
+	for _, item := range result.Items {
+		out.Items = append(out.Items, *convert_v1beta1_to_v1(&item))
+	}
+	return &out, nil
+}
+
 func DeleteCronJob(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) error {
-	if ok, err := discovery.CheckAPIVersion(c.Discovery(), ">= 1.21"); err == nil && ok {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
 		return c.BatchV1().CronJobs(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 	}
 	return c.BatchV1beta1().CronJobs(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 }
 
-func convert_v1beta1_to_v1(in *batchv1beta1.CronJob) *batchv1.CronJob {
+func convert_spec_v1beta1_to_v1(in *batchv1beta1.CronJob) *batchv1.CronJob {
 	return &batchv1.CronJob{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       in.Kind,
@@ -67,7 +110,17 @@ func convert_v1beta1_to_v1(in *batchv1beta1.CronJob) *batchv1.CronJob {
 	}
 }
 
-func convert_v1_to_v1beta1(in *batchv1.CronJob) *batchv1beta1.CronJob {
+func convert_v1beta1_to_v1(in *batchv1beta1.CronJob) *batchv1.CronJob {
+	out := convert_spec_v1beta1_to_v1(in)
+	out.Status = batchv1.CronJobStatus{
+		Active:             in.Status.Active,
+		LastScheduleTime:   in.Status.LastScheduleTime,
+		LastSuccessfulTime: in.Status.LastSuccessfulTime,
+	}
+	return out
+}
+
+func convert_spec_v1_to_v1beta1(in *batchv1.CronJob) *batchv1beta1.CronJob {
 	return &batchv1beta1.CronJob{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       in.Kind,
@@ -88,4 +141,14 @@ func convert_v1_to_v1beta1(in *batchv1.CronJob) *batchv1beta1.CronJob {
 			FailedJobsHistoryLimit:     in.Spec.FailedJobsHistoryLimit,
 		},
 	}
+}
+
+func convert_v1_to_v1beta1(in *batchv1.CronJob) *batchv1beta1.CronJob {
+	out := convert_spec_v1_to_v1beta1(in)
+	out.Status = batchv1beta1.CronJobStatus{
+		Active:             in.Status.Active,
+		LastScheduleTime:   in.Status.LastScheduleTime,
+		LastSuccessfulTime: in.Status.LastSuccessfulTime,
+	}
+	return out
 }
