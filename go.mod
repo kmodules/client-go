@@ -25,6 +25,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.2.0
 	gomodules.xyz/mergo v0.3.13
 	gomodules.xyz/pointer v0.1.0
+	gomodules.xyz/sync v0.1.0
 	gomodules.xyz/x v0.0.14
 	k8s.io/api v0.25.1
 	k8s.io/apiextensions-apiserver v0.25.1
@@ -35,6 +36,7 @@ require (
 	k8s.io/klog/v2 v2.80.1
 	k8s.io/kube-aggregator v0.25.1
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1
+	kmodules.xyz/apiversion v0.2.0
 	sigs.k8s.io/controller-runtime v0.13.0
 	sigs.k8s.io/yaml v1.3.0
 )
