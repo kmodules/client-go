@@ -1,3 +1,20 @@
+/*
+Copyright AppsCode Inc. and Contributors
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
+//nolint:unused
 package batch
 
 import (
@@ -30,6 +47,26 @@ func CreateOrPatchCronJob(ctx context.Context, c kubernetes.Interface, meta meta
 			out := convert_spec_v1_to_v1beta1(transform(convert_spec_v1beta1_to_v1(in)))
 			out.Status = in.Status
 			return out
+		},
+		opts,
+	)
+	if err != nil {
+		return nil, kutil.VerbUnchanged, err
+	}
+	return convert_v1beta1_to_v1(p), vt, nil
+}
+
+func PatchCronJob(ctx context.Context, c kubernetes.Interface, cur *batchv1.CronJob, transform func(*batchv1.CronJob) *batchv1.CronJob, opts metav1.PatchOptions) (*batchv1.CronJob, kutil.VerbType, error) {
+	if discovery.ExistsGroupVersionKind(c.Discovery(), batchv1.SchemeGroupVersion.String(), kindCronJob) {
+		return v1.PatchCronJob(ctx, c, cur, transform, opts)
+	}
+
+	p, vt, err := v1beta1.PatchCronJob(
+		ctx,
+		c,
+		convert_spec_v1_to_v1beta1(cur),
+		func(in *batchv1beta1.CronJob) *batchv1beta1.CronJob {
+			return convert_spec_v1_to_v1beta1(transform(convert_spec_v1beta1_to_v1(in)))
 		},
 		opts,
 	)
