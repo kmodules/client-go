@@ -20,22 +20,38 @@ package policy
 import (
 	"context"
 
-	"kmodules.xyz/client-go/discovery"
+	du "kmodules.xyz/client-go/discovery"
 	v1 "kmodules.xyz/client-go/policy/v1"
 	"kmodules.xyz/client-go/policy/v1beta1"
 
+	"gomodules.xyz/sync"
 	policyv1 "k8s.io/api/policy/v1"
 	policyv1beta1 "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	kutil "kmodules.xyz/client-go"
 )
 
 const kindPodDisruptionBudget = "PodDisruptionBudget"
 
+var (
+	once  sync.Once
+	useV1 bool
+)
+
+func detectVersion(c discovery.DiscoveryInterface) {
+	once.Do(func() error {
+		ok, err := du.HasGVK(c, policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget)
+		useV1 = ok
+		return err
+	})
+}
+
 func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*policyv1.PodDisruptionBudget) *policyv1.PodDisruptionBudget, opts metav1.PatchOptions) (*policyv1.PodDisruptionBudget, kutil.VerbType, error) {
-	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+	detectVersion(c.Discovery())
+	if useV1 {
 		return v1.CreateOrPatchPodDisruptionBudget(ctx, c, meta, transform, opts)
 	}
 
@@ -57,7 +73,8 @@ func CreateOrPatchPodDisruptionBudget(ctx context.Context, c kubernetes.Interfac
 }
 
 func CreatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, in *policyv1.PodDisruptionBudget) (*policyv1.PodDisruptionBudget, error) {
-	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+	detectVersion(c.Discovery())
+	if useV1 {
 		return c.PolicyV1().PodDisruptionBudgets(in.Namespace).Create(ctx, in, metav1.CreateOptions{})
 	}
 	result, err := c.PolicyV1beta1().PodDisruptionBudgets(in.Namespace).Create(ctx, convert_spec_v1_to_v1beta1(in), metav1.CreateOptions{})
@@ -68,7 +85,8 @@ func CreatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, in *
 }
 
 func GetPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) (*policyv1.PodDisruptionBudget, error) {
-	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+	detectVersion(c.Discovery())
+	if useV1 {
 		return c.PolicyV1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 	}
 	result, err := c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
@@ -79,7 +97,8 @@ func GetPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta ty
 }
 
 func ListPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, ns string, opts metav1.ListOptions) (*policyv1.PodDisruptionBudgetList, error) {
-	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+	detectVersion(c.Discovery())
+	if useV1 {
 		return c.PolicyV1().PodDisruptionBudgets(ns).List(ctx, opts)
 	}
 	result, err := c.PolicyV1beta1().PodDisruptionBudgets(ns).List(ctx, opts)
@@ -98,7 +117,8 @@ func ListPodDisruptionBudget(ctx context.Context, c kubernetes.Interface, ns str
 }
 
 func DeletePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName) error {
-	if discovery.ExistsGroupVersionKind(c.Discovery(), policyv1.SchemeGroupVersion.String(), kindPodDisruptionBudget) {
+	detectVersion(c.Discovery())
+	if useV1 {
 		return c.PolicyV1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 	}
 	return c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})

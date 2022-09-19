@@ -19,6 +19,7 @@ package discovery
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
@@ -27,6 +28,7 @@ import (
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
+	"kmodules.xyz/apiversion"
 )
 
 func GetVersion(client discovery.DiscoveryInterface) (string, error) {
@@ -112,7 +114,7 @@ func IsPreferredAPIResource(client discovery.DiscoveryInterface, groupVersion, k
 }
 
 func ExistsGroupVersionKind(client discovery.DiscoveryInterface, groupVersion, kind string) bool {
-	if _, resourceList, err := client.ServerGroupsAndResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+	if resourceList, err := client.ServerPreferredResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
 		for _, resources := range resourceList {
 			if resources.GroupVersion != groupVersion {
 				continue
@@ -128,7 +130,7 @@ func ExistsGroupVersionKind(client discovery.DiscoveryInterface, groupVersion, k
 }
 
 func ExistsGroupKind(client discovery.DiscoveryInterface, group, kind string) bool {
-	if _, resourceList, err := client.ServerGroupsAndResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+	if resourceList, err := client.ServerPreferredResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
 		for _, resources := range resourceList {
 			gv, err := schema.ParseGroupVersion(resources.GroupVersion)
 			if err != nil {
@@ -154,7 +156,7 @@ func ExistsGroupKinds(client discovery.DiscoveryInterface, gk schema.GroupKind, 
 		desired[other] = false
 	}
 
-	if _, resourceList, err := client.ServerGroupsAndResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+	if resourceList, err := client.ServerPreferredResources(); discovery.IsGroupDiscoveryFailedError(err) || err == nil {
 		for _, resources := range resourceList {
 			gv, err := schema.ParseGroupVersion(resources.GroupVersion)
 			if err != nil {
@@ -278,4 +280,49 @@ func checkVersion(v *semver.Version, multiMaster bool, constraint string, blackL
 		}
 	}
 	return nil
+}
+
+func HasGVK(client discovery.DiscoveryInterface, groupVersion, kind string) (bool, error) {
+	_, resourceList, err := client.ServerGroupsAndResources()
+	if discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+		for _, resources := range resourceList {
+			if resources.GroupVersion != groupVersion {
+				continue
+			}
+			for _, resource := range resources.APIResources {
+				if resource.Kind == kind {
+					return true, nil
+				}
+			}
+		}
+	}
+	return false, err
+}
+
+func ListAPIVersions(c discovery.DiscoveryInterface, group, kind string) ([]string, error) {
+	_, resourceList, err := c.ServerGroupsAndResources()
+
+	out := make([]string, 0)
+	if discovery.IsGroupDiscoveryFailedError(err) || err == nil {
+		for _, resources := range resourceList {
+			gv, err := schema.ParseGroupVersion(resources.GroupVersion)
+			if err != nil {
+				return nil, err
+			}
+			if gv.Group != group {
+				continue
+			}
+			for _, resource := range resources.APIResources {
+				if resource.Kind == kind {
+					out = append(out, resource.Version)
+				}
+			}
+		}
+	}
+	if len(out) > 1 {
+		sort.Slice(out, func(i, j int) bool {
+			return apiversion.MustCompare(out[i], out[j]) > 0
+		})
+	}
+	return out, nil
 }
