@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/pkg/errors"
@@ -104,7 +105,7 @@ func IsPreferredAPIResource(client discovery.DiscoveryInterface, groupVersion, k
 				continue
 			}
 			for _, resource := range resources.APIResources {
-				if resource.Kind == kind {
+				if resource.Kind == kind && !strings.ContainsRune(resource.Name, '/') {
 					return true
 				}
 			}
@@ -120,7 +121,7 @@ func ExistsGroupVersionKind(client discovery.DiscoveryInterface, groupVersion, k
 				continue
 			}
 			for _, resource := range resources.APIResources {
-				if resource.Kind == kind {
+				if resource.Kind == kind && !strings.ContainsRune(resource.Name, '/') {
 					return true
 				}
 			}
@@ -140,7 +141,7 @@ func ExistsGroupKind(client discovery.DiscoveryInterface, group, kind string) bo
 				continue
 			}
 			for _, resource := range resources.APIResources {
-				if resource.Kind == kind {
+				if resource.Kind == kind && !strings.ContainsRune(resource.Name, '/') {
 					return true
 				}
 			}
@@ -290,7 +291,7 @@ func HasGVK(client discovery.DiscoveryInterface, groupVersion, kind string) (boo
 				continue
 			}
 			for _, resource := range resources.APIResources {
-				if resource.Kind == kind {
+				if resource.Kind == kind && !strings.ContainsRune(resource.Name, '/') {
 					return true, nil
 				}
 			}
@@ -313,8 +314,8 @@ func ListAPIVersions(c discovery.DiscoveryInterface, group, kind string) ([]stri
 				continue
 			}
 			for _, resource := range resources.APIResources {
-				if resource.Kind == kind {
-					out = append(out, resource.Version)
+				if resource.Kind == kind && !strings.ContainsRune(resource.Name, '/') {
+					out = append(out, gv.Version)
 				}
 			}
 		}
