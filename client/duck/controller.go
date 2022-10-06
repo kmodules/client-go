@@ -220,7 +220,6 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 		// b2.WithLogConstructor(blder.)
 
 		r := rb()
-		r.InjectLister(lister)
 		cc, err := lister.Client(rawGVK)
 		if err != nil {
 			return err
