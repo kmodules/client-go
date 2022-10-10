@@ -64,9 +64,7 @@ func (b *ListerBuilder) ForDuckType(obj Object) *ListerBuilder {
 func (b *ListerBuilder) WithUnderlyingType(rawGVK schema.GroupVersionKind, rest ...schema.GroupVersionKind) *ListerBuilder {
 	b.cc.rawGVK = make([]schema.GroupVersionKind, 0, len(rest)+1)
 	b.cc.rawGVK = append(b.cc.rawGVK, rawGVK)
-	for _, gvk := range rest {
-		b.cc.rawGVK = append(b.cc.rawGVK, gvk)
-	}
+	b.cc.rawGVK = append(b.cc.rawGVK, rest...)
 	return b
 }
 

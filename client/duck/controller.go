@@ -40,7 +40,6 @@ type ControllerBuilder struct {
 	watchesInput     []WatchesInput
 	mgr              manager.Manager
 	globalPredicates []predicate.Predicate
-	ctrl             controller.Controller
 	ctrlOptions      controller.Options
 	name             string
 }
@@ -87,9 +86,7 @@ func (blder *ControllerBuilder) WithUnderlyingTypes(rawGVK schema.GroupVersionKi
 
 	gvks := make([]schema.GroupVersionKind, 0, len(rest)+1)
 	gvks = append(gvks, rawGVK)
-	for _, gvk := range rest {
-		gvks = append(gvks, gvk)
-	}
+	gvks = append(gvks, rest...)
 	blder.forInput.rawGVKs = gvks
 	return blder
 }
