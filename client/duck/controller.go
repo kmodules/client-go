@@ -217,15 +217,14 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 		// b2.WithLogConstructor(blder.)
 
 		r := rb()
+		if err = b2.Complete(r); err != nil {
+			return err
+		}
 		cc, err := lister.Client(rawGVK)
 		if err != nil {
 			return err
 		}
 		r.InjectClient(cc)
-		_ = r.InjectScheme(blder.mgr.GetScheme())
-		if err = b2.Complete(r); err != nil {
-			return err
-		}
 	}
 	return nil
 }
