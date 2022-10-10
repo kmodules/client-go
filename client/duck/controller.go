@@ -185,46 +185,45 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 		return fmt.Errorf("must provide underlying types for reconciliation")
 	}
 
-	lister, err := NewLister().
-		ForDuckType(blder.forInput.object).
-		WithUnderlyingType(blder.forInput.rawGVKs[0], blder.forInput.rawGVKs[1:]...).
-		Build(blder.mgr.GetClient())
-	if err != nil {
-		return err
-	}
-
 	for _, rawGVK := range blder.forInput.rawGVKs {
 		b2 := ctrl.NewControllerManagedBy(blder.mgr)
-		b2 = b2.Named(blder.name + "-" + rawGVK.String())
+		b2.Named(blder.name + rawGVK.String())
 
 		ll, err := blder.mgr.GetScheme().New(rawGVK)
 		if err != nil {
 			return err
 		}
 		llo := ll.(client.Object)
-		b2 = b2.For(llo, blder.forInput.opts...)
+		b2.For(llo, blder.forInput.opts...)
 
 		for _, own := range blder.ownsInput {
-			b2 = b2.Owns(own.object, own.opts...)
+			b2.Owns(own.object, own.opts...)
 		}
 		for _, w := range blder.watchesInput {
-			b2 = b2.Watches(w.src, w.eventhandler, w.opts...)
+			b2.Watches(w.src, w.eventhandler, w.opts...)
 		}
 		for _, p := range blder.globalPredicates {
 			b2.WithEventFilter(p)
 		}
 		b2.WithOptions(blder.ctrlOptions)
-		// b2.WithLogConstructor(blder.)
+		b2.WithLogConstructor(blder.ctrlOptions.LogConstructor)
 
 		r := rb()
 		if err = b2.Complete(r); err != nil {
 			return err
 		}
-		cc, err := lister.Client(rawGVK)
+
+		cc, err := NewClient().
+			ForDuckType(blder.forInput.object).
+			WithUnderlyingType(rawGVK).
+			Build(blder.mgr.GetClient())
 		if err != nil {
 			return err
 		}
-		r.InjectClient(cc)
+		err = r.InjectClient(cc)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
