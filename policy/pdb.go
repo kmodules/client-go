@@ -124,6 +124,32 @@ func DeletePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, meta
 	return c.PolicyV1beta1().PodDisruptionBudgets(meta.Namespace).Delete(ctx, meta.Name, metav1.DeleteOptions{})
 }
 
+func DeletePodDisruptionBudgets(ctx context.Context, c kubernetes.Interface, ns string, listOpts metav1.ListOptions, deleteOpts metav1.DeleteOptions) error {
+	detectVersion(c.Discovery())
+	if useV1 {
+		budgets, err := c.PolicyV1().PodDisruptionBudgets(ns).List(ctx, listOpts)
+		if err != nil {
+			return err
+		}
+		for _, pdb := range budgets.Items {
+			if err = c.PolicyV1().PodDisruptionBudgets(ns).Delete(ctx, pdb.Name, deleteOpts); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+	budgets, err := c.PolicyV1beta1().PodDisruptionBudgets(ns).List(ctx, listOpts)
+	if err != nil {
+		return err
+	}
+	for _, pdb := range budgets.Items {
+		if err = c.PolicyV1beta1().PodDisruptionBudgets(ns).Delete(ctx, pdb.Name, deleteOpts); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func convert_spec_v1beta1_to_v1(in *policyv1beta1.PodDisruptionBudget) *policyv1.PodDisruptionBudget {
 	return &policyv1.PodDisruptionBudget{
 		TypeMeta: metav1.TypeMeta{
