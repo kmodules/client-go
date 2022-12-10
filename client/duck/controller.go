@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/go-logr/logr"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	errors2 "k8s.io/apimachinery/pkg/util/errors"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -51,10 +51,10 @@ func ControllerManagedBy(m manager.Manager) *ControllerBuilder {
 
 // ForInput represents the information set by For method.
 type ForInput struct {
-	object  Object
-	rawGVKs []schema.GroupVersionKind
-	opts    []builder.ForOption
-	err     error
+	object     Object
+	rawObjects []client.Object
+	opts       []builder.ForOption
+	err        error
 }
 
 // For defines the type of Object being *reconciled*, and configures the ControllerManagedBy to respond to create / delete /
@@ -75,8 +75,8 @@ func (blder *ControllerBuilder) For(object Object, opts ...builder.ForOption) *C
 	return blder
 }
 
-func (blder *ControllerBuilder) WithUnderlyingTypes(rawGVK schema.GroupVersionKind, rest ...schema.GroupVersionKind) *ControllerBuilder {
-	if len(blder.forInput.rawGVKs) > 0 {
+func (blder *ControllerBuilder) WithUnderlyingTypes(rawObj client.Object, rest ...client.Object) *ControllerBuilder {
+	if len(blder.forInput.rawObjects) > 0 {
 		blder.forInput.err = errors2.NewAggregate([]error{
 			blder.forInput.err,
 			fmt.Errorf("WithUnderlyingTypes(...) should only be called once"),
@@ -84,10 +84,10 @@ func (blder *ControllerBuilder) WithUnderlyingTypes(rawGVK schema.GroupVersionKi
 		return blder
 	}
 
-	gvks := make([]schema.GroupVersionKind, 0, len(rest)+1)
-	gvks = append(gvks, rawGVK)
-	gvks = append(gvks, rest...)
-	blder.forInput.rawGVKs = gvks
+	objs := make([]client.Object, 0, len(rest)+1)
+	objs = append(objs, rawObj)
+	objs = append(objs, rest...)
+	blder.forInput.rawObjects = objs
 	return blder
 }
 
@@ -181,19 +181,29 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 	if blder.forInput.object == nil {
 		return fmt.Errorf("must provide a duck type for reconciliation")
 	}
-	if len(blder.forInput.rawGVKs) == 0 {
-		return fmt.Errorf("must provide underlying types for reconciliation")
+	if len(blder.forInput.rawObjects) == 0 {
+		return fmt.Errorf("must provide underlying objects for reconciliation")
 	}
 
-	for _, rawGVK := range blder.forInput.rawGVKs {
+	for _, rawObj := range blder.forInput.rawObjects {
+		rawGVK := rawObj.GetObjectKind().GroupVersionKind()
+		_, isUnstructured := rawObj.(*unstructured.Unstructured)
+
 		b2 := ctrl.NewControllerManagedBy(blder.mgr)
 		b2.Named(blder.name + rawGVK.String())
 
-		ll, err := blder.mgr.GetScheme().New(rawGVK)
-		if err != nil {
-			return err
+		var llo client.Object
+		if isUnstructured {
+			var u unstructured.Unstructured
+			u.GetObjectKind().SetGroupVersionKind(rawGVK)
+			llo = &u
+		} else {
+			ll, err := blder.mgr.GetScheme().New(rawGVK)
+			if err != nil {
+				return err
+			}
+			llo = ll.(client.Object)
 		}
-		llo := ll.(client.Object)
 		b2.For(llo, blder.forInput.opts...)
 
 		for _, own := range blder.ownsInput {
@@ -209,13 +219,13 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 		b2.WithLogConstructor(blder.ctrlOptions.LogConstructor)
 
 		r := rb()
-		if err = b2.Complete(r); err != nil {
+		if err := b2.Complete(r); err != nil {
 			return err
 		}
 
 		cc, err := NewClient().
 			ForDuckType(blder.forInput.object).
-			WithUnderlyingType(rawGVK).
+			WithUnderlyingType(rawObj).
 			Build(blder.mgr.GetClient())
 		if err != nil {
 			return err

@@ -28,60 +28,29 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
 
-type Client struct {
-	c       client.Client // reader?
-	obj     Object
+type typedClient struct {
+	c       client.Client
 	duckGVK schema.GroupVersionKind
 	rawGVK  schema.GroupVersionKind
 }
 
 var (
-	_ client.Reader       = &Client{}
-	_ client.Writer       = &Client{}
-	_ client.StatusClient = &Client{}
+	_ client.Reader       = &typedClient{}
+	_ client.Writer       = &typedClient{}
+	_ client.StatusClient = &typedClient{}
 )
 
-type ClientBuilder struct {
-	cc *Client
-}
-
-func NewClient() *ClientBuilder {
-	return &ClientBuilder{
-		cc: new(Client),
-	}
-}
-
-func (b *ClientBuilder) ForDuckType(obj Object) *ClientBuilder {
-	b.cc.obj = obj
-	return b
-}
-
-func (b *ClientBuilder) WithUnderlyingType(rawGVK schema.GroupVersionKind) *ClientBuilder {
-	b.cc.rawGVK = rawGVK
-	return b
-}
-
-func (b *ClientBuilder) Build(c client.Client) (client.Client, error) {
-	b.cc.c = c
-	gvk, err := apiutil.GVKForObject(b.cc.obj, c.Scheme())
-	if err != nil {
-		return nil, err
-	}
-	b.cc.duckGVK = gvk
-	return b.cc, nil
-}
-
 // Scheme returns the scheme this client is using.
-func (d *Client) Scheme() *runtime.Scheme {
+func (d *typedClient) Scheme() *runtime.Scheme {
 	return d.c.Scheme()
 }
 
 // RESTMapper returns the rest this client is using.
-func (d *Client) RESTMapper() apimeta.RESTMapper {
+func (d *typedClient) RESTMapper() apimeta.RESTMapper {
 	return d.c.RESTMapper()
 }
 
-func (d *Client) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
+func (d *typedClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -104,12 +73,12 @@ func (d *Client) Get(ctx context.Context, key client.ObjectKey, obj client.Objec
 	return dd.Duckify(llo)
 }
 
-func (d *Client) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
+func (d *typedClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
 	gvk, err := apiutil.GVKForObject(list, d.c.Scheme())
 	if err != nil {
 		return err
 	}
-	if strings.HasSuffix(gvk.Kind, "List") && apimeta.IsListType(list) {
+	if strings.HasSuffix(gvk.Kind, listType) && apimeta.IsListType(list) {
 		gvk.Kind = gvk.Kind[:len(gvk.Kind)-4]
 	}
 
@@ -118,7 +87,7 @@ func (d *Client) List(ctx context.Context, list client.ObjectList, opts ...clien
 	}
 
 	listGVK := d.rawGVK
-	listGVK.Kind += "List"
+	listGVK.Kind += listType
 
 	ll, err := d.c.Scheme().New(listGVK)
 	if err != nil {
@@ -155,7 +124,7 @@ func (d *Client) List(ctx context.Context, list client.ObjectList, opts ...clien
 	return apimeta.SetList(list, items)
 }
 
-func (d *Client) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
+func (d *typedClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -166,7 +135,7 @@ func (d *Client) Create(ctx context.Context, obj client.Object, opts ...client.C
 	return fmt.Errorf("create not supported for duck type %+v", d.duckGVK)
 }
 
-func (d *Client) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
+func (d *typedClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -186,7 +155,7 @@ func (d *Client) Delete(ctx context.Context, obj client.Object, opts ...client.D
 	return d.c.Delete(ctx, llo, opts...)
 }
 
-func (d *Client) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (d *typedClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -197,7 +166,7 @@ func (d *Client) Update(ctx context.Context, obj client.Object, opts ...client.U
 	return fmt.Errorf("update not supported for duck type %+v", d.duckGVK)
 }
 
-func (d *Client) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (d *typedClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -217,7 +186,7 @@ func (d *Client) Patch(ctx context.Context, obj client.Object, patch client.Patc
 	return d.c.Patch(ctx, llo, patch, opts...)
 }
 
-func (d *Client) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
+func (d *typedClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
 	gvk, err := apiutil.GVKForObject(obj, d.c.Scheme())
 	if err != nil {
 		return err
@@ -237,19 +206,19 @@ func (d *Client) DeleteAllOf(ctx context.Context, obj client.Object, opts ...cli
 	return d.c.DeleteAllOf(ctx, llo, opts...)
 }
 
-func (d *Client) Status() client.StatusWriter {
-	return &statusWriter{client: d}
+func (d *typedClient) Status() client.StatusWriter {
+	return &typedStatusWriter{client: d}
 }
 
-// statusWriter is client.StatusWriter that writes status subresource.
-type statusWriter struct {
-	client *Client
+// typedStatusWriter is client.StatusWriter that writes status subresource.
+type typedStatusWriter struct {
+	client *typedClient
 }
 
-// ensure statusWriter implements client.StatusWriter.
-var _ client.StatusWriter = &statusWriter{}
+// ensure typedStatusWriter implements client.StatusWriter.
+var _ client.StatusWriter = &typedStatusWriter{}
 
-func (sw *statusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (sw *typedStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
@@ -260,7 +229,7 @@ func (sw *statusWriter) Update(ctx context.Context, obj client.Object, opts ...c
 	return fmt.Errorf("update not supported for duck type %+v", sw.client.duckGVK)
 }
 
-func (sw *statusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (sw *typedStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
