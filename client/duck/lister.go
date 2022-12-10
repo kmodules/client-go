@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,14 +35,14 @@ type Lister interface {
 	// result returned from the server.
 	List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error
 
-	Client(gvk schema.GroupVersionKind) (client.Client, error)
+	Client(obj client.Object) (client.Client, error)
 }
 
 type ListerImpl struct {
 	c       client.Client // reader?
-	obj     Object
+	duckObj Object
 	duckGVK schema.GroupVersionKind
-	rawGVK  []schema.GroupVersionKind
+	rawObjs []client.Object
 }
 
 var _ Lister = &ListerImpl{}
@@ -57,20 +58,20 @@ func NewLister() *ListerBuilder {
 }
 
 func (b *ListerBuilder) ForDuckType(obj Object) *ListerBuilder {
-	b.cc.obj = obj
+	b.cc.duckObj = obj
 	return b
 }
 
-func (b *ListerBuilder) WithUnderlyingType(rawGVK schema.GroupVersionKind, rest ...schema.GroupVersionKind) *ListerBuilder {
-	b.cc.rawGVK = make([]schema.GroupVersionKind, 0, len(rest)+1)
-	b.cc.rawGVK = append(b.cc.rawGVK, rawGVK)
-	b.cc.rawGVK = append(b.cc.rawGVK, rest...)
+func (b *ListerBuilder) WithUnderlyingTypes(objs client.Object, rest ...client.Object) *ListerBuilder {
+	b.cc.rawObjs = make([]client.Object, 0, len(rest)+1)
+	b.cc.rawObjs = append(b.cc.rawObjs, objs)
+	b.cc.rawObjs = append(b.cc.rawObjs, rest...)
 	return b
 }
 
 func (b *ListerBuilder) Build(c client.Client) (Lister, error) {
 	b.cc.c = c
-	gvk, err := apiutil.GVKForObject(b.cc.obj, c.Scheme())
+	gvk, err := apiutil.GVKForObject(b.cc.duckObj, c.Scheme())
 	if err != nil {
 		return nil, err
 	}
@@ -88,10 +89,10 @@ func (d *ListerImpl) RESTMapper() apimeta.RESTMapper {
 	return d.c.RESTMapper()
 }
 
-func (d *ListerImpl) Client(gvk schema.GroupVersionKind) (client.Client, error) {
+func (d *ListerImpl) Client(obj client.Object) (client.Client, error) {
 	return NewClient().
-		ForDuckType(d.obj).
-		WithUnderlyingType(gvk).
+		ForDuckType(d.duckObj).
+		WithUnderlyingType(obj).
 		Build(d.c)
 }
 
@@ -100,7 +101,7 @@ func (d *ListerImpl) List(ctx context.Context, list client.ObjectList, opts ...c
 	if err != nil {
 		return err
 	}
-	if strings.HasSuffix(gvk.Kind, "List") && apimeta.IsListType(list) {
+	if strings.HasSuffix(gvk.Kind, listType) && apimeta.IsListType(list) {
 		gvk.Kind = gvk.Kind[:len(gvk.Kind)-4]
 	}
 
@@ -109,17 +110,32 @@ func (d *ListerImpl) List(ctx context.Context, list client.ObjectList, opts ...c
 	}
 
 	var items []runtime.Object
-	for _, listGVK := range d.rawGVK {
-		listGVK.Kind += "List"
+	for _, rawObj := range d.rawObjs {
+		_, isUnstructured := rawObj.(*unstructured.Unstructured)
 
-		ll, err := d.c.Scheme().New(listGVK)
-		if err != nil {
-			return err
-		}
-		llo := ll.(client.ObjectList)
-		err = d.c.List(ctx, llo, opts...)
-		if err != nil {
-			return err
+		rawGVK := rawObj.GetObjectKind().GroupVersionKind()
+		listGVK := rawGVK
+		listGVK.Kind += listType
+
+		var llo client.ObjectList
+		if isUnstructured {
+			var ul unstructured.UnstructuredList
+			llo.GetObjectKind().SetGroupVersionKind(listGVK)
+			err := d.c.List(ctx, &ul, opts...)
+			if err != nil {
+				return err
+			}
+			llo = &ul
+		} else {
+			ll, err := d.c.Scheme().New(listGVK)
+			if err != nil {
+				return err
+			}
+			llo = ll.(client.ObjectList)
+			err = d.c.List(ctx, llo, opts...)
+			if err != nil {
+				return err
+			}
 		}
 
 		list.SetResourceVersion(llo.GetResourceVersion())
