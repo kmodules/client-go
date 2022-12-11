@@ -19,6 +19,7 @@ package duck
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -54,12 +55,10 @@ func (d *unstructuredClient) RESTMapper() apimeta.RESTMapper {
 
 // Create implements client.Client.
 func (uc *unstructuredClient) Create(ctx context.Context, obj client.Object, opts ...client.CreateOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.Create(ctx, obj, opts...)
 	}
@@ -68,12 +67,10 @@ func (uc *unstructuredClient) Create(ctx context.Context, obj client.Object, opt
 
 // Update implements client.Client.
 func (uc *unstructuredClient) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.Update(ctx, obj, opts...)
 	}
@@ -82,12 +79,10 @@ func (uc *unstructuredClient) Update(ctx context.Context, obj client.Object, opt
 
 // Delete implements client.Client.
 func (uc *unstructuredClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.Delete(ctx, obj, opts...)
 	}
@@ -102,12 +97,10 @@ func (uc *unstructuredClient) Delete(ctx context.Context, obj client.Object, opt
 
 // DeleteAllOf implements client.Client.
 func (uc *unstructuredClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.DeleteAllOf(ctx, obj, opts...)
 	}
@@ -122,12 +115,10 @@ func (uc *unstructuredClient) DeleteAllOf(ctx context.Context, obj client.Object
 
 // Patch implements client.Client.
 func (uc *unstructuredClient) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.Patch(ctx, obj, patch, opts...)
 	}
@@ -142,19 +133,17 @@ func (uc *unstructuredClient) Patch(ctx context.Context, obj client.Object, patc
 
 // Get implements client.Client.
 func (uc *unstructuredClient) Get(ctx context.Context, key client.ObjectKey, obj client.Object, opts ...client.GetOption) error {
-	u, ok := obj.(*unstructured.Unstructured)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", obj)
+	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
+	if err != nil {
+		return err
 	}
-
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.Get(ctx, key, obj, opts...)
 	}
 
 	var llo unstructured.Unstructured
 	llo.GetObjectKind().SetGroupVersionKind(uc.rawGVK)
-	err := uc.c.Get(ctx, key, &llo, opts...)
+	err = uc.c.Get(ctx, key, &llo, opts...)
 	if err != nil {
 		return err
 	}
@@ -165,12 +154,14 @@ func (uc *unstructuredClient) Get(ctx context.Context, key client.ObjectKey, obj
 
 // List implements client.Client.
 func (uc *unstructuredClient) List(ctx context.Context, list client.ObjectList, opts ...client.ListOption) error {
-	u, ok := list.(*unstructured.UnstructuredList)
-	if !ok {
-		return fmt.Errorf("unstructured client did not understand object: %T", list)
+	gvk, err := apiutil.GVKForObject(list, uc.c.Scheme())
+	if err != nil {
+		return err
+	}
+	if strings.HasSuffix(gvk.Kind, listType) && apimeta.IsListType(list) {
+		gvk.Kind = gvk.Kind[:len(gvk.Kind)-4]
 	}
 
-	gvk := u.GroupVersionKind()
 	if gvk != uc.duckGVK {
 		return uc.c.List(ctx, list, opts...)
 	}
@@ -180,7 +171,7 @@ func (uc *unstructuredClient) List(ctx context.Context, list client.ObjectList, 
 
 	var llo unstructured.UnstructuredList
 	llo.GetObjectKind().SetGroupVersionKind(listGVK)
-	err := uc.c.List(ctx, &llo, opts...)
+	err = uc.c.List(ctx, &llo, opts...)
 	if err != nil {
 		return err
 	}
