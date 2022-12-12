@@ -18,6 +18,7 @@ package apiutil
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -44,6 +45,9 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 	refs := map[string][]string{}
 	for _, c := range pod.Spec.Containers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.ContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("containerStatus is empty for container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return images, err
@@ -52,6 +56,9 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 	}
 	for _, c := range pod.Spec.InitContainers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.InitContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("initContainerStatus is empty for init container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return images, err
@@ -60,6 +67,9 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 	}
 	for _, c := range pod.Spec.EphemeralContainers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("ephemeralContainerStatus is empty for ephemeral container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return images, err
@@ -92,6 +102,9 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[string]kmapi.PullSecrets, error) {
 	for _, c := range pod.Spec.Containers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.ContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("containerStatus is empty for container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return refs, err
@@ -103,6 +116,9 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 	}
 	for _, c := range pod.Spec.InitContainers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.InitContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("initContainerStatus is empty for init container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return refs, err
@@ -114,6 +130,9 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 	}
 	for _, c := range pod.Spec.EphemeralContainers {
 		containerStatus := FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
+		if containerStatus == nil {
+			return nil, fmt.Errorf("ephemeralContainerStatus is empty for ephemeral container named %s", c.Name)
+		}
 		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
 		if err != nil {
 			return refs, err
