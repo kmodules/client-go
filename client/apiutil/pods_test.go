@@ -18,6 +18,16 @@ func TestGetImageRef(t *testing.T) {
 			name: "appscode/scanner:extend_linux_amd64",
 			args: args{
 				containerImage: "appscode/scanner:extend_linux_amd64",
+				statusImage:    "",
+				statusImageID:  "",
+			},
+			want:    "index.docker.io/appscode/scanner:extend_linux_amd64",
+			wantErr: false,
+		},
+		{
+			name: "appscode/scanner:extend_linux_amd64",
+			args: args{
+				containerImage: "appscode/scanner:extend_linux_amd64",
 				statusImage:    "docker.io/appscode/scanner:extend_linux_amd64",
 				statusImageID:  "docker.io/library/import-2022-12-12@sha256:a21a96a7e93eed1d90b44d57c8b4a53608033a9858cc274561e930f0603acf1b",
 			},

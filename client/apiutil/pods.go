@@ -43,24 +43,24 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 
 	refs := map[string][]string{}
 	for _, c := range pod.Spec.Containers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.ContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.ContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return images, err
 		}
 		refs[ref] = append(refs[ref], c.Name)
 	}
 	for _, c := range pod.Spec.InitContainers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.InitContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.InitContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return images, err
 		}
 		refs[ref] = append(refs[ref], c.Name)
 	}
 	for _, c := range pod.Spec.EphemeralContainers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return images, err
 		}
@@ -91,8 +91,8 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 
 func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[string]kmapi.PullSecrets, error) {
 	for _, c := range pod.Spec.Containers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.ContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.ContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return refs, err
 		}
@@ -102,8 +102,8 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 		}
 	}
 	for _, c := range pod.Spec.InitContainers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.InitContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.InitContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return refs, err
 		}
@@ -113,8 +113,8 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 		}
 	}
 	for _, c := range pod.Spec.EphemeralContainers {
-		containerStatus := FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
-		ref, err := GetImageRef(c.Image, containerStatus.Image, containerStatus.ImageID)
+		si, sid := findContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses)
+		ref, err := GetImageRef(c.Image, si, sid)
 		if err != nil {
 			return refs, err
 		}
@@ -175,13 +175,13 @@ func GetImageRef(containerImage, statusImage, statusImageID string) (string, err
 	return ref.Name(), nil
 }
 
-func FindContainerStatus(name string, statuses []core.ContainerStatus) *core.ContainerStatus {
-	for i := range statuses {
-		if statuses[i].Name == name {
-			return &statuses[i]
+func findContainerStatus(name string, statuses []core.ContainerStatus) (string, string) {
+	for _, s := range statuses {
+		if s.Name == name {
+			return s.Image, s.ImageID
 		}
 	}
-	return nil
+	return "", ""
 }
 
 func DetectLineage(ctx context.Context, kc client.Client, obj client.Object) ([]kmapi.ObjectInfo, error) {
