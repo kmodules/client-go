@@ -57,7 +57,7 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 		refs[ref] = append(refs[ref], c.Name)
 	}
 	for _, c := range pod.Spec.EphemeralContainers {
-		ref, err := GetImageRef(Container{Name: c.Name, Image: c.Image}, nil)
+		ref, err := GetImageRef(Container{Name: c.Name, Image: c.Image}, FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses))
 		if err != nil {
 			return images, err
 		}
@@ -87,8 +87,8 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 }
 
 func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[string]kmapi.PullSecrets, error) {
-	for _, c := range pod.Status.ContainerStatuses {
-		ref, err := GetImageRef(Container{Name: c.Name, Image: c.ImageID}, FindContainerStatus(c.Name, pod.Status.ContainerStatuses))
+	for _, c := range pod.Spec.Containers {
+		ref, err := GetImageRef(Container{Name: c.Name, Image: c.Image}, FindContainerStatus(c.Name, pod.Status.ContainerStatuses))
 		if err != nil {
 			return refs, err
 		}
@@ -97,8 +97,8 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 			Refs:      pod.Spec.ImagePullSecrets,
 		}
 	}
-	for _, c := range pod.Status.InitContainerStatuses {
-		ref, err := GetImageRef(Container{Name: c.Name, Image: c.ImageID}, FindContainerStatus(c.Name, pod.Status.InitContainerStatuses))
+	for _, c := range pod.Spec.InitContainers {
+		ref, err := GetImageRef(Container{Name: c.Name, Image: c.Image}, FindContainerStatus(c.Name, pod.Status.InitContainerStatuses))
 		if err != nil {
 			return refs, err
 		}
@@ -107,8 +107,8 @@ func CollectPullSecrets(pod *core.Pod, refs map[string]kmapi.PullSecrets) (map[s
 			Refs:      pod.Spec.ImagePullSecrets,
 		}
 	}
-	for _, c := range pod.Status.EphemeralContainerStatuses {
-		ref, err := GetImageRef(Container{Name: c.Name, Image: c.ImageID}, nil)
+	for _, c := range pod.Spec.EphemeralContainers {
+		ref, err := GetImageRef(Container{Name: c.Name, Image: c.Image}, FindContainerStatus(c.Name, pod.Status.EphemeralContainerStatuses))
 		if err != nil {
 			return refs, err
 		}
