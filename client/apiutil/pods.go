@@ -30,11 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type Container struct {
-	Name  string
-	Image string
-}
-
 func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.ImageInfo) (map[string]kmapi.ImageInfo, error) {
 	lineage, err := DetectLineage(context.TODO(), kc, pod)
 	if err != nil {
@@ -167,10 +162,6 @@ func GetImageRef(containerImage, statusImage, statusImageID string) (string, err
 	ref, err := name.ParseReference(img)
 	if err != nil {
 		return "", errors.Wrapf(err, "ref=%s", img)
-	}
-	id := ref.Identifier()
-	if strings.HasPrefix(id, "sha256:") {
-		return ref.Context().String() + "@" + id, nil
 	}
 	return ref.Name(), nil
 }
