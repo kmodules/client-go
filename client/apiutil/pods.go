@@ -72,6 +72,7 @@ func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.I
 					Namespace: pod.Namespace,
 					Refs:      pod.Spec.ImagePullSecrets,
 				},
+				ServiceAccountName: pod.Spec.ServiceAccountName,
 			}
 		}
 		iu.Lineages = append(iu.Lineages, kmapi.Lineage{

@@ -361,8 +361,13 @@ func schema_kmodulesxyz_client_go_api_v1_ImageInfo(ref common.ReferenceCallback)
 							Ref: ref("kmodules.xyz/client-go/api/v1.PullSecrets"),
 						},
 					},
+					"serviceAccountName": {
+						SchemaProps: spec.SchemaProps{
+							Type:   []string{"string"},
+							Format: "",
+						},
+					},
 				},
-				Required: []string{"pullSecrets"},
 			},
 		},
 		Dependencies: []string{
