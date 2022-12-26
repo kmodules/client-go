@@ -26,9 +26,10 @@ type Lineage struct {
 }
 
 type ImageInfo struct {
-	Image       string       `json:"image,omitempty" protobuf:"bytes,1,opt,name=image"`
-	Lineages    []Lineage    `json:"lineages,omitempty" protobuf:"bytes,2,rep,name=lineages"`
-	PullSecrets *PullSecrets `json:"pullSecrets" protobuf:"bytes,3,opt,name=pullSecrets"`
+	Image              string       `json:"image,omitempty" protobuf:"bytes,1,opt,name=image"`
+	Lineages           []Lineage    `json:"lineages,omitempty" protobuf:"bytes,2,rep,name=lineages"`
+	PullSecrets        *PullSecrets `json:"pullSecrets,omitempty" protobuf:"bytes,3,opt,name=pullSecrets"`
+	ServiceAccountName string       `json:"serviceAccountName,omitempty" protobuf:"bytes,4,opt,name=serviceAccountName"`
 }
 
 type PullSecrets struct {

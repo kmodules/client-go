@@ -147,6 +147,8 @@ message ImageInfo {
   repeated Lineage lineages = 2;
 
   optional PullSecrets pullSecrets = 3;
+
+  optional string serviceAccountName = 4;
 }
 
 message Lineage {
