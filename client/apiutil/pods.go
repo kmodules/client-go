@@ -30,10 +30,31 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.ImageInfo) (map[string]kmapi.ImageInfo, error) {
-	lineage, err := DetectLineage(context.TODO(), kc, pod)
-	if err != nil {
-		return images, err
+func CollectImageInfo(kc client.Client, pod *core.Pod, images map[string]kmapi.ImageInfo, fullLineage bool) (map[string]kmapi.ImageInfo, error) {
+	var lineage []kmapi.ObjectInfo
+
+	var err error
+	if fullLineage {
+		lineage, err = DetectLineage(context.TODO(), kc, pod)
+		if err != nil {
+			return images, err
+		}
+	} else {
+		lineage = []kmapi.ObjectInfo{
+			{
+				Resource: kmapi.ResourceID{
+					Group:   "",
+					Version: "v1",
+					Name:    "pods",
+					Kind:    "Pod",
+					Scope:   kmapi.NamespaceScoped,
+				},
+				Ref: kmapi.ObjectReference{
+					Namespace: pod.Namespace,
+					Name:      pod.Name,
+				},
+			},
+		}
 	}
 
 	refs := map[string][]string{}
