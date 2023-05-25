@@ -234,3 +234,23 @@ func (e EdgeLabel) Direct() bool {
 		e == EdgeOps ||
 		e == EdgeRecommendedFor
 }
+
+func ListEdgeLabels() []EdgeLabel {
+	return []EdgeLabel{
+		EdgeId,
+		EdgeConfig,
+		EdgeBackupVia,
+		EdgeCatalog,
+		EdgeConnectVia,
+		EdgeExposedBy,
+		EdgeMonitoredBy,
+		EdgeOffshoot,
+		EdgeRestoreInto,
+		EdgeScaledBy,
+		EdgeView,
+		EdgeCertIssuer,
+		EdgePolicy,
+		EdgeOps,
+		EdgeRecommendedFor,
+	}
+}
