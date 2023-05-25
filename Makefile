@@ -153,8 +153,26 @@ gen-crd-protos:
 			--apimachinery-packages=-k8s.io/apimachinery/pkg/api/resource,-k8s.io/apimachinery/pkg/apis/meta/v1,-k8s.io/apimachinery/pkg/apis/meta/v1beta1,-k8s.io/apimachinery/pkg/runtime,-k8s.io/apimachinery/pkg/runtime/schema,-k8s.io/apimachinery/pkg/util/intstr \
 			--packages=-k8s.io/api/core/v1,kmodules.xyz/client-go/api/v1
 
+.PHONY: gen-enum
+gen-enum:
+	@docker run                                                 \
+	    -i                                                      \
+	    --rm                                                    \
+	    -u $$(id -u):$$(id -g)                                  \
+	    -v $$(pwd):/src                                         \
+	    -w /src                                                 \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin                \
+	    -v $$(pwd)/.go/bin/$(OS)_$(ARCH):/go/bin/$(OS)_$(ARCH)  \
+	    -v $$(pwd)/.go/cache:/.cache                            \
+	    --env HTTP_PROXY=$(HTTP_PROXY)                          \
+	    --env HTTPS_PROXY=$(HTTPS_PROXY)                        \
+	    $(BUILD_IMAGE)                                          \
+	    /bin/bash -c "                                          \
+	        go generate ./api/...                               \
+	    "
+
 .PHONY: gen
-gen: clientset openapi gen-crd-protos
+gen: clientset gen-enum openapi gen-crd-protos
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
