@@ -59,7 +59,11 @@ type BackupManager struct {
 }
 
 func NewBackupManager(cluster string, config *rest.Config, sanitize bool) BackupManager {
-	mapper, err := apiutil.NewDynamicRESTMapper(config)
+	hc, err := rest.HTTPClientFor(config)
+	if err != nil {
+		panic(err)
+	}
+	mapper, err := apiutil.NewDynamicRESTMapper(config, hc)
 	if err != nil {
 		panic(err)
 	}
