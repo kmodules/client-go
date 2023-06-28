@@ -111,7 +111,7 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	return obj, kutil.VerbPatched, nil
 }
 
-func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
+func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.SubResourcePatchOption) (client.Object, kutil.VerbType, error) {
 	key := types.NamespacedName{
 		Namespace: obj.GetNamespace(),
 		Name:      obj.GetName(),

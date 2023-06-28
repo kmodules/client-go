@@ -57,7 +57,6 @@ func (r restClientGetter) ToRESTMapper() (meta.RESTMapper, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return apiutil.NewDynamicRESTMapper(config)
 }
 
