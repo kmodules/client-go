@@ -210,7 +210,7 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 			b2.Owns(own.object, own.opts...)
 		}
 		for _, w := range blder.watchesInput {
-			b2.Watches(w.src, w.eventhandler, w.opts...)
+			b2.WatchesRawSource(w.src, w.eventhandler, w.opts...)
 		}
 		for _, p := range blder.globalPredicates {
 			b2.WithEventFilter(p)

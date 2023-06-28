@@ -23,14 +23,13 @@ import (
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/selection"
 	"k8s.io/client-go/tools/cache"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/internal/field/selector"
 )
 
 // CacheReader is a client.Reader.
@@ -113,60 +112,17 @@ func (c *CacheReader) List(_ context.Context, out client.ObjectList, opts ...cli
 	listOpts.ApplyOptions(opts)
 
 	switch {
-	// listOpts.FieldSelector.Empty() == true means select all
-	case listOpts.FieldSelector != nil && !listOpts.FieldSelector.Empty():
+	case listOpts.FieldSelector != nil:
 		// TODO(directxman12): support more complicated field selectors by
 		// combining multiple indices, GetIndexers, etc
-		requiresExact := requiresExactMatch(listOpts.FieldSelector)
+		field, val, requiresExact := selector.RequiresExactMatch(listOpts.FieldSelector)
 		if !requiresExact {
 			return fmt.Errorf("non-exact field matches are not supported by the cache")
 		}
-
-		reqs := listOpts.FieldSelector.Requirements()
-		// len(reqs) == 0 means, select nothing
-		if len(reqs) > 0 {
-			req := reqs[0]
-			// list all objects by the field selector.  If this is namespaced and we have one, ask for the
-			// namespaced index key.  Otherwise, ask for the non-namespaced variant by using the fake "all namespaces"
-			// namespace.
-			list, err := c.indexer.ByIndex(FieldIndexName(req.Field), KeyToNamespacedKey(listOpts.Namespace, req.Value))
-			if err != nil {
-				return err
-			}
-			if len(reqs) > 1 {
-				objmap := make(map[client.ObjectKey]interface{}, len(list))
-				for i := range list {
-					obj := list[i].(client.Object)
-					objmap[client.ObjectKey{Namespace: obj.GetNamespace(), Name: obj.GetName()}] = obj
-				}
-				for _, req := range reqs[1:] {
-					list, err := c.indexer.ByIndex(FieldIndexName(req.Field), KeyToNamespacedKey(listOpts.Namespace, req.Value))
-					if err != nil {
-						return err
-					}
-
-					numap := make(map[client.ObjectKey]interface{}, len(list))
-					for i := range list {
-						obj := list[i].(client.Object)
-						key := client.ObjectKey{Namespace: obj.GetNamespace(), Name: obj.GetName()}
-						if o, exists := objmap[key]; exists {
-							if o.(client.Object).GetGeneration() == obj.GetGeneration() {
-								numap[key] = obj
-							} else {
-								return fmt.Errorf("multiple generation found in indices for %+v %s/%s", obj.GetObjectKind().GroupVersionKind(), obj.GetNamespace(), obj.GetName())
-							}
-						}
-					}
-					objmap = numap
-				}
-				objs = make([]interface{}, 0, len(objmap))
-				for _, obj := range objmap {
-					objs = append(objs, obj)
-				}
-			} else {
-				objs = list
-			}
-		}
+		// list all objects by the field selector.  If this is namespaced and we have one, ask for the
+		// namespaced index key.  Otherwise, ask for the non-namespaced variant by using the fake "all namespaces"
+		// namespace.
+		objs, err = c.indexer.ByIndex(FieldIndexName(field), KeyToNamespacedKey(listOpts.Namespace, val))
 	case listOpts.Namespace != "":
 		objs, err = c.indexer.ByIndex(cache.NamespaceIndex, listOpts.Namespace)
 	default:
@@ -191,7 +147,7 @@ func (c *CacheReader) List(_ context.Context, out client.ObjectList, opts ...cli
 		}
 		obj, isObj := item.(runtime.Object)
 		if !isObj {
-			return fmt.Errorf("cache contained %T, which is not an Object", obj)
+			return fmt.Errorf("cache contained %T, which is not an Object", item)
 		}
 		meta, err := apimeta.Accessor(obj)
 		if err != nil {
@@ -205,7 +161,7 @@ func (c *CacheReader) List(_ context.Context, out client.ObjectList, opts ...cli
 		}
 
 		var outObj runtime.Object
-		if c.disableDeepCopy {
+		if c.disableDeepCopy || (listOpts.UnsafeDisableDeepCopy != nil && *listOpts.UnsafeDisableDeepCopy) {
 			// skip deep copy which might be unsafe
 			// you must DeepCopy any object before mutating it outside
 			outObj = obj
@@ -227,17 +183,6 @@ func objectKeyToStoreKey(k client.ObjectKey) string {
 		return k.Name
 	}
 	return k.Namespace + "/" + k.Name
-}
-
-// requiresExactMatch checks if the given field selector is of the form `k=v` or `k==v`.
-func requiresExactMatch(sel fields.Selector) (required bool) {
-	reqs := sel.Requirements()
-	for _, req := range reqs {
-		if req.Operator != selection.Equals && req.Operator != selection.DoubleEquals {
-			return false
-		}
-	}
-	return true
 }
 
 // FieldIndexName constructs the name of the index over the given field,

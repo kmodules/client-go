@@ -36,7 +36,11 @@ import (
 )
 
 func NewUncachedClient(cfg *rest.Config, funcs ...func(*runtime.Scheme) error) (client.Client, error) {
-	mapper, err := apiutil.NewDynamicRESTMapper(cfg)
+	hc, err := rest.HTTPClientFor(cfg)
+	if err != nil {
+		return nil, err
+	}
+	mapper, err := apiutil.NewDynamicRESTMapper(cfg, hc)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +127,7 @@ func assign(target, src any) {
 	reflect.ValueOf(target).Elem().Set(srcValue)
 }
 
-func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (kutil.VerbType, error) {
+func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.SubResourcePatchOption) (kutil.VerbType, error) {
 	cur := obj.DeepCopyObject().(client.Object)
 	key := types.NamespacedName{
 		Namespace: cur.GetNamespace(),

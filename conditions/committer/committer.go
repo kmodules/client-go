@@ -29,7 +29,7 @@ import (
 
 // Patcher is just the Patch API with a generic to keep use sites type safe
 type Patcher interface {
-	Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error
+	Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error
 }
 
 type StatusGetter[St any] interface {

@@ -43,6 +43,16 @@ var (
 	_ client.StatusClient = &unstructuredClient{}
 )
 
+// GroupVersionKindFor returns the GroupVersionKind for the given object.
+func (d *unstructuredClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return d.c.GroupVersionKindFor(obj)
+}
+
+// IsObjectNamespaced returns true if the GroupVersionKind of the object is namespaced.
+func (d *unstructuredClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return d.c.IsObjectNamespaced(obj)
+}
+
 // Scheme returns the scheme this client is using.
 func (d *unstructuredClient) Scheme() *runtime.Scheme {
 	return d.c.Scheme()
@@ -213,7 +223,18 @@ type unstructuredStatusWriter struct {
 // ensure unstructuredStatusWriter implements client.StatusWriter.
 var _ client.StatusWriter = &unstructuredStatusWriter{}
 
-func (sw *unstructuredStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (sw *unstructuredStatusWriter) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
+	if err != nil {
+		return err
+	}
+	if gvk != sw.client.duckGVK {
+		return sw.client.c.Status().Create(ctx, obj, subResource, opts...)
+	}
+	return fmt.Errorf("create not supported for duck type %+v", sw.client.duckGVK)
+}
+
+func (sw *unstructuredStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
@@ -224,7 +245,7 @@ func (sw *unstructuredStatusWriter) Update(ctx context.Context, obj client.Objec
 	return fmt.Errorf("update not supported for duck type %+v", sw.client.duckGVK)
 }
 
-func (sw *unstructuredStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (sw *unstructuredStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
@@ -239,4 +260,8 @@ func (sw *unstructuredStatusWriter) Patch(ctx context.Context, obj client.Object
 	llo.SetName(obj.GetName())
 	llo.SetLabels(obj.GetLabels())
 	return sw.client.c.Status().Patch(ctx, &llo, patch, opts...)
+}
+
+func (d *unstructuredClient) SubResource(subResource string) client.SubResourceClient {
+	return d.c.SubResource(subResource)
 }

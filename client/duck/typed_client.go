@@ -40,6 +40,16 @@ var (
 	_ client.StatusClient = &typedClient{}
 )
 
+// GroupVersionKindFor returns the GroupVersionKind for the given object.
+func (d *typedClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return d.c.GroupVersionKindFor(obj)
+}
+
+// IsObjectNamespaced returns true if the GroupVersionKind of the object is namespaced.
+func (d *typedClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return d.c.IsObjectNamespaced(obj)
+}
+
 // Scheme returns the scheme this client is using.
 func (d *typedClient) Scheme() *runtime.Scheme {
 	return d.c.Scheme()
@@ -218,7 +228,18 @@ type typedStatusWriter struct {
 // ensure typedStatusWriter implements client.StatusWriter.
 var _ client.StatusWriter = &typedStatusWriter{}
 
-func (sw *typedStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
+func (sw *typedStatusWriter) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
+	if err != nil {
+		return err
+	}
+	if gvk != sw.client.duckGVK {
+		return sw.client.c.Status().Create(ctx, obj, subResource, opts...)
+	}
+	return fmt.Errorf("create not supported for duck type %+v", sw.client.duckGVK)
+}
+
+func (sw *typedStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
@@ -229,7 +250,7 @@ func (sw *typedStatusWriter) Update(ctx context.Context, obj client.Object, opts
 	return fmt.Errorf("update not supported for duck type %+v", sw.client.duckGVK)
 }
 
-func (sw *typedStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
+func (sw *typedStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
 	gvk, err := apiutil.GVKForObject(obj, sw.client.c.Scheme())
 	if err != nil {
 		return err
@@ -247,4 +268,8 @@ func (sw *typedStatusWriter) Patch(ctx context.Context, obj client.Object, patch
 	llo.SetName(obj.GetName())
 	llo.SetLabels(obj.GetLabels())
 	return sw.client.c.Status().Patch(ctx, llo, patch, opts...)
+}
+
+func (d *typedClient) SubResource(subResource string) client.SubResourceClient {
+	return d.c.SubResource(subResource)
 }

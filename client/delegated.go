@@ -70,8 +70,9 @@ func NewDelegatingClient(in NewDelegatingClientInput) (client.Client, error) {
 			cacheUnstructured: in.CacheUnstructured,
 			cachable:          in.Cachable,
 		},
-		Writer:       in.Client,
-		StatusClient: in.Client,
+		Writer:                       in.Client,
+		StatusClient:                 in.Client,
+		SubResourceClientConstructor: in.Client,
 	}, nil
 }
 
@@ -79,9 +80,20 @@ type delegatingClient struct {
 	client.Reader
 	client.Writer
 	client.StatusClient
+	client.SubResourceClientConstructor
 
 	scheme *runtime.Scheme
 	mapper meta.RESTMapper
+}
+
+// GroupVersionKindFor returns the GroupVersionKind for the given object.
+func (d *delegatingClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return apiutil.GVKForObject(obj, d.scheme)
+}
+
+// IsObjectNamespaced returns true if the GroupVersionKind of the object is namespaced.
+func (d *delegatingClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return apiutil.IsObjectNamespaced(obj, d.scheme, d.mapper)
 }
 
 // Scheme returns the scheme this client is using.
@@ -154,6 +166,10 @@ func (d *delegatingReader) List(ctx context.Context, list client.ObjectList, opt
 		return d.ClientReader.List(ctx, list, opts...)
 	}
 	return d.CacheReader.List(ctx, list, opts...)
+}
+
+func (d *delegatingClient) SubResource(subResource string) client.SubResourceClient {
+	return d.SubResourceClientConstructor.SubResource(subResource)
 }
 
 func NewClient(cache cache.Cache, config *restclient.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error) {
