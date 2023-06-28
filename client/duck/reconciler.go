@@ -17,13 +17,13 @@ limitations under the License.
 package duck
 
 import (
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 )
 
 type Reconciler interface {
 	reconcile.Reconciler
-	inject.Client
+	InjectClient(client.Client) error
 }
 
 type ReconcilerBuilder func() Reconciler
