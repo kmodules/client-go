@@ -58,19 +58,22 @@ func detectEvictionVersion(c discovery.DiscoveryInterface) {
 func EvictPod(ctx context.Context, c kubernetes.Interface, meta types.NamespacedName, opts *metav1.DeleteOptions) error {
 	detectEvictionVersion(c.Discovery())
 	if useEvictionV1 {
-		return c.CoreV1().Pods(meta.Namespace).EvictV1(ctx, &policyv1.Eviction{
+		eviction := &policyv1.Eviction{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      meta.Name,
 				Namespace: meta.Namespace,
 			},
 			DeleteOptions: opts,
-		})
+		}
+		return c.PolicyV1().Evictions(eviction.Namespace).Evict(context.TODO(), eviction)
 	}
-	return c.CoreV1().Pods(meta.Namespace).EvictV1beta1(ctx, &policyv1beta1.Eviction{
+
+	eviction := &policyv1beta1.Eviction{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      meta.Name,
 			Namespace: meta.Namespace,
 		},
 		DeleteOptions: opts,
-	})
+	}
+	return c.PolicyV1beta1().Evictions(eviction.Namespace).Evict(context.TODO(), eviction)
 }
