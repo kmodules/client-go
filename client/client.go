@@ -91,7 +91,7 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 			return kutil.VerbUnchanged, err
 		}
 
-		setValue(mod, obj)
+		assign(obj, mod)
 		return kutil.VerbCreated, err
 	} else if err != nil {
 		return kutil.VerbUnchanged, err
@@ -116,11 +116,11 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return kutil.VerbUnchanged, err
 	}
 
-	setValue(mod, obj)
+	assign(obj, mod)
 	return kutil.VerbPatched, nil
 }
 
-func setValue(src, target any) {
+func assign(target, src any) {
 	srcValue := reflect.ValueOf(src)
 	if srcValue.Kind() == reflect.Pointer {
 		srcValue = srcValue.Elem()
@@ -128,14 +128,15 @@ func setValue(src, target any) {
 	reflect.ValueOf(target).Elem().Set(srcValue)
 }
 
-func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
+func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (kutil.VerbType, error) {
+	cur := obj.DeepCopyObject().(client.Object)
 	key := types.NamespacedName{
-		Namespace: obj.GetNamespace(),
-		Name:      obj.GetName(),
+		Namespace: cur.GetNamespace(),
+		Name:      cur.GetName(),
 	}
-	err := c.Get(ctx, key, obj)
+	err := c.Get(ctx, key, cur)
 	if err != nil {
-		return nil, kutil.VerbUnchanged, err
+		return kutil.VerbUnchanged, err
 	}
 
 	// The body of the request was in an unknown format -
@@ -143,13 +144,14 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 	//   - application/json-patch+json,
 	//   - application/merge-patch+json,
 	//   - application/apply-patch+yaml
-	patch := client.MergeFrom(obj)
-	obj = transform(obj.DeepCopyObject().(client.Object))
-	err = c.Status().Patch(ctx, obj, patch, opts...)
+	patch := client.MergeFrom(cur)
+	mod := transform(cur.DeepCopyObject().(client.Object))
+	err = c.Status().Patch(ctx, mod, patch, opts...)
 	if err != nil {
-		return nil, kutil.VerbUnchanged, err
+		return kutil.VerbUnchanged, err
 	}
-	return obj, kutil.VerbPatched, nil
+	assign(obj, mod)
+	return kutil.VerbPatched, nil
 }
 
 func isOfficialTypes(group string) bool {
