@@ -90,7 +90,8 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		if err != nil {
 			return kutil.VerbUnchanged, err
 		}
-		reflect.ValueOf(obj).Elem().Set(reflect.ValueOf(mod))
+
+		setValue(mod, obj)
 		return kutil.VerbCreated, err
 	} else if err != nil {
 		return kutil.VerbUnchanged, err
@@ -114,8 +115,17 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	if err != nil {
 		return kutil.VerbUnchanged, err
 	}
-	reflect.ValueOf(obj).Elem().Set(reflect.ValueOf(mod))
+
+	setValue(mod, obj)
 	return kutil.VerbPatched, nil
+}
+
+func setValue(src, target any) {
+	srcValue := reflect.ValueOf(src)
+	if srcValue.Kind() == reflect.Pointer {
+		srcValue = srcValue.Elem()
+	}
+	reflect.ValueOf(target).Elem().Set(srcValue)
 }
 
 func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
