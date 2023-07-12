@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -68,12 +69,13 @@ type (
 	TransformStatusFunc func(obj client.Object) client.Object
 )
 
-func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
+func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (kutil.VerbType, error) {
+	cur := obj.DeepCopyObject().(client.Object)
 	key := types.NamespacedName{
-		Namespace: obj.GetNamespace(),
-		Name:      obj.GetName(),
+		Namespace: cur.GetNamespace(),
+		Name:      cur.GetName(),
 	}
-	err := c.Get(ctx, key, obj)
+	err := c.Get(ctx, key, cur)
 	if kerr.IsNotFound(err) {
 		klog.V(3).Infof("Creating %+v %s/%s.", obj.GetObjectKind().GroupVersionKind(), key.Namespace, key.Name)
 
@@ -83,32 +85,37 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 				createOpts = append(createOpts, opt)
 			}
 		}
-		obj = transform(obj.DeepCopyObject().(client.Object), true)
-		err := c.Create(ctx, obj, createOpts...)
-		return obj, kutil.VerbCreated, err
+		mod := transform(obj.DeepCopyObject().(client.Object), true)
+		err := c.Create(ctx, mod, createOpts...)
+		if err != nil {
+			return kutil.VerbUnchanged, err
+		}
+		reflect.ValueOf(obj).Elem().Set(reflect.ValueOf(mod))
+		return kutil.VerbCreated, err
 	} else if err != nil {
-		return nil, kutil.VerbUnchanged, err
+		return kutil.VerbUnchanged, err
 	}
 
 	gvk, err := apiutil.GVKForObject(obj, c.Scheme())
 	if err != nil {
-		return nil, kutil.VerbUnchanged, errors.Wrapf(err, "failed to get GVK for object %T", obj)
+		return kutil.VerbUnchanged, errors.Wrapf(err, "failed to get GVK for object %T", obj)
 	}
 
 	_, unstructuredObj := obj.(*unstructured.Unstructured)
 
 	var patch client.Patch
 	if isOfficialTypes(gvk.Group) && !unstructuredObj {
-		patch = client.StrategicMergeFrom(obj)
+		patch = client.StrategicMergeFrom(cur)
 	} else {
-		patch = client.MergeFrom(obj)
+		patch = client.MergeFrom(cur)
 	}
-	obj = transform(obj.DeepCopyObject().(client.Object), false)
-	err = c.Patch(ctx, obj, patch, opts...)
+	mod := transform(cur.DeepCopyObject().(client.Object), false)
+	err = c.Patch(ctx, mod, patch, opts...)
 	if err != nil {
-		return nil, kutil.VerbUnchanged, err
+		return kutil.VerbUnchanged, err
 	}
-	return obj, kutil.VerbPatched, nil
+	reflect.ValueOf(obj).Elem().Set(reflect.ValueOf(mod))
+	return kutil.VerbPatched, nil
 }
 
 func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transform TransformStatusFunc, opts ...client.PatchOption) (client.Object, kutil.VerbType, error) {
