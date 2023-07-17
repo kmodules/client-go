@@ -45,7 +45,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_PKGS := admissionregistration api apiextensions apiregistration apps batch certificates client core discovery dynamic extensions meta networking openapi policy rbac storage tools
+SRC_PKGS := admissionregistration api apiextensions apiregistration apps batch certificates client conditions core discovery dynamic extensions meta networking openapi policy rbac storage tools
 SRC_DIRS := $(SRC_PKGS) *.go
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
@@ -115,6 +115,7 @@ clientset:
 		deepcopy-gen                                     \
 			--go-header-file "./hack/license/go.txt"     \
 			--input-dirs "$(GO_PKG)/$(REPO)/api/v1"      \
+			--input-dirs "$(GO_PKG)/$(REPO)/conditions/api"      \
 			--output-file-base zz_generated.deepcopy
 
 # Generate openapi schema
