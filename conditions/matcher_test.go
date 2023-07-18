@@ -19,7 +19,7 @@ package conditions
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,32 +29,32 @@ func TestMatchConditions(t *testing.T) {
 	testCases := []struct {
 		name        string
 		actual      interface{}
-		expected    conditionsapi.Conditions
+		expected    kmapi.Conditions
 		expectMatch bool
 	}{
 		{
 			name:        "with an empty conditions",
-			actual:      conditionsapi.Conditions{},
-			expected:    conditionsapi.Conditions{},
+			actual:      kmapi.Conditions{},
+			expected:    kmapi.Conditions{},
 			expectMatch: true,
 		},
 		{
 			name: "with matching conditions",
-			actual: conditionsapi.Conditions{
+			actual: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 			},
-			expected: conditionsapi.Conditions{
+			expected: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
@@ -64,37 +64,37 @@ func TestMatchConditions(t *testing.T) {
 		},
 		{
 			name: "with non-matching conditions",
-			actual: conditionsapi.Conditions{
+			actual: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 			},
-			expected: conditionsapi.Conditions{
+			expected: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 				{
-					Type:               conditionsapi.ConditionType("different"),
+					Type:               kmapi.ConditionType("different"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "different",
 					Message:            "different",
@@ -104,29 +104,29 @@ func TestMatchConditions(t *testing.T) {
 		},
 		{
 			name: "with a different number of conditions",
-			actual: conditionsapi.Conditions{
+			actual: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
 				},
 			},
-			expected: conditionsapi.Conditions{
+			expected: kmapi.Conditions{
 				{
-					Type:               conditionsapi.ConditionType("type"),
+					Type:               kmapi.ConditionType("type"),
 					Status:             metav1.ConditionTrue,
-					Severity:           conditionsapi.ConditionSeverityNone,
+					Severity:           kmapi.ConditionSeverityNone,
 					LastTransitionTime: metav1.Now(),
 					Reason:             "reason",
 					Message:            "message",
@@ -152,29 +152,29 @@ func TestMatchCondition(t *testing.T) {
 	testCases := []struct {
 		name        string
 		actual      interface{}
-		expected    conditionsapi.Condition
+		expected    kmapi.Condition
 		expectMatch bool
 	}{
 		{
 			name:        "with an empty condition",
-			actual:      conditionsapi.Condition{},
-			expected:    conditionsapi.Condition{},
+			actual:      kmapi.Condition{},
+			expected:    kmapi.Condition{},
 			expectMatch: true,
 		},
 		{
 			name: "with a matching condition",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
@@ -183,18 +183,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different time",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Time{},
 				Reason:             "reason",
 				Message:            "message",
@@ -203,18 +203,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different type",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("different"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("different"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
@@ -223,18 +223,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different status",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionFalse,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
@@ -243,18 +243,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different severity",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityInfo,
+				Severity:           kmapi.ConditionSeverityInfo,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
@@ -263,18 +263,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different reason",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "different",
 				Message:            "message",
@@ -283,18 +283,18 @@ func TestMatchCondition(t *testing.T) {
 		},
 		{
 			name: "with a different message",
-			actual: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			actual: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "message",
 			},
-			expected: conditionsapi.Condition{
-				Type:               conditionsapi.ConditionType("type"),
+			expected: kmapi.Condition{
+				Type:               kmapi.ConditionType("type"),
 				Status:             metav1.ConditionTrue,
-				Severity:           conditionsapi.ConditionSeverityNone,
+				Severity:           kmapi.ConditionSeverityNone,
 				LastTransitionTime: metav1.Now(),
 				Reason:             "reason",
 				Message:            "different",

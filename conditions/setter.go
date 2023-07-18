@@ -21,7 +21,7 @@ import (
 	"sort"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -30,14 +30,14 @@ import (
 // use the conditions package for setting conditions.
 type Setter interface {
 	Getter
-	SetConditions(conditionsapi.Conditions)
+	SetConditions(kmapi.Conditions)
 }
 
 // Set sets the given condition.
 //
 // NOTE: If a condition already exists, the LastTransitionTime is updated only if a change is detected
 // in any of the following fields: Status, Reason, Severity and Message.
-func Set(to Setter, condition *conditionsapi.Condition) {
+func Set(to Setter, condition *kmapi.Condition) {
 	if to == nil || condition == nil {
 		return
 	}
@@ -80,16 +80,16 @@ func Set(to Setter, condition *conditionsapi.Condition) {
 }
 
 // TrueCondition returns a condition with Status=True and the given type.
-func TrueCondition(t conditionsapi.ConditionType) *conditionsapi.Condition {
-	return &conditionsapi.Condition{
+func TrueCondition(t kmapi.ConditionType) *kmapi.Condition {
+	return &kmapi.Condition{
 		Type:   t,
 		Status: metav1.ConditionTrue,
 	}
 }
 
 // FalseCondition returns a condition with Status=False and the given type.
-func FalseCondition(t conditionsapi.ConditionType, reason string, severity conditionsapi.ConditionSeverity, messageFormat string, messageArgs ...interface{}) *conditionsapi.Condition {
-	return &conditionsapi.Condition{
+func FalseCondition(t kmapi.ConditionType, reason string, severity kmapi.ConditionSeverity, messageFormat string, messageArgs ...interface{}) *kmapi.Condition {
+	return &kmapi.Condition{
 		Type:     t,
 		Status:   metav1.ConditionFalse,
 		Reason:   reason,
@@ -99,8 +99,8 @@ func FalseCondition(t conditionsapi.ConditionType, reason string, severity condi
 }
 
 // UnknownCondition returns a condition with Status=Unknown and the given type.
-func UnknownCondition(t conditionsapi.ConditionType, reason string, messageFormat string, messageArgs ...interface{}) *conditionsapi.Condition {
-	return &conditionsapi.Condition{
+func UnknownCondition(t kmapi.ConditionType, reason string, messageFormat string, messageArgs ...interface{}) *kmapi.Condition {
+	return &kmapi.Condition{
 		Type:    t,
 		Status:  metav1.ConditionUnknown,
 		Reason:  reason,
@@ -109,17 +109,17 @@ func UnknownCondition(t conditionsapi.ConditionType, reason string, messageForma
 }
 
 // MarkTrue sets Status=True for the condition with the given type.
-func MarkTrue(to Setter, t conditionsapi.ConditionType) {
+func MarkTrue(to Setter, t kmapi.ConditionType) {
 	Set(to, TrueCondition(t))
 }
 
 // MarkUnknown sets Status=Unknown for the condition with the given type.
-func MarkUnknown(to Setter, t conditionsapi.ConditionType, reason, messageFormat string, messageArgs ...interface{}) {
+func MarkUnknown(to Setter, t kmapi.ConditionType, reason, messageFormat string, messageArgs ...interface{}) {
 	Set(to, UnknownCondition(t, reason, messageFormat, messageArgs...))
 }
 
 // MarkFalse sets Status=False for the condition with the given type.
-func MarkFalse(to Setter, t conditionsapi.ConditionType, reason string, severity conditionsapi.ConditionSeverity, messageFormat string, messageArgs ...interface{}) {
+func MarkFalse(to Setter, t kmapi.ConditionType, reason string, severity kmapi.ConditionSeverity, messageFormat string, messageArgs ...interface{}) {
 	Set(to, FalseCondition(t, reason, severity, messageFormat, messageArgs...))
 }
 
@@ -131,7 +131,7 @@ func SetSummary(to Setter, options ...MergeOption) {
 
 // SetMirror creates a new condition by mirroring the Ready condition from a dependent object;
 // if the Ready condition does not exist in the source object, no target conditions is generated.
-func SetMirror(to Setter, targetCondition conditionsapi.ConditionType, from Getter, options ...MirrorOptions) {
+func SetMirror(to Setter, targetCondition kmapi.ConditionType, from Getter, options ...MirrorOptions) {
 	Set(to, mirror(from, targetCondition, options...))
 }
 
@@ -139,18 +139,18 @@ func SetMirror(to Setter, targetCondition conditionsapi.ConditionType, from Gett
 // from a list of dependent objects; if the Ready condition does not exist in one of the source object,
 // the object is excluded from the aggregation; if none of the source object have ready condition,
 // no target conditions is generated.
-func SetAggregate(to Setter, targetCondition conditionsapi.ConditionType, from []Getter, options ...MergeOption) {
+func SetAggregate(to Setter, targetCondition kmapi.ConditionType, from []Getter, options ...MergeOption) {
 	Set(to, aggregate(from, targetCondition, options...))
 }
 
 // Delete deletes the condition with the given type.
-func Delete(to Setter, t conditionsapi.ConditionType) {
+func Delete(to Setter, t kmapi.ConditionType) {
 	if to == nil {
 		return
 	}
 
 	conditions := to.GetConditions()
-	newConditions := make(conditionsapi.Conditions, 0, len(conditions))
+	newConditions := make(kmapi.Conditions, 0, len(conditions))
 	for _, condition := range conditions {
 		if condition.Type != t {
 			newConditions = append(newConditions, condition)
@@ -163,13 +163,13 @@ func Delete(to Setter, t conditionsapi.ConditionType) {
 // to order of conditions designed for convenience of the consumer, i.e. kubectl.
 // According to this order the Ready condition always goes first, followed by all the other
 // conditions sorted by Type.
-func lexicographicLess(i, j *conditionsapi.Condition) bool {
-	return (i.Type == conditionsapi.ReadyCondition || i.Type < j.Type) && j.Type != conditionsapi.ReadyCondition
+func lexicographicLess(i, j *kmapi.Condition) bool {
+	return (i.Type == kmapi.ReadyCondition || i.Type < j.Type) && j.Type != kmapi.ReadyCondition
 }
 
 // hasSameState returns true if a condition has the same state of another; state is defined
 // by the union of following fields: Type, Status, Reason, Severity and Message (it excludes LastTransitionTime).
-func hasSameState(i, j *conditionsapi.Condition) bool {
+func hasSameState(i, j *kmapi.Condition) bool {
 	return i.Type == j.Type &&
 		i.Status == j.Status &&
 		i.Reason == j.Reason &&

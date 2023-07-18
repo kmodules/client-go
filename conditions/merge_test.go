@@ -19,7 +19,7 @@ package conditions
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -28,7 +28,7 @@ import (
 func TestNewConditionsGroup(t *testing.T) {
 	g := NewWithT(t)
 
-	conditions := []*conditionsapi.Condition{nil1, true1, true1, falseInfo1, falseWarning1, falseWarning1, falseError1, unknown1}
+	conditions := []*kmapi.Condition{nil1, true1, true1, falseInfo1, falseWarning1, falseWarning1, falseError1, unknown1}
 
 	got := getConditionGroups(conditionsWithSource(&conditioned{}, conditions...))
 
@@ -37,47 +37,47 @@ func TestNewConditionsGroup(t *testing.T) {
 
 	// The top group should be False/Error and it should have one condition
 	g.Expect(got.TopGroup().status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got.TopGroup().severity).To(Equal(conditionsapi.ConditionSeverityError))
+	g.Expect(got.TopGroup().severity).To(Equal(kmapi.ConditionSeverityError))
 	g.Expect(got.TopGroup().conditions).To(HaveLen(1))
 
 	// The true group should be true, and it should have two conditions
 	g.Expect(got.TrueGroup().status).To(Equal(metav1.ConditionTrue))
-	g.Expect(got.TrueGroup().severity).To(Equal(conditionsapi.ConditionSeverityNone))
+	g.Expect(got.TrueGroup().severity).To(Equal(kmapi.ConditionSeverityNone))
 	g.Expect(got.TrueGroup().conditions).To(HaveLen(2))
 
 	// The error group should be False/Error and it should have one condition
 	g.Expect(got.ErrorGroup().status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got.ErrorGroup().severity).To(Equal(conditionsapi.ConditionSeverityError))
+	g.Expect(got.ErrorGroup().severity).To(Equal(kmapi.ConditionSeverityError))
 	g.Expect(got.ErrorGroup().conditions).To(HaveLen(1))
 
 	// The warning group should be False/Warning, and it should have two conditions
 	g.Expect(got.WarningGroup().status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got.WarningGroup().severity).To(Equal(conditionsapi.ConditionSeverityWarning))
+	g.Expect(got.WarningGroup().severity).To(Equal(kmapi.ConditionSeverityWarning))
 	g.Expect(got.WarningGroup().conditions).To(HaveLen(2))
 
 	// got[0] should be False/Error and it should have one condition
 	g.Expect(got[0].status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got[0].severity).To(Equal(conditionsapi.ConditionSeverityError))
+	g.Expect(got[0].severity).To(Equal(kmapi.ConditionSeverityError))
 	g.Expect(got[0].conditions).To(HaveLen(1))
 
 	// got[1] should be False/Warning, and it should have two conditions
 	g.Expect(got[1].status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got[1].severity).To(Equal(conditionsapi.ConditionSeverityWarning))
+	g.Expect(got[1].severity).To(Equal(kmapi.ConditionSeverityWarning))
 	g.Expect(got[1].conditions).To(HaveLen(2))
 
 	// got[2] should be False/Info and it should have one condition
 	g.Expect(got[2].status).To(Equal(metav1.ConditionFalse))
-	g.Expect(got[2].severity).To(Equal(conditionsapi.ConditionSeverityInfo))
+	g.Expect(got[2].severity).To(Equal(kmapi.ConditionSeverityInfo))
 	g.Expect(got[2].conditions).To(HaveLen(1))
 
 	// got[3] should be True, and it should have two conditions
 	g.Expect(got[3].status).To(Equal(metav1.ConditionTrue))
-	g.Expect(got[3].severity).To(Equal(conditionsapi.ConditionSeverityNone))
+	g.Expect(got[3].severity).To(Equal(kmapi.ConditionSeverityNone))
 	g.Expect(got[3].conditions).To(HaveLen(2))
 
 	// got[4] should be Unknown and it should have one condition
 	g.Expect(got[4].status).To(Equal(metav1.ConditionUnknown))
-	g.Expect(got[4].severity).To(Equal(conditionsapi.ConditionSeverityNone))
+	g.Expect(got[4].severity).To(Equal(kmapi.ConditionSeverityNone))
 	g.Expect(got[4].conditions).To(HaveLen(1))
 
 	// nil conditions are ignored
@@ -86,8 +86,8 @@ func TestNewConditionsGroup(t *testing.T) {
 func TestMergeRespectPriority(t *testing.T) {
 	tests := []struct {
 		name       string
-		conditions []*conditionsapi.Condition
-		want       *conditionsapi.Condition
+		conditions []*kmapi.Condition
+		want       *kmapi.Condition
 	}{
 		{
 			name:       "aggregate nil list return nil",
@@ -96,37 +96,37 @@ func TestMergeRespectPriority(t *testing.T) {
 		},
 		{
 			name:       "aggregate empty list return nil",
-			conditions: []*conditionsapi.Condition{},
+			conditions: []*kmapi.Condition{},
 			want:       nil,
 		},
 		{
 			name:       "When there is false/error it returns false/error",
-			conditions: []*conditionsapi.Condition{falseError1, falseWarning1, falseInfo1, unknown1, true1},
-			want:       FalseCondition("foo", "reason falseError1", conditionsapi.ConditionSeverityError, "message falseError1"),
+			conditions: []*kmapi.Condition{falseError1, falseWarning1, falseInfo1, unknown1, true1},
+			want:       FalseCondition("foo", "reason falseError1", kmapi.ConditionSeverityError, "message falseError1"),
 		},
 		{
 			name:       "When there is false/warning and no false/error, it returns false/warning",
-			conditions: []*conditionsapi.Condition{falseWarning1, falseInfo1, unknown1, true1},
-			want:       FalseCondition("foo", "reason falseWarning1", conditionsapi.ConditionSeverityWarning, "message falseWarning1"),
+			conditions: []*kmapi.Condition{falseWarning1, falseInfo1, unknown1, true1},
+			want:       FalseCondition("foo", "reason falseWarning1", kmapi.ConditionSeverityWarning, "message falseWarning1"),
 		},
 		{
 			name:       "When there is false/info and no false/error or false/warning, it returns false/info",
-			conditions: []*conditionsapi.Condition{falseInfo1, unknown1, true1},
-			want:       FalseCondition("foo", "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			conditions: []*kmapi.Condition{falseInfo1, unknown1, true1},
+			want:       FalseCondition("foo", "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 		{
 			name:       "When there is true and no false/*, it returns info",
-			conditions: []*conditionsapi.Condition{unknown1, true1},
+			conditions: []*kmapi.Condition{unknown1, true1},
 			want:       TrueCondition("foo"),
 		},
 		{
 			name:       "When there is unknown and no true or false/*, it returns unknown",
-			conditions: []*conditionsapi.Condition{unknown1},
+			conditions: []*kmapi.Condition{unknown1},
 			want:       UnknownCondition("foo", "reason unknown1", "message unknown1"),
 		},
 		{
 			name:       "nil conditions are ignored",
-			conditions: []*conditionsapi.Condition{nil1, nil1, nil1},
+			conditions: []*kmapi.Condition{nil1, nil1, nil1},
 			want:       nil,
 		},
 	}
@@ -146,7 +146,7 @@ func TestMergeRespectPriority(t *testing.T) {
 	}
 }
 
-func conditionsWithSource(obj Setter, conditions ...*conditionsapi.Condition) []localizedCondition {
+func conditionsWithSource(obj Setter, conditions ...*kmapi.Condition) []localizedCondition {
 	obj.SetConditions(conditionList(conditions...))
 
 	ret := []localizedCondition{}

@@ -17,7 +17,7 @@ limitations under the License.
 package conditions
 
 import (
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -30,12 +30,12 @@ type Getter interface {
 	runtime.Object
 
 	// GetConditions returns the list of conditions for an object.
-	GetConditions() conditionsapi.Conditions
+	GetConditions() kmapi.Conditions
 }
 
 // Get returns the condition with the given type, if the condition does not exist,
 // it returns nil.
-func Get(from Getter, t conditionsapi.ConditionType) *conditionsapi.Condition {
+func Get(from Getter, t kmapi.ConditionType) *kmapi.Condition {
 	conditions := from.GetConditions()
 	if conditions == nil {
 		return nil
@@ -50,13 +50,13 @@ func Get(from Getter, t conditionsapi.ConditionType) *conditionsapi.Condition {
 }
 
 // Has returns true if a condition with the given type exists.
-func Has(from Getter, t conditionsapi.ConditionType) bool {
+func Has(from Getter, t kmapi.ConditionType) bool {
 	return Get(from, t) != nil
 }
 
 // IsTrue is true if the condition with the given type is True, otherwise it returns false
 // if the condition is not True or if the condition does not exist (is nil).
-func IsTrue(from Getter, t conditionsapi.ConditionType) bool {
+func IsTrue(from Getter, t kmapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
 		return c.Status == metav1.ConditionTrue
 	}
@@ -65,7 +65,7 @@ func IsTrue(from Getter, t conditionsapi.ConditionType) bool {
 
 // IsFalse is true if the condition with the given type is False, otherwise it returns false
 // if the condition is not False or if the condition does not exist (is nil).
-func IsFalse(from Getter, t conditionsapi.ConditionType) bool {
+func IsFalse(from Getter, t kmapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
 		return c.Status == metav1.ConditionFalse
 	}
@@ -74,7 +74,7 @@ func IsFalse(from Getter, t conditionsapi.ConditionType) bool {
 
 // IsUnknown is true if the condition with the given type is Unknown or if the condition
 // does not exist (is nil).
-func IsUnknown(from Getter, t conditionsapi.ConditionType) bool {
+func IsUnknown(from Getter, t kmapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
 		return c.Status == metav1.ConditionUnknown
 	}
@@ -82,7 +82,7 @@ func IsUnknown(from Getter, t conditionsapi.ConditionType) bool {
 }
 
 // GetReason returns a nil safe string of Reason for the condition with the given type.
-func GetReason(from Getter, t conditionsapi.ConditionType) string {
+func GetReason(from Getter, t kmapi.ConditionType) string {
 	if c := Get(from, t); c != nil {
 		return c.Reason
 	}
@@ -90,7 +90,7 @@ func GetReason(from Getter, t conditionsapi.ConditionType) string {
 }
 
 // GetMessage returns a nil safe string of Message.
-func GetMessage(from Getter, t conditionsapi.ConditionType) string {
+func GetMessage(from Getter, t kmapi.ConditionType) string {
 	if c := Get(from, t); c != nil {
 		return c.Message
 	}
@@ -99,7 +99,7 @@ func GetMessage(from Getter, t conditionsapi.ConditionType) string {
 
 // GetSeverity returns the condition Severity or nil if the condition
 // does not exist (is nil).
-func GetSeverity(from Getter, t conditionsapi.ConditionType) *conditionsapi.ConditionSeverity {
+func GetSeverity(from Getter, t kmapi.ConditionType) *kmapi.ConditionSeverity {
 	if c := Get(from, t); c != nil {
 		return &c.Severity
 	}
@@ -108,7 +108,7 @@ func GetSeverity(from Getter, t conditionsapi.ConditionType) *conditionsapi.Cond
 
 // GetLastTransitionTime returns the condition Severity or nil if the condition
 // does not exist (is nil).
-func GetLastTransitionTime(from Getter, t conditionsapi.ConditionType) *metav1.Time {
+func GetLastTransitionTime(from Getter, t kmapi.ConditionType) *metav1.Time {
 	if c := Get(from, t); c != nil {
 		return &c.LastTransitionTime
 	}
@@ -117,7 +117,7 @@ func GetLastTransitionTime(from Getter, t conditionsapi.ConditionType) *metav1.T
 
 // summary returns a Ready condition with the summary of all the conditions existing
 // on an object. If the object does not have other conditions, no summary condition is generated.
-func summary(from Getter, options ...MergeOption) *conditionsapi.Condition {
+func summary(from Getter, options ...MergeOption) *kmapi.Condition {
 	conditions := from.GetConditions()
 
 	mergeOpt := &mergeOptions{}
@@ -130,7 +130,7 @@ func summary(from Getter, options ...MergeOption) *conditionsapi.Condition {
 	conditionsInScope := make([]localizedCondition, 0, len(conditions))
 	for i := range conditions {
 		c := conditions[i]
-		if c.Type == conditionsapi.ReadyCondition {
+		if c.Type == kmapi.ReadyCondition {
 			continue
 		}
 
@@ -183,14 +183,14 @@ func summary(from Getter, options ...MergeOption) *conditionsapi.Condition {
 		}
 	}
 
-	return merge(conditionsInScope, conditionsapi.ReadyCondition, mergeOpt)
+	return merge(conditionsInScope, kmapi.ReadyCondition, mergeOpt)
 }
 
 // mirrorOptions allows to set options for the mirror operation.
 type mirrorOptions struct {
 	fallbackTo       *bool
 	fallbackReason   string
-	fallbackSeverity conditionsapi.ConditionSeverity
+	fallbackSeverity kmapi.ConditionSeverity
 	fallbackMessage  string
 }
 
@@ -199,7 +199,7 @@ type MirrorOptions func(*mirrorOptions)
 
 // WithFallbackValue specify a fallback value to use in case the mirrored condition does not exist;
 // in case the fallbackValue is false, given values for reason, severity and message will be used.
-func WithFallbackValue(fallbackValue bool, reason string, severity conditionsapi.ConditionSeverity, message string) MirrorOptions {
+func WithFallbackValue(fallbackValue bool, reason string, severity kmapi.ConditionSeverity, message string) MirrorOptions {
 	return func(c *mirrorOptions) {
 		c.fallbackTo = &fallbackValue
 		c.fallbackReason = reason
@@ -210,13 +210,13 @@ func WithFallbackValue(fallbackValue bool, reason string, severity conditionsapi
 
 // mirror mirrors the Ready condition from a dependent object into the target condition;
 // if the Ready condition does not exist in the source object, no target conditions is generated.
-func mirror(from Getter, targetCondition conditionsapi.ConditionType, options ...MirrorOptions) *conditionsapi.Condition {
+func mirror(from Getter, targetCondition kmapi.ConditionType, options ...MirrorOptions) *kmapi.Condition {
 	mirrorOpt := &mirrorOptions{}
 	for _, o := range options {
 		o(mirrorOpt)
 	}
 
-	condition := Get(from, conditionsapi.ReadyCondition)
+	condition := Get(from, kmapi.ReadyCondition)
 
 	if mirrorOpt.fallbackTo != nil && condition == nil {
 		switch *mirrorOpt.fallbackTo {
@@ -237,10 +237,10 @@ func mirror(from Getter, targetCondition conditionsapi.ConditionType, options ..
 // Aggregates all the Ready condition from a list of dependent objects into the target object;
 // if the Ready condition does not exist in one of the source object, the object is excluded from
 // the aggregation; if none of the source object have ready condition, no target conditions is generated.
-func aggregate(from []Getter, targetCondition conditionsapi.ConditionType, options ...MergeOption) *conditionsapi.Condition {
+func aggregate(from []Getter, targetCondition kmapi.ConditionType, options ...MergeOption) *kmapi.Condition {
 	conditionsInScope := make([]localizedCondition, 0, len(from))
 	for i := range from {
-		condition := Get(from[i], conditionsapi.ReadyCondition)
+		condition := Get(from[i], kmapi.ReadyCondition)
 
 		conditionsInScope = append(conditionsInScope, localizedCondition{
 			Condition: condition,

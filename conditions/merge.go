@@ -19,7 +19,7 @@ package conditions
 import (
 	"sort"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -27,7 +27,7 @@ import (
 // localizedCondition defines a condition with the information of the object the util
 // was originated from.
 type localizedCondition struct {
-	*conditionsapi.Condition
+	*kmapi.Condition
 	Getter
 }
 
@@ -51,7 +51,7 @@ type localizedCondition struct {
 // condition; in order to complete such task some trade-off should be made, because there is no a golden rule
 // for summarizing many Reason/Message into single Reason/Message.
 // mergeOptions allows the user to adapt this process to the specific needs by exposing a set of merge strategies.
-func merge(conditions []localizedCondition, targetCondition conditionsapi.ConditionType, options *mergeOptions) *conditionsapi.Condition {
+func merge(conditions []localizedCondition, targetCondition kmapi.ConditionType, options *mergeOptions) *kmapi.Condition {
 	g := getConditionGroups(conditions)
 	if len(g) == 0 {
 		return nil
@@ -143,20 +143,20 @@ func (g conditionGroups) TopGroup() *conditionGroup {
 
 // TrueGroup returns the condition group with status True, if any.
 func (g conditionGroups) TrueGroup() *conditionGroup {
-	return g.getByStatusAndSeverity(metav1.ConditionTrue, conditionsapi.ConditionSeverityNone)
+	return g.getByStatusAndSeverity(metav1.ConditionTrue, kmapi.ConditionSeverityNone)
 }
 
 // ErrorGroup returns the condition group with status False and severity Error, if any.
 func (g conditionGroups) ErrorGroup() *conditionGroup {
-	return g.getByStatusAndSeverity(metav1.ConditionFalse, conditionsapi.ConditionSeverityError)
+	return g.getByStatusAndSeverity(metav1.ConditionFalse, kmapi.ConditionSeverityError)
 }
 
 // WarningGroup returns the condition group with status False and severity Warning, if any.
 func (g conditionGroups) WarningGroup() *conditionGroup {
-	return g.getByStatusAndSeverity(metav1.ConditionFalse, conditionsapi.ConditionSeverityWarning)
+	return g.getByStatusAndSeverity(metav1.ConditionFalse, kmapi.ConditionSeverityWarning)
 }
 
-func (g conditionGroups) getByStatusAndSeverity(status metav1.ConditionStatus, severity conditionsapi.ConditionSeverity) *conditionGroup {
+func (g conditionGroups) getByStatusAndSeverity(status metav1.ConditionStatus, severity kmapi.ConditionSeverity) *conditionGroup {
 	if len(g) == 0 {
 		return nil
 	}
@@ -172,7 +172,7 @@ func (g conditionGroups) getByStatusAndSeverity(status metav1.ConditionStatus, s
 // and thus with the same priority when merging into a Ready condition.
 type conditionGroup struct {
 	status     metav1.ConditionStatus
-	severity   conditionsapi.ConditionSeverity
+	severity   kmapi.ConditionSeverity
 	conditions []localizedCondition
 }
 
@@ -182,11 +182,11 @@ func (g conditionGroup) mergePriority() int {
 	switch g.status {
 	case metav1.ConditionFalse:
 		switch g.severity {
-		case conditionsapi.ConditionSeverityError:
+		case kmapi.ConditionSeverityError:
 			return 0
-		case conditionsapi.ConditionSeverityWarning:
+		case kmapi.ConditionSeverityWarning:
 			return 1
-		case conditionsapi.ConditionSeverityInfo:
+		case kmapi.ConditionSeverityInfo:
 			return 2
 		}
 	case metav1.ConditionTrue:

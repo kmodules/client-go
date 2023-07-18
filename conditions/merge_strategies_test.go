@@ -19,7 +19,7 @@ package conditions
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -69,8 +69,8 @@ func TestLocalizeReason(t *testing.T) {
 func TestGetFirstReasonAndMessage(t *testing.T) {
 	g := NewWithT(t)
 
-	foo := FalseCondition("foo", "falseFoo", conditionsapi.ConditionSeverityInfo, "message falseFoo")
-	bar := FalseCondition("bar", "falseBar", conditionsapi.ConditionSeverityInfo, "message falseBar")
+	foo := FalseCondition("foo", "falseFoo", kmapi.ConditionSeverityInfo, "message falseFoo")
+	bar := FalseCondition("bar", "falseBar", kmapi.ConditionSeverityInfo, "message falseBar")
 
 	getter := &conditioned{
 		Unstructured: &unstructured.Unstructured{
@@ -92,21 +92,21 @@ func TestGetFirstReasonAndMessage(t *testing.T) {
 	g.Expect(gotMessage).To(Equal("message falseBar"))
 
 	// getFirst should report should respect order
-	gotReason = getFirstReason(groups, []conditionsapi.ConditionType{"foo", "bar"}, false)
+	gotReason = getFirstReason(groups, []kmapi.ConditionType{"foo", "bar"}, false)
 	g.Expect(gotReason).To(Equal("falseFoo"))
-	gotMessage = getFirstMessage(groups, []conditionsapi.ConditionType{"foo", "bar"})
+	gotMessage = getFirstMessage(groups, []kmapi.ConditionType{"foo", "bar"})
 	g.Expect(gotMessage).To(Equal("message falseFoo"))
 
 	// getFirst should report should respect order in case of missing conditions
-	gotReason = getFirstReason(groups, []conditionsapi.ConditionType{"missingBaz", "foo", "bar"}, false)
+	gotReason = getFirstReason(groups, []kmapi.ConditionType{"missingBaz", "foo", "bar"}, false)
 	g.Expect(gotReason).To(Equal("falseFoo"))
-	gotMessage = getFirstMessage(groups, []conditionsapi.ConditionType{"missingBaz", "foo", "bar"})
+	gotMessage = getFirstMessage(groups, []kmapi.ConditionType{"missingBaz", "foo", "bar"})
 	g.Expect(gotMessage).To(Equal("message falseFoo"))
 
 	// getFirst should fall back to first condition if none of the conditions in the list exists
-	gotReason = getFirstReason(groups, []conditionsapi.ConditionType{"missingBaz"}, false)
+	gotReason = getFirstReason(groups, []kmapi.ConditionType{"missingBaz"}, false)
 	g.Expect(gotReason).To(Equal("falseBar"))
-	gotMessage = getFirstMessage(groups, []conditionsapi.ConditionType{"missingBaz"})
+	gotMessage = getFirstMessage(groups, []kmapi.ConditionType{"missingBaz"})
 	g.Expect(gotMessage).To(Equal("message falseBar"))
 
 	// getFirstReason should localize reason if required

@@ -20,7 +20,7 @@ import (
 	"testing"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,7 +29,7 @@ import (
 
 func TestNewPatch(t *testing.T) {
 	fooTrue := TrueCondition("foo")
-	fooFalse := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityInfo, "message foo")
+	fooFalse := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityInfo, "message foo")
 
 	tests := []struct {
 		name   string
@@ -100,8 +100,8 @@ func TestNewPatch(t *testing.T) {
 
 func TestApply(t *testing.T) {
 	fooTrue := TrueCondition("foo")
-	fooFalse := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityInfo, "message foo")
-	fooWarning := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityWarning, "message foo")
+	fooFalse := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityInfo, "message foo")
+	fooWarning := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityWarning, "message foo")
 
 	tests := []struct {
 		name    string
@@ -109,7 +109,7 @@ func TestApply(t *testing.T) {
 		after   Getter
 		latest  Setter
 		options []ApplyOption
-		want    conditionsapi.Conditions
+		want    kmapi.Conditions
 		wantErr bool
 	}{
 		{
@@ -264,8 +264,8 @@ func TestApplyDoesNotAlterLastTransitionTime(t *testing.T) {
 		Unstructured: &unstructured.Unstructured{
 			Object: map[string]interface{}{
 				"status": map[string]interface{}{
-					"conditions": conditionsapi.Conditions{
-						conditionsapi.Condition{
+					"conditions": kmapi.Conditions{
+						kmapi.Condition{
 							Type:               "foo",
 							Status:             metav1.ConditionTrue,
 							LastTransitionTime: metav1.NewTime(time.Now().UTC().Truncate(time.Second)),
