@@ -21,9 +21,8 @@ import (
 	"sort"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -84,7 +83,7 @@ func Set(to Setter, condition *conditionsapi.Condition) {
 func TrueCondition(t conditionsapi.ConditionType) *conditionsapi.Condition {
 	return &conditionsapi.Condition{
 		Type:   t,
-		Status: corev1.ConditionTrue,
+		Status: metav1.ConditionTrue,
 	}
 }
 
@@ -92,7 +91,7 @@ func TrueCondition(t conditionsapi.ConditionType) *conditionsapi.Condition {
 func FalseCondition(t conditionsapi.ConditionType, reason string, severity conditionsapi.ConditionSeverity, messageFormat string, messageArgs ...interface{}) *conditionsapi.Condition {
 	return &conditionsapi.Condition{
 		Type:     t,
-		Status:   corev1.ConditionFalse,
+		Status:   metav1.ConditionFalse,
 		Reason:   reason,
 		Severity: severity,
 		Message:  fmt.Sprintf(messageFormat, messageArgs...),
@@ -103,7 +102,7 @@ func FalseCondition(t conditionsapi.ConditionType, reason string, severity condi
 func UnknownCondition(t conditionsapi.ConditionType, reason string, messageFormat string, messageArgs ...interface{}) *conditionsapi.Condition {
 	return &conditionsapi.Condition{
 		Type:    t,
-		Status:  corev1.ConditionUnknown,
+		Status:  metav1.ConditionUnknown,
 		Reason:  reason,
 		Message: fmt.Sprintf(messageFormat, messageArgs...),
 	}

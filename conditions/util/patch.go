@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"reflect"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	"github.com/google/go-cmp/cmp"
 )

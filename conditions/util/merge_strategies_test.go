@@ -19,7 +19,7 @@ package util
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

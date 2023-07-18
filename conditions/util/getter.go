@@ -17,9 +17,8 @@ limitations under the License.
 package util
 
 import (
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
@@ -59,7 +58,7 @@ func Has(from Getter, t conditionsapi.ConditionType) bool {
 // if the condition is not True or if the condition does not exist (is nil).
 func IsTrue(from Getter, t conditionsapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
-		return c.Status == corev1.ConditionTrue
+		return c.Status == metav1.ConditionTrue
 	}
 	return false
 }
@@ -68,7 +67,7 @@ func IsTrue(from Getter, t conditionsapi.ConditionType) bool {
 // if the condition is not False or if the condition does not exist (is nil).
 func IsFalse(from Getter, t conditionsapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
-		return c.Status == corev1.ConditionFalse
+		return c.Status == metav1.ConditionFalse
 	}
 	return false
 }
@@ -77,7 +76,7 @@ func IsFalse(from Getter, t conditionsapi.ConditionType) bool {
 // does not exist (is nil).
 func IsUnknown(from Getter, t conditionsapi.ConditionType) bool {
 	if c := Get(from, t); c != nil {
-		return c.Status == corev1.ConditionUnknown
+		return c.Status == metav1.ConditionUnknown
 	}
 	return true
 }

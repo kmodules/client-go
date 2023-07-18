@@ -14,10 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package api
+package v1
 
 import (
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -51,10 +50,10 @@ type Condition struct {
 	// Type of condition in CamelCase or in foo.example.com/CamelCase.
 	// Many .condition.type values are consistent across resources like Available, but because arbitrary util
 	// can be useful (see .node.status.util), the ability to deconflict is important.
-	Type ConditionType `json:"type"`
+	Type ConditionType `json:"type" protobuf:"bytes,4,opt,name=type,casttype=ConditionType"`
 
 	// Status of the condition, one of True, False, Unknown.
-	Status corev1.ConditionStatus `json:"status"`
+	Status metav1.ConditionStatus `json:"status" protobuf:"bytes,5,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
 
 	// If set, this represents the .metadata.generation that the condition was set based upon.
 	// For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date
@@ -66,23 +65,23 @@ type Condition struct {
 	// understand the current situation and act accordingly.
 	// The Severity field MUST be set only when Status=False.
 	// +optional
-	Severity ConditionSeverity `json:"severity,omitempty"`
+	Severity ConditionSeverity `json:"severity,omitempty" protobuf:"bytes,6,opt,name=severity,casttype=ConditionSeverity"`
 
 	// Last time the condition transitioned from one status to another.
 	// This should be when the underlying condition changed. If that is not known, then using the time when
 	// the API field changed is acceptable.
-	LastTransitionTime metav1.Time `json:"lastTransitionTime"`
+	LastTransitionTime metav1.Time `json:"lastTransitionTime" protobuf:"bytes,7,opt,name=lastTransitionTime"`
 
 	// The reason for the condition's last transition in CamelCase.
 	// The specific API may choose whether this field is considered a guaranteed API.
 	// This field may not be empty.
 	// +optional
-	Reason string `json:"reason,omitempty"`
+	Reason string `json:"reason,omitempty" protobuf:"bytes,8,opt,name=reason"`
 
 	// A human-readable message indicating details about the transition.
 	// This field may be empty.
 	// +optional
-	Message string `json:"message,omitempty"`
+	Message string `json:"message,omitempty" protobuf:"bytes,9,opt,name=message"`
 }
 
 // Conditions provide observations of the operational state of a object.

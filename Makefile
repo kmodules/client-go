@@ -115,7 +115,6 @@ clientset:
 		deepcopy-gen                                     \
 			--go-header-file "./hack/license/go.txt"     \
 			--input-dirs "$(GO_PKG)/$(REPO)/api/v1"      \
-			--input-dirs "$(GO_PKG)/$(REPO)/conditions/api"      \
 			--output-file-base zz_generated.deepcopy
 
 # Generate openapi schema

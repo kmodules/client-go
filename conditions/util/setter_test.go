@@ -21,12 +21,11 @@ import (
 	"testing"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -48,7 +47,7 @@ func TestHasSameState(t *testing.T) {
 	g.Expect(hasSameState(falseInfo1, falseInfo2)).To(BeFalse())
 
 	falseInfo2 = falseInfo1.DeepCopy()
-	falseInfo2.Status = corev1.ConditionTrue
+	falseInfo2.Status = metav1.ConditionTrue
 	g.Expect(hasSameState(falseInfo1, falseInfo2)).To(BeFalse())
 
 	falseInfo2 = falseInfo1.DeepCopy()
@@ -202,14 +201,14 @@ func TestMarkMethods(t *testing.T) {
 	MarkTrue(cluster, "conditionFoo")
 	g.Expect(Get(cluster, "conditionFoo")).To(HaveSameStateOf(&conditionsapi.Condition{
 		Type:   "conditionFoo",
-		Status: corev1.ConditionTrue,
+		Status: metav1.ConditionTrue,
 	}))
 
 	// test MarkFalse
 	MarkFalse(cluster, "conditionBar", "reasonBar", conditionsapi.ConditionSeverityError, "messageBar")
 	g.Expect(Get(cluster, "conditionBar")).To(HaveSameStateOf(&conditionsapi.Condition{
 		Type:     "conditionBar",
-		Status:   corev1.ConditionFalse,
+		Status:   metav1.ConditionFalse,
 		Severity: conditionsapi.ConditionSeverityError,
 		Reason:   "reasonBar",
 		Message:  "messageBar",
@@ -219,7 +218,7 @@ func TestMarkMethods(t *testing.T) {
 	MarkUnknown(cluster, "conditionBaz", "reasonBaz", "messageBaz")
 	g.Expect(Get(cluster, "conditionBaz")).To(HaveSameStateOf(&conditionsapi.Condition{
 		Type:    "conditionBaz",
-		Status:  corev1.ConditionUnknown,
+		Status:  metav1.ConditionUnknown,
 		Reason:  "reasonBaz",
 		Message: "messageBaz",
 	}))

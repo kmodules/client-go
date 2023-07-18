@@ -19,10 +19,10 @@ package util
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 )
 
 func TestNewConditionsGroup(t *testing.T) {
@@ -36,47 +36,47 @@ func TestNewConditionsGroup(t *testing.T) {
 	g.Expect(got).To(HaveLen(5))
 
 	// The top group should be False/Error and it should have one condition
-	g.Expect(got.TopGroup().status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got.TopGroup().status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got.TopGroup().severity).To(Equal(conditionsapi.ConditionSeverityError))
 	g.Expect(got.TopGroup().conditions).To(HaveLen(1))
 
 	// The true group should be true, and it should have two conditions
-	g.Expect(got.TrueGroup().status).To(Equal(corev1.ConditionTrue))
+	g.Expect(got.TrueGroup().status).To(Equal(metav1.ConditionTrue))
 	g.Expect(got.TrueGroup().severity).To(Equal(conditionsapi.ConditionSeverityNone))
 	g.Expect(got.TrueGroup().conditions).To(HaveLen(2))
 
 	// The error group should be False/Error and it should have one condition
-	g.Expect(got.ErrorGroup().status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got.ErrorGroup().status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got.ErrorGroup().severity).To(Equal(conditionsapi.ConditionSeverityError))
 	g.Expect(got.ErrorGroup().conditions).To(HaveLen(1))
 
 	// The warning group should be False/Warning, and it should have two conditions
-	g.Expect(got.WarningGroup().status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got.WarningGroup().status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got.WarningGroup().severity).To(Equal(conditionsapi.ConditionSeverityWarning))
 	g.Expect(got.WarningGroup().conditions).To(HaveLen(2))
 
 	// got[0] should be False/Error and it should have one condition
-	g.Expect(got[0].status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got[0].status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got[0].severity).To(Equal(conditionsapi.ConditionSeverityError))
 	g.Expect(got[0].conditions).To(HaveLen(1))
 
 	// got[1] should be False/Warning, and it should have two conditions
-	g.Expect(got[1].status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got[1].status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got[1].severity).To(Equal(conditionsapi.ConditionSeverityWarning))
 	g.Expect(got[1].conditions).To(HaveLen(2))
 
 	// got[2] should be False/Info and it should have one condition
-	g.Expect(got[2].status).To(Equal(corev1.ConditionFalse))
+	g.Expect(got[2].status).To(Equal(metav1.ConditionFalse))
 	g.Expect(got[2].severity).To(Equal(conditionsapi.ConditionSeverityInfo))
 	g.Expect(got[2].conditions).To(HaveLen(1))
 
 	// got[3] should be True, and it should have two conditions
-	g.Expect(got[3].status).To(Equal(corev1.ConditionTrue))
+	g.Expect(got[3].status).To(Equal(metav1.ConditionTrue))
 	g.Expect(got[3].severity).To(Equal(conditionsapi.ConditionSeverityNone))
 	g.Expect(got[3].conditions).To(HaveLen(2))
 
 	// got[4] should be Unknown and it should have one condition
-	g.Expect(got[4].status).To(Equal(corev1.ConditionUnknown))
+	g.Expect(got[4].status).To(Equal(metav1.ConditionUnknown))
 	g.Expect(got[4].severity).To(Equal(conditionsapi.ConditionSeverityNone))
 	g.Expect(got[4].conditions).To(HaveLen(1))
 

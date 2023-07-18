@@ -20,10 +20,9 @@ import (
 	"testing"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
-	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -268,7 +267,7 @@ func TestApplyDoesNotAlterLastTransitionTime(t *testing.T) {
 					"conditions": conditionsapi.Conditions{
 						conditionsapi.Condition{
 							Type:               "foo",
-							Status:             corev1.ConditionTrue,
+							Status:             metav1.ConditionTrue,
 							LastTransitionTime: metav1.NewTime(time.Now().UTC().Truncate(time.Second)),
 						},
 					},

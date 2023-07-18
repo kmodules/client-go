@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"strings"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 )
 
 // mergeOptions allows to set strategies for merging a set of conditions into a single condition,

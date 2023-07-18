@@ -19,7 +19,7 @@ package util
 import (
 	"fmt"
 
-	conditionsapi "kmodules.xyz/client-go/conditions/api"
+	conditionsapi "kmodules.xyz/client-go/api/v1"
 
 	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
