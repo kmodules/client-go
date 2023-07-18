@@ -21,7 +21,7 @@ import (
 	"reflect"
 	"time"
 
-	kmapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/conditions"
 
 	"github.com/mitchellh/mapstructure"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
