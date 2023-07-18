@@ -19,7 +19,6 @@ package v1
 import (
 	"fmt"
 
-	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -37,42 +36,13 @@ const (
 	ConditionRequestDenied   = "Denied"
 )
 
-type Condition struct {
-	// Type of condition in CamelCase or in foo.example.com/CamelCase.
-	// Many .condition.type values are consistent across resources like Available, but because arbitrary conditions can be
-	// useful (see .node.status.conditions), the ability to deconflict is important.
-	// +required
-	Type string `json:"type" protobuf:"bytes,1,opt,name=type"`
-	// Status of the condition, one of True, False, Unknown.
-	// +required
-	Status core.ConditionStatus `json:"status" protobuf:"bytes,2,opt,name=status,casttype=k8s.io/api/core/v1.ConditionStatus"`
-	// If set, this represents the .metadata.generation that the condition was set based upon.
-	// For instance, if .metadata.generation is currently 12, but the .status.condition[x].observedGeneration is 9, the condition is out of date
-	// with respect to the current state of the instance.
-	// +optional
-	ObservedGeneration int64 `json:"observedGeneration,omitempty" protobuf:"varint,3,opt,name=observedGeneration"`
-	// Last time the condition transitioned from one status to another.
-	// This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
-	// +required
-	LastTransitionTime metav1.Time `json:"lastTransitionTime" protobuf:"bytes,4,opt,name=lastTransitionTime"`
-	// The reason for the condition's last transition in CamelCase.
-	// The specific API may choose whether or not this field is considered a guaranteed API.
-	// This field may not be empty.
-	// +required
-	Reason string `json:"reason" protobuf:"bytes,5,opt,name=reason"`
-	// A human readable message indicating details about the transition.
-	// This field may be empty.
-	// +required
-	Message string `json:"message" protobuf:"bytes,6,opt,name=message"`
-}
-
-func NewCondition(reason string, message string, generation int64, conditionStatus ...bool) Condition {
-	cs := core.ConditionTrue
+func NewCondition(reason string, message string, generation int64, conditionStatus ...bool) metav1.Condition {
+	cs := metav1.ConditionTrue
 	if len(conditionStatus) > 0 && !conditionStatus[0] {
-		cs = core.ConditionFalse
+		cs = metav1.ConditionFalse
 	}
 
-	return Condition{
+	return metav1.Condition{
 		Type:               reason,
 		Reason:             reason,
 		Message:            message,
@@ -84,7 +54,7 @@ func NewCondition(reason string, message string, generation int64, conditionStat
 
 // HasCondition returns "true" if the desired condition provided in "condType" is present in the condition list.
 // Otherwise, it returns "false".
-func HasCondition(conditions []Condition, condType string) bool {
+func HasCondition(conditions []metav1.Condition, condType string) bool {
 	for i := range conditions {
 		if conditions[i].Type == condType {
 			return true
@@ -94,7 +64,7 @@ func HasCondition(conditions []Condition, condType string) bool {
 }
 
 // GetCondition returns a pointer to the desired condition referred by "condType". Otherwise, it returns nil.
-func GetCondition(conditions []Condition, condType string) (int, *Condition) {
+func GetCondition(conditions []metav1.Condition, condType string) (int, *metav1.Condition) {
 	for i := range conditions {
 		c := conditions[i]
 		if c.Type == condType {
@@ -106,7 +76,7 @@ func GetCondition(conditions []Condition, condType string) (int, *Condition) {
 
 // SetCondition add/update the desired condition to the condition list. It does nothing if the condition is already in
 // its desired state.
-func SetCondition(conditions []Condition, newCondition Condition) []Condition {
+func SetCondition(conditions []metav1.Condition, newCondition metav1.Condition) []metav1.Condition {
 	idx, curCond := GetCondition(conditions, newCondition.Type)
 	// If the current condition is in its desired state, we have nothing to do. Just return the original condition list.
 	if curCond != nil &&
@@ -129,7 +99,7 @@ func SetCondition(conditions []Condition, newCondition Condition) []Condition {
 }
 
 // RemoveCondition remove a condition from the condition list referred by "condType" parameter.
-func RemoveCondition(conditions []Condition, condType string) []Condition {
+func RemoveCondition(conditions []metav1.Condition, condType string) []metav1.Condition {
 	idx, _ := GetCondition(conditions, condType)
 	if idx == -1 {
 		// The desired condition is not present in the condition list. So, nothing to do.
@@ -140,9 +110,9 @@ func RemoveCondition(conditions []Condition, condType string) []Condition {
 
 // IsConditionTrue returns "true" if the desired condition is in true state.
 // It returns "false" if the desired condition is not in "true" state or is not in the condition list.
-func IsConditionTrue(conditions []Condition, condType string) bool {
+func IsConditionTrue(conditions []metav1.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == core.ConditionTrue {
+		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionTrue {
 			return true
 		}
 	}
@@ -151,9 +121,9 @@ func IsConditionTrue(conditions []Condition, condType string) bool {
 
 // IsConditionFalse returns "true" if the desired condition is in false state.
 // It returns "false" if the desired condition is not in "false" state or is not in the condition list.
-func IsConditionFalse(conditions []Condition, condType string) bool {
+func IsConditionFalse(conditions []metav1.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == core.ConditionFalse {
+		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionFalse {
 			return true
 		}
 	}
@@ -162,9 +132,9 @@ func IsConditionFalse(conditions []Condition, condType string) bool {
 
 // IsConditionUnknown returns "true" if the desired condition is in unknown state.
 // It returns "false" if the desired condition is not in "unknown" state or is not in the condition list.
-func IsConditionUnknown(conditions []Condition, condType string) bool {
+func IsConditionUnknown(conditions []metav1.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == core.ConditionUnknown {
+		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionUnknown {
 			return true
 		}
 	}

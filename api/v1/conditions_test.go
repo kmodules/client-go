@@ -24,7 +24,7 @@ import (
 
 var transitionTime = metav1.Now()
 
-var conditions = []Condition{
+var conditions = []metav1.Condition{
 	{
 		Type:               "type-1",
 		Status:             "True",
@@ -83,12 +83,12 @@ func TestGetCondition(t *testing.T) {
 	cases := []struct {
 		title           string
 		desiredCondType string
-		expected        *Condition
+		expected        *metav1.Condition
 	}{
 		{
 			title:           "condition is present in the condition list",
 			desiredCondType: "type-1",
-			expected: &Condition{
+			expected: &metav1.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "No reason",
@@ -114,18 +114,18 @@ func TestGetCondition(t *testing.T) {
 func TestSetCondition(t *testing.T) {
 	cases := []struct {
 		title    string
-		desired  Condition
-		expected *Condition
+		desired  metav1.Condition
+		expected *metav1.Condition
 	}{
 		{
 			title: "condition is not in the condition list",
-			desired: Condition{
+			desired: metav1.Condition{
 				Type:    "type-5",
 				Status:  "True",
 				Reason:  "Never seen before",
 				Message: "New condition added",
 			},
-			expected: &Condition{
+			expected: &metav1.Condition{
 				Type:    "type-5",
 				Status:  "True",
 				Reason:  "Never seen before",
@@ -134,14 +134,14 @@ func TestSetCondition(t *testing.T) {
 		},
 		{
 			title: "condition is in the condition list but not in desired state",
-			desired: Condition{
+			desired: metav1.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "Updated",
 				Message:            "Condition has changed",
 				ObservedGeneration: 2,
 			},
-			expected: &Condition{
+			expected: &metav1.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "Updated",
@@ -151,13 +151,13 @@ func TestSetCondition(t *testing.T) {
 		},
 		{
 			title: "condition is already in the desired state",
-			desired: Condition{
+			desired: metav1.Condition{
 				Type:    "type-4",
 				Status:  "True",
 				Reason:  "No reason",
 				Message: "No msg",
 			},
-			expected: &Condition{
+			expected: &metav1.Condition{
 				Type:               "type-4",
 				Status:             "True",
 				Reason:             "No reason",
@@ -180,7 +180,7 @@ func TestRemoveCondition(t *testing.T) {
 	cases := []struct {
 		title           string
 		desiredCondType string
-		expected        *Condition
+		expected        *metav1.Condition
 	}{
 		{
 			title:           "condition is present in the condition list",
@@ -229,7 +229,7 @@ func TestIsConditionTrue(t *testing.T) {
 	}
 }
 
-func equalCondition(expected, got *Condition) bool {
+func equalCondition(expected, got *metav1.Condition) bool {
 	if expected == nil && got == nil {
 		return true
 	}

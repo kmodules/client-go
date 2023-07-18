@@ -47,7 +47,7 @@ func (do *DynamicOptions) HasCondition(condType string) (bool, error) {
 	return kmapi.HasCondition(conditions, condType), nil
 }
 
-func (do *DynamicOptions) GetCondition(condType string) (int, *kmapi.Condition, error) {
+func (do *DynamicOptions) GetCondition(condType string) (int, *metav1.Condition, error) {
 	_, conditions, err := do.ReadConditions()
 	if err != nil {
 		return -1, nil, err
@@ -56,7 +56,7 @@ func (do *DynamicOptions) GetCondition(condType string) (int, *kmapi.Condition, 
 	return idx, cond, nil
 }
 
-func (do *DynamicOptions) SetCondition(newCond kmapi.Condition) error {
+func (do *DynamicOptions) SetCondition(newCond metav1.Condition) error {
 	res, conditions, err := do.ReadConditions()
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (do *DynamicOptions) IsConditionTrue(condType string) (bool, error) {
 	return kmapi.IsConditionTrue(conditions, condType), nil
 }
 
-func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.Condition, error) {
+func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []metav1.Condition, error) {
 	resp, err := do.Client.Resource(do.GVR).Namespace(do.Namespace).Get(context.TODO(), do.Name, metav1.GetOptions{})
 	if err != nil {
 		return nil, nil, err
@@ -122,7 +122,7 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	if !ok {
 		return resp, nil, nil
 	}
-	var conditions []kmapi.Condition
+	var conditions []metav1.Condition
 
 	config := &mapstructure.DecoderConfig{
 		Metadata:   nil,
@@ -140,7 +140,7 @@ func (do *DynamicOptions) ReadConditions() (*unstructured.Unstructured, []kmapi.
 	return resp, conditions, err
 }
 
-func (do *DynamicOptions) UpdateConditions(conditions []kmapi.Condition) error {
+func (do *DynamicOptions) UpdateConditions(conditions []metav1.Condition) error {
 	obj, err := do.Client.Resource(do.GVR).Namespace(do.Namespace).Get(context.TODO(), do.Name, metav1.GetOptions{})
 	if err != nil {
 		return err
