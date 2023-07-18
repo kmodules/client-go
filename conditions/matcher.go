@@ -19,21 +19,21 @@ package conditions
 import (
 	"fmt"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	"github.com/onsi/gomega"
 	"github.com/onsi/gomega/types"
 )
 
 // MatchConditions returns a custom matcher to check equality of conditionsapi.Conditions.
-func MatchConditions(expected conditionsapi.Conditions) types.GomegaMatcher {
+func MatchConditions(expected kmapi.Conditions) types.GomegaMatcher {
 	return &matchConditions{
 		expected: expected,
 	}
 }
 
 type matchConditions struct {
-	expected conditionsapi.Conditions
+	expected kmapi.Conditions
 }
 
 func (m matchConditions) Match(actual interface{}) (success bool, err error) {
@@ -54,18 +54,18 @@ func (m matchConditions) NegatedFailureMessage(actual interface{}) (message stri
 }
 
 // MatchCondition returns a custom matcher to check equality of conditionsapi.Condition.
-func MatchCondition(expected conditionsapi.Condition) types.GomegaMatcher {
+func MatchCondition(expected kmapi.Condition) types.GomegaMatcher {
 	return &matchCondition{
 		expected: expected,
 	}
 }
 
 type matchCondition struct {
-	expected conditionsapi.Condition
+	expected kmapi.Condition
 }
 
 func (m matchCondition) Match(actual interface{}) (success bool, err error) {
-	actualCondition, ok := actual.(conditionsapi.Condition)
+	actualCondition, ok := actual.(kmapi.Condition)
 	if !ok {
 		return false, fmt.Errorf("actual should be of type Condition")
 	}

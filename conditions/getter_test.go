@@ -19,19 +19,19 @@ package conditions
 import (
 	"testing"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
 var (
-	nil1          *conditionsapi.Condition
+	nil1          *kmapi.Condition
 	true1         = TrueCondition("true1")
 	unknown1      = UnknownCondition("unknown1", "reason unknown1", "message unknown1")
-	falseInfo1    = FalseCondition("falseInfo1", "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1")
-	falseWarning1 = FalseCondition("falseWarning1", "reason falseWarning1", conditionsapi.ConditionSeverityWarning, "message falseWarning1")
-	falseError1   = FalseCondition("falseError1", "reason falseError1", conditionsapi.ConditionSeverityError, "message falseError1")
+	falseInfo1    = FalseCondition("falseInfo1", "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1")
+	falseWarning1 = FalseCondition("falseWarning1", "reason falseWarning1", kmapi.ConditionSeverityWarning, "message falseWarning1")
+	falseError1   = FalseCondition("falseError1", "reason falseError1", kmapi.ConditionSeverityError, "message falseError1")
 )
 
 func newConditioned(name string) *conditioned { // nolint: errcheck
@@ -49,14 +49,14 @@ func newConditioned(name string) *conditioned { // nolint: errcheck
 
 type conditioned struct {
 	*unstructured.Unstructured
-	conditions conditionsapi.Conditions
+	conditions kmapi.Conditions
 }
 
-func (c *conditioned) SetConditions(conditions conditionsapi.Conditions) {
+func (c *conditioned) SetConditions(conditions kmapi.Conditions) {
 	c.conditions = conditions
 }
 
-func (c *conditioned) GetConditions() conditionsapi.Conditions {
+func (c *conditioned) GetConditions() kmapi.Conditions {
 	return c.conditions
 }
 
@@ -113,7 +113,7 @@ func TestIsMethods(t *testing.T) {
 	// test GetSeverity
 	g.Expect(GetSeverity(obj, "nil1")).To(BeNil())
 	severity := GetSeverity(obj, "falseInfo1")
-	expectedSeverity := conditionsapi.ConditionSeverityInfo
+	expectedSeverity := kmapi.ConditionSeverityInfo
 	g.Expect(severity).To(Equal(&expectedSeverity))
 
 	// test GetMessage
@@ -122,16 +122,16 @@ func TestIsMethods(t *testing.T) {
 }
 
 func TestMirror(t *testing.T) {
-	foo := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityInfo, "message foo")
-	ready := TrueCondition(conditionsapi.ReadyCondition)
+	foo := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityInfo, "message foo")
+	ready := TrueCondition(kmapi.ReadyCondition)
 	readyBar := ready.DeepCopy()
 	readyBar.Type = "bar"
 
 	tests := []struct {
 		name string
 		from Getter
-		t    conditionsapi.ConditionType
-		want *conditionsapi.Condition
+		t    kmapi.ConditionType
+		want *kmapi.Condition
 	}{
 		{
 			name: "Returns nil when the ready condition does not exists",
@@ -162,15 +162,15 @@ func TestMirror(t *testing.T) {
 
 func TestSummary(t *testing.T) {
 	foo := TrueCondition("foo")
-	bar := FalseCondition("bar", "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1")
-	baz := FalseCondition("baz", "reason falseInfo2", conditionsapi.ConditionSeverityInfo, "message falseInfo2")
-	existingReady := FalseCondition(conditionsapi.ReadyCondition, "reason falseError1", conditionsapi.ConditionSeverityError, "message falseError1") // NB. existing ready has higher priority than other conditions
+	bar := FalseCondition("bar", "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1")
+	baz := FalseCondition("baz", "reason falseInfo2", kmapi.ConditionSeverityInfo, "message falseInfo2")
+	existingReady := FalseCondition(kmapi.ReadyCondition, "reason falseError1", kmapi.ConditionSeverityError, "message falseError1") // NB. existing ready has higher priority than other conditions
 
 	tests := []struct {
 		name    string
 		from    Getter
 		options []MergeOption
-		want    *conditionsapi.Condition
+		want    *kmapi.Condition
 	}{
 		{
 			name: "Returns nil when there are no conditions to summarize",
@@ -180,78 +180,78 @@ func TestSummary(t *testing.T) {
 		{
 			name: "Returns ready condition with the summary of existing conditions (with default options)",
 			from: getterWithConditions(foo, bar),
-			want: FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			want: FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 		{
 			name:    "Returns ready condition with the summary of existing conditions (using WithStepCounter options)",
 			from:    getterWithConditions(foo, bar),
 			options: []MergeOption{WithStepCounter()},
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "1 of 2 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "1 of 2 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of existing conditions (using WithStepCounterIf options)",
 			from:    getterWithConditions(foo, bar),
 			options: []MergeOption{WithStepCounterIf(false)},
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 		{
 			name:    "Returns ready condition with the summary of existing conditions (using WithStepCounterIf options)",
 			from:    getterWithConditions(foo, bar),
 			options: []MergeOption{WithStepCounterIf(true)},
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "1 of 2 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "1 of 2 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of existing conditions (using WithStepCounterIf and WithStepCounterIfOnly options)",
 			from:    getterWithConditions(bar),
 			options: []MergeOption{WithStepCounter(), WithStepCounterIfOnly("bar")},
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "0 of 1 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "0 of 1 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of existing conditions (using WithStepCounterIf and WithStepCounterIfOnly options)",
 			from:    getterWithConditions(foo, bar),
 			options: []MergeOption{WithStepCounter(), WithStepCounterIfOnly("foo")},
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 		{
 			name:    "Returns ready condition with the summary of selected conditions (using WithConditions options)",
 			from:    getterWithConditions(foo, bar),
 			options: []MergeOption{WithConditions("foo")}, // bar should be ignored
-			want:    TrueCondition(conditionsapi.ReadyCondition),
+			want:    TrueCondition(kmapi.ReadyCondition),
 		},
 		{
 			name:    "Returns ready condition with the summary of selected conditions (using WithConditions and WithStepCounter options)",
 			from:    getterWithConditions(foo, bar, baz),
 			options: []MergeOption{WithConditions("foo", "bar"), WithStepCounter()}, // baz should be ignored, total steps should be 2
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "1 of 2 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "1 of 2 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of selected conditions (using WithConditions and WithStepCounterIfOnly options)",
 			from:    getterWithConditions(bar),
 			options: []MergeOption{WithConditions("bar", "baz"), WithStepCounter(), WithStepCounterIfOnly("bar")}, // there is only bar, the step counter should be set and counts only a subset of conditions
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "0 of 1 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "0 of 1 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of selected conditions (using WithConditions and WithStepCounterIfOnly options - with inconsistent order between the two)",
 			from:    getterWithConditions(bar),
 			options: []MergeOption{WithConditions("baz", "bar"), WithStepCounter(), WithStepCounterIfOnly("bar", "baz")}, // conditions in WithStepCounterIfOnly could be in different order than in WithConditions
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "0 of 2 completed"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "0 of 2 completed"),
 		},
 		{
 			name:    "Returns ready condition with the summary of selected conditions (using WithConditions and WithStepCounterIfOnly options)",
 			from:    getterWithConditions(bar, baz),
 			options: []MergeOption{WithConditions("bar", "baz"), WithStepCounter(), WithStepCounterIfOnly("bar")}, // there is also baz, so the step counter should not be set
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 		{
 			name:    "Ready condition respects merge order",
 			from:    getterWithConditions(bar, baz),
 			options: []MergeOption{WithConditions("baz", "bar")}, // baz should take precedence on bar
-			want:    FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo2", conditionsapi.ConditionSeverityInfo, "message falseInfo2"),
+			want:    FalseCondition(kmapi.ReadyCondition, "reason falseInfo2", kmapi.ConditionSeverityInfo, "message falseInfo2"),
 		},
 		{
 			name: "Ignores existing Ready condition when computing the summary",
 			from: getterWithConditions(existingReady, foo, bar),
-			want: FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1"),
+			want: FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1"),
 		},
 	}
 
@@ -270,15 +270,15 @@ func TestSummary(t *testing.T) {
 }
 
 func TestAggregate(t *testing.T) {
-	ready1 := TrueCondition(conditionsapi.ReadyCondition)
-	ready2 := FalseCondition(conditionsapi.ReadyCondition, "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "message falseInfo1")
-	bar := FalseCondition("bar", "reason falseError1", conditionsapi.ConditionSeverityError, "message falseError1") // NB. bar has higher priority than other conditions
+	ready1 := TrueCondition(kmapi.ReadyCondition)
+	ready2 := FalseCondition(kmapi.ReadyCondition, "reason falseInfo1", kmapi.ConditionSeverityInfo, "message falseInfo1")
+	bar := FalseCondition("bar", "reason falseError1", kmapi.ConditionSeverityError, "message falseError1") // NB. bar has higher priority than other conditions
 
 	tests := []struct {
 		name string
 		from []Getter
-		t    conditionsapi.ConditionType
-		want *conditionsapi.Condition
+		t    kmapi.ConditionType
+		want *kmapi.Condition
 	}{
 		{
 			name: "Returns nil when there are no conditions to aggregate",
@@ -295,7 +295,7 @@ func TestAggregate(t *testing.T) {
 				getterWithConditions(bar),
 			},
 			t:    "foo",
-			want: FalseCondition("foo", "reason falseInfo1", conditionsapi.ConditionSeverityInfo, "2 of 5 completed"),
+			want: FalseCondition("foo", "reason falseInfo1", kmapi.ConditionSeverityInfo, "2 of 5 completed"),
 		},
 	}
 
@@ -313,14 +313,14 @@ func TestAggregate(t *testing.T) {
 	}
 }
 
-func getterWithConditions(conditions ...*conditionsapi.Condition) Getter {
+func getterWithConditions(conditions ...*kmapi.Condition) Getter {
 	obj := newConditioned("test2")
 	obj.SetConditions(conditionList(conditions...))
 	return obj
 }
 
-func conditionList(conditions ...*conditionsapi.Condition) conditionsapi.Conditions {
-	cs := conditionsapi.Conditions{}
+func conditionList(conditions ...*kmapi.Condition) kmapi.Conditions {
+	cs := kmapi.Conditions{}
 	for _, x := range conditions {
 		if x != nil {
 			cs = append(cs, *x)

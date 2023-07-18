@@ -19,6 +19,8 @@ package conditions
 import (
 	"fmt"
 
+	kmapi "kmodules.xyz/client-go/api/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -36,14 +38,14 @@ const (
 	ConditionRequestDenied   = "Denied"
 )
 
-func NewCondition(reason string, message string, generation int64, conditionStatus ...bool) metav1.Condition {
+func NewCondition(reason string, message string, generation int64, conditionStatus ...bool) kmapi.Condition {
 	cs := metav1.ConditionTrue
 	if len(conditionStatus) > 0 && !conditionStatus[0] {
 		cs = metav1.ConditionFalse
 	}
 
-	return metav1.Condition{
-		Type:               reason,
+	return kmapi.Condition{
+		Type:               kmapi.ConditionType(reason),
 		Reason:             reason,
 		Message:            message,
 		Status:             cs,
@@ -54,9 +56,9 @@ func NewCondition(reason string, message string, generation int64, conditionStat
 
 // HasCondition returns "true" if the desired condition provided in "condType" is present in the condition list.
 // Otherwise, it returns "false".
-func HasCondition(conditions []metav1.Condition, condType string) bool {
+func HasCondition(conditions []kmapi.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType {
+		if conditions[i].Type == kmapi.ConditionType(condType) {
 			return true
 		}
 	}
@@ -64,10 +66,10 @@ func HasCondition(conditions []metav1.Condition, condType string) bool {
 }
 
 // GetCondition returns a pointer to the desired condition referred by "condType". Otherwise, it returns nil.
-func GetCondition(conditions []metav1.Condition, condType string) (int, *metav1.Condition) {
+func GetCondition(conditions []kmapi.Condition, condType string) (int, *kmapi.Condition) {
 	for i := range conditions {
 		c := conditions[i]
-		if c.Type == condType {
+		if c.Type == kmapi.ConditionType(condType) {
 			return i, &c
 		}
 	}
@@ -76,8 +78,8 @@ func GetCondition(conditions []metav1.Condition, condType string) (int, *metav1.
 
 // SetCondition add/update the desired condition to the condition list. It does nothing if the condition is already in
 // its desired state.
-func SetCondition(conditions []metav1.Condition, newCondition metav1.Condition) []metav1.Condition {
-	idx, curCond := GetCondition(conditions, newCondition.Type)
+func SetCondition(conditions []kmapi.Condition, newCondition kmapi.Condition) []kmapi.Condition {
+	idx, curCond := GetCondition(conditions, string(newCondition.Type))
 	// If the current condition is in its desired state, we have nothing to do. Just return the original condition list.
 	if curCond != nil &&
 		curCond.Status == newCondition.Status &&
@@ -99,7 +101,7 @@ func SetCondition(conditions []metav1.Condition, newCondition metav1.Condition) 
 }
 
 // RemoveCondition remove a condition from the condition list referred by "condType" parameter.
-func RemoveCondition(conditions []metav1.Condition, condType string) []metav1.Condition {
+func RemoveCondition(conditions []kmapi.Condition, condType string) []kmapi.Condition {
 	idx, _ := GetCondition(conditions, condType)
 	if idx == -1 {
 		// The desired condition is not present in the condition list. So, nothing to do.
@@ -110,9 +112,9 @@ func RemoveCondition(conditions []metav1.Condition, condType string) []metav1.Co
 
 // IsConditionTrue returns "true" if the desired condition is in true state.
 // It returns "false" if the desired condition is not in "true" state or is not in the condition list.
-func IsConditionTrue(conditions []metav1.Condition, condType string) bool {
+func IsConditionTrue(conditions []kmapi.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionTrue {
+		if conditions[i].Type == kmapi.ConditionType(condType) && conditions[i].Status == metav1.ConditionTrue {
 			return true
 		}
 	}
@@ -121,9 +123,9 @@ func IsConditionTrue(conditions []metav1.Condition, condType string) bool {
 
 // IsConditionFalse returns "true" if the desired condition is in false state.
 // It returns "false" if the desired condition is not in "false" state or is not in the condition list.
-func IsConditionFalse(conditions []metav1.Condition, condType string) bool {
+func IsConditionFalse(conditions []kmapi.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionFalse {
+		if conditions[i].Type == kmapi.ConditionType(condType) && conditions[i].Status == metav1.ConditionFalse {
 			return true
 		}
 	}
@@ -132,9 +134,9 @@ func IsConditionFalse(conditions []metav1.Condition, condType string) bool {
 
 // IsConditionUnknown returns "true" if the desired condition is in unknown state.
 // It returns "false" if the desired condition is not in "unknown" state or is not in the condition list.
-func IsConditionUnknown(conditions []metav1.Condition, condType string) bool {
+func IsConditionUnknown(conditions []kmapi.Condition, condType string) bool {
 	for i := range conditions {
-		if conditions[i].Type == condType && conditions[i].Status == metav1.ConditionUnknown {
+		if conditions[i].Type == kmapi.ConditionType(condType) && conditions[i].Status == metav1.ConditionUnknown {
 			return true
 		}
 	}

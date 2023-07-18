@@ -19,12 +19,14 @@ package conditions
 import (
 	"testing"
 
+	kmapi "kmodules.xyz/client-go/api/v1"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var transitionTime = metav1.Now()
 
-var conditions = []metav1.Condition{
+var conditions = []kmapi.Condition{
 	{
 		Type:               "type-1",
 		Status:             "True",
@@ -83,12 +85,12 @@ func TestGetCondition(t *testing.T) {
 	cases := []struct {
 		title           string
 		desiredCondType string
-		expected        *metav1.Condition
+		expected        *kmapi.Condition
 	}{
 		{
 			title:           "condition is present in the condition list",
 			desiredCondType: "type-1",
-			expected: &metav1.Condition{
+			expected: &kmapi.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "No reason",
@@ -114,18 +116,18 @@ func TestGetCondition(t *testing.T) {
 func TestSetCondition(t *testing.T) {
 	cases := []struct {
 		title    string
-		desired  metav1.Condition
-		expected *metav1.Condition
+		desired  kmapi.Condition
+		expected *kmapi.Condition
 	}{
 		{
 			title: "condition is not in the condition list",
-			desired: metav1.Condition{
+			desired: kmapi.Condition{
 				Type:    "type-5",
 				Status:  "True",
 				Reason:  "Never seen before",
 				Message: "New condition added",
 			},
-			expected: &metav1.Condition{
+			expected: &kmapi.Condition{
 				Type:    "type-5",
 				Status:  "True",
 				Reason:  "Never seen before",
@@ -134,14 +136,14 @@ func TestSetCondition(t *testing.T) {
 		},
 		{
 			title: "condition is in the condition list but not in desired state",
-			desired: metav1.Condition{
+			desired: kmapi.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "Updated",
 				Message:            "Condition has changed",
 				ObservedGeneration: 2,
 			},
-			expected: &metav1.Condition{
+			expected: &kmapi.Condition{
 				Type:               "type-1",
 				Status:             "True",
 				Reason:             "Updated",
@@ -151,13 +153,13 @@ func TestSetCondition(t *testing.T) {
 		},
 		{
 			title: "condition is already in the desired state",
-			desired: metav1.Condition{
+			desired: kmapi.Condition{
 				Type:    "type-4",
 				Status:  "True",
 				Reason:  "No reason",
 				Message: "No msg",
 			},
-			expected: &metav1.Condition{
+			expected: &kmapi.Condition{
 				Type:               "type-4",
 				Status:             "True",
 				Reason:             "No reason",
@@ -169,7 +171,7 @@ func TestSetCondition(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.title, func(t *testing.T) {
 			newConditions := SetCondition(conditions, tt.desired)
-			if _, got := GetCondition(newConditions, tt.desired.Type); !equalCondition(tt.expected, got) {
+			if _, got := GetCondition(newConditions, string(tt.desired.Type)); !equalCondition(tt.expected, got) {
 				t.Errorf("Expected: %v Found: %v", tt.expected, got)
 			}
 		})
@@ -180,7 +182,7 @@ func TestRemoveCondition(t *testing.T) {
 	cases := []struct {
 		title           string
 		desiredCondType string
-		expected        *metav1.Condition
+		expected        *kmapi.Condition
 	}{
 		{
 			title:           "condition is present in the condition list",
@@ -229,7 +231,7 @@ func TestIsConditionTrue(t *testing.T) {
 	}
 }
 
-func equalCondition(expected, got *metav1.Condition) bool {
+func equalCondition(expected, got *kmapi.Condition) bool {
 	if expected == nil && got == nil {
 		return true
 	}

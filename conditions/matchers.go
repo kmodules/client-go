@@ -19,25 +19,25 @@ package conditions
 import (
 	"errors"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	"github.com/onsi/gomega/format"
 	"github.com/onsi/gomega/types"
 )
 
 // HaveSameStateOf matches a condition to have the same state of another.
-func HaveSameStateOf(expected *conditionsapi.Condition) types.GomegaMatcher {
+func HaveSameStateOf(expected *kmapi.Condition) types.GomegaMatcher {
 	return &conditionMatcher{
 		Expected: expected,
 	}
 }
 
 type conditionMatcher struct {
-	Expected *conditionsapi.Condition
+	Expected *kmapi.Condition
 }
 
 func (matcher *conditionMatcher) Match(actual interface{}) (success bool, err error) {
-	actualCondition, ok := actual.(*conditionsapi.Condition)
+	actualCondition, ok := actual.(*kmapi.Condition)
 	if !ok {
 		return false, errors.New("value should be a condition")
 	}

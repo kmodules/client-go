@@ -21,7 +21,7 @@ import (
 	"testing"
 	"time"
 
-	conditionsapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
@@ -51,7 +51,7 @@ func TestHasSameState(t *testing.T) {
 	g.Expect(hasSameState(falseInfo1, falseInfo2)).To(BeFalse())
 
 	falseInfo2 = falseInfo1.DeepCopy()
-	falseInfo2.Severity = conditionsapi.ConditionSeverityWarning
+	falseInfo2.Severity = kmapi.ConditionSeverityWarning
 	g.Expect(hasSameState(falseInfo1, falseInfo2)).To(BeFalse())
 
 	falseInfo2 = falseInfo1.DeepCopy()
@@ -76,25 +76,25 @@ func TestLexicographicLess(t *testing.T) {
 	g.Expect(lexicographicLess(a, b)).To(BeFalse())
 
 	// Ready condition is treated as an exception and always goes first
-	a = TrueCondition(conditionsapi.ReadyCondition)
+	a = TrueCondition(kmapi.ReadyCondition)
 	b = TrueCondition("A")
 	g.Expect(lexicographicLess(a, b)).To(BeTrue())
 
 	a = TrueCondition("A")
-	b = TrueCondition(conditionsapi.ReadyCondition)
+	b = TrueCondition(kmapi.ReadyCondition)
 	g.Expect(lexicographicLess(a, b)).To(BeFalse())
 }
 
 func TestSet(t *testing.T) {
 	a := TrueCondition("a")
 	b := TrueCondition("b")
-	ready := TrueCondition(conditionsapi.ReadyCondition)
+	ready := TrueCondition(kmapi.ReadyCondition)
 
 	tests := []struct {
 		name      string
 		to        Setter
-		condition *conditionsapi.Condition
-		want      conditionsapi.Conditions
+		condition *kmapi.Condition
+		want      kmapi.Conditions
 	}{
 		{
 			name:      "Set adds a condition",
@@ -136,15 +136,15 @@ func TestSet(t *testing.T) {
 func TestSetLastTransitionTime(t *testing.T) {
 	x := metav1.Date(2012, time.January, 1, 12, 15, 30, 5e8, time.UTC)
 
-	foo := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityInfo, "message foo")
-	fooWithLastTransitionTime := FalseCondition("foo", "reason foo", conditionsapi.ConditionSeverityInfo, "message foo")
+	foo := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityInfo, "message foo")
+	fooWithLastTransitionTime := FalseCondition("foo", "reason foo", kmapi.ConditionSeverityInfo, "message foo")
 	fooWithLastTransitionTime.LastTransitionTime = x
 	fooWithAnotherState := TrueCondition("foo")
 
 	tests := []struct {
 		name                    string
 		to                      Setter
-		new                     *conditionsapi.Condition
+		new                     *kmapi.Condition
 		LastTransitionTimeCheck func(*WithT, metav1.Time)
 	}{
 		{
@@ -199,24 +199,24 @@ func TestMarkMethods(t *testing.T) {
 
 	// test MarkTrue
 	MarkTrue(cluster, "conditionFoo")
-	g.Expect(Get(cluster, "conditionFoo")).To(HaveSameStateOf(&conditionsapi.Condition{
+	g.Expect(Get(cluster, "conditionFoo")).To(HaveSameStateOf(&kmapi.Condition{
 		Type:   "conditionFoo",
 		Status: metav1.ConditionTrue,
 	}))
 
 	// test MarkFalse
-	MarkFalse(cluster, "conditionBar", "reasonBar", conditionsapi.ConditionSeverityError, "messageBar")
-	g.Expect(Get(cluster, "conditionBar")).To(HaveSameStateOf(&conditionsapi.Condition{
+	MarkFalse(cluster, "conditionBar", "reasonBar", kmapi.ConditionSeverityError, "messageBar")
+	g.Expect(Get(cluster, "conditionBar")).To(HaveSameStateOf(&kmapi.Condition{
 		Type:     "conditionBar",
 		Status:   metav1.ConditionFalse,
-		Severity: conditionsapi.ConditionSeverityError,
+		Severity: kmapi.ConditionSeverityError,
 		Reason:   "reasonBar",
 		Message:  "messageBar",
 	}))
 
 	// test MarkUnknown
 	MarkUnknown(cluster, "conditionBaz", "reasonBaz", "messageBaz")
-	g.Expect(Get(cluster, "conditionBaz")).To(HaveSameStateOf(&conditionsapi.Condition{
+	g.Expect(Get(cluster, "conditionBaz")).To(HaveSameStateOf(&kmapi.Condition{
 		Type:    "conditionBaz",
 		Status:  metav1.ConditionUnknown,
 		Reason:  "reasonBaz",
@@ -230,12 +230,12 @@ func TestSetSummary(t *testing.T) {
 
 	SetSummary(target)
 
-	g.Expect(Has(target, conditionsapi.ReadyCondition)).To(BeTrue())
+	g.Expect(Has(target, kmapi.ReadyCondition)).To(BeTrue())
 }
 
 func TestSetMirror(t *testing.T) {
 	g := NewWithT(t)
-	source := getterWithConditions(TrueCondition(conditionsapi.ReadyCondition))
+	source := getterWithConditions(TrueCondition(kmapi.ReadyCondition))
 	target := setterWithConditions()
 
 	SetMirror(target, "foo", source)
@@ -245,8 +245,8 @@ func TestSetMirror(t *testing.T) {
 
 func TestSetAggregate(t *testing.T) {
 	g := NewWithT(t)
-	source1 := getterWithConditions(TrueCondition(conditionsapi.ReadyCondition))
-	source2 := getterWithConditions(TrueCondition(conditionsapi.ReadyCondition))
+	source1 := getterWithConditions(TrueCondition(kmapi.ReadyCondition))
+	source2 := getterWithConditions(TrueCondition(kmapi.ReadyCondition))
 	target := setterWithConditions()
 
 	SetAggregate(target, "foo", []Getter{source1, source2})
@@ -254,24 +254,24 @@ func TestSetAggregate(t *testing.T) {
 	g.Expect(Has(target, "foo")).To(BeTrue())
 }
 
-func setterWithConditions(conditions ...*conditionsapi.Condition) Setter {
+func setterWithConditions(conditions ...*kmapi.Condition) Setter {
 	obj := newConditioned("test")
 	obj.SetConditions(conditionList(conditions...))
 	return obj
 }
 
-func haveSameConditionsOf(expected conditionsapi.Conditions) types.GomegaMatcher {
+func haveSameConditionsOf(expected kmapi.Conditions) types.GomegaMatcher {
 	return &ConditionsMatcher{
 		Expected: expected,
 	}
 }
 
 type ConditionsMatcher struct {
-	Expected conditionsapi.Conditions
+	Expected kmapi.Conditions
 }
 
 func (matcher *ConditionsMatcher) Match(actual interface{}) (success bool, err error) {
-	actualConditions, ok := actual.(conditionsapi.Conditions)
+	actualConditions, ok := actual.(kmapi.Conditions)
 	if !ok {
 		return false, errors.New("value should be a conditions list")
 	}
