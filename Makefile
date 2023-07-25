@@ -154,7 +154,7 @@ gen-crd-protos:
 			--packages=-k8s.io/api/core/v1,kmodules.xyz/client-go/api/v1
 
 .PHONY: gen-enum
-gen-enum:
+gen-enum: $(BUILD_DIRS)
 	@docker run                                                 \
 	    -i                                                      \
 	    --rm                                                    \
