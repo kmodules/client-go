@@ -111,9 +111,6 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		patch = client.MergeFrom(cur)
 	}
 	mod := transform(cur.DeepCopyObject().(client.Object), false)
-	if p, err := patch.Data(mod); err != nil || string(p) == "{}" {
-		return kutil.VerbUnchanged, err
-	}
 	err = c.Patch(ctx, mod, patch, opts...)
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -149,9 +146,6 @@ func PatchStatus(ctx context.Context, c client.Client, obj client.Object, transf
 	//   - application/apply-patch+yaml
 	patch := client.MergeFrom(cur)
 	mod := transform(cur.DeepCopyObject().(client.Object))
-	if p, err := patch.Data(mod); err != nil || string(p) == "{}" {
-		return kutil.VerbUnchanged, err
-	}
 	err = c.Status().Patch(ctx, mod, patch, opts...)
 	if err != nil {
 		return kutil.VerbUnchanged, err
