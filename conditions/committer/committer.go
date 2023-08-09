@@ -28,20 +28,18 @@ import (
 )
 
 // Patcher is just the Patch API with a generic to keep use sites type safe
-type Patcher[R any] interface {
+type Patcher interface {
 	Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error
 }
 
-type NamespacedPatcher[R any] func(ns string) Patcher[R]
-
-type MyInterface[Sp any, St any] interface {
+type StatusGetter[St any] interface {
 	GetStatus() St
 	client.Object
 }
 
-func NewStatusCommitter[R any, Sp any, St any](patcher NamespacedPatcher[R]) func(context.Context, MyInterface[Sp, St], MyInterface[Sp, St]) error {
+func NewStatusCommitter[R any, St any](patcher Patcher) func(context.Context, StatusGetter[St], StatusGetter[St]) error {
 	focusType := fmt.Sprintf("%T", *new(R))
-	return func(ctx context.Context, old, obj MyInterface[Sp, St]) error {
+	return func(ctx context.Context, old, obj StatusGetter[St]) error {
 		logger := klog.FromContext(ctx)
 		statusChanged := !equality.Semantic.DeepEqual(old.GetStatus(), obj.GetStatus())
 		if !statusChanged {
@@ -66,8 +64,8 @@ func NewStatusCommitter[R any, Sp any, St any](patcher NamespacedPatcher[R]) fun
 			return fmt.Errorf("failed to create patch for %s %s/%s: %w", focusType, ns, name, err)
 		}
 
-		logger.Info(fmt.Sprintf("patching %s", focusType), "patch", string(patchBytes))
+		logger.V(3).Info(fmt.Sprintf("patching %s", focusType), "patch", string(patchBytes))
 		patch := client.MergeFrom(old)
-		return patcher(ns).Patch(ctx, obj, patch)
+		return patcher.Patch(ctx, obj, patch)
 	}
 }
