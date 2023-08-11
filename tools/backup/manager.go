@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -28,6 +29,8 @@ import (
 	"time"
 
 	core "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -36,6 +39,7 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
+	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 	"sigs.k8s.io/yaml"
 )
 
@@ -50,13 +54,19 @@ type ItemList struct {
 type BackupManager struct {
 	cluster  string
 	config   *rest.Config
+	mapper   meta.RESTMapper
 	sanitize bool
 }
 
 func NewBackupManager(cluster string, config *rest.Config, sanitize bool) BackupManager {
+	mapper, err := apiutil.NewDynamicRESTMapper(config)
+	if err != nil {
+		panic(err)
+	}
 	return BackupManager{
 		cluster:  cluster,
 		config:   config,
+		mapper:   mapper,
 		sanitize: sanitize,
 	}
 }
@@ -194,7 +204,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 
 				md, ok := item["metadata"]
 				if ok {
-					path = getPathFromSelfLink(md)
+					path = getPathFromSelfLink(mgr.mapper, item)
 					if mgr.sanitize {
 						cleanUpObjectMeta(md)
 					}
@@ -300,10 +310,15 @@ func cleanUpPodSpec(in map[string]interface{}) (map[string]interface{}, error) {
 	return out, err
 }
 
-func getPathFromSelfLink(md interface{}) string {
-	meta, ok := md.(map[string]interface{})
-	if ok {
-		return meta["selfLink"].(string) + ".yaml"
+func getPathFromSelfLink(mapper meta.RESTMapper, obj map[string]interface{}) string {
+	u := unstructured.Unstructured{Object: obj}
+	gvk := u.GetObjectKind().GroupVersionKind()
+	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)
+	if err != nil {
+		panic(err)
 	}
-	return ""
+	if mapping.Scope.Name() == meta.RESTScopeNameNamespace {
+		return fmt.Sprintf("%s/%s/namespaces/%s/%s/%s.yaml", gvk.Group, gvk.Version, u.GetNamespace(), mapping.Resource.Resource, u.GetName())
+	}
+	return fmt.Sprintf("%s/%s/%s/%s.yaml", gvk.Group, gvk.Version, mapping.Resource.Resource, u.GetName())
 }
