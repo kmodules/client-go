@@ -25,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/yudai/gojsondiff v1.0.0
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
-	gomodules.xyz/jsonpatch/v2 v2.3.0
+	gomodules.xyz/jsonpatch/v2 v2.4.0
 	gomodules.xyz/mergo v0.3.13
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sync v0.1.0
