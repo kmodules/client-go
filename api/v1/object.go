@@ -144,6 +144,14 @@ func ParseObjectID(key OID) (*ObjectID, error) {
 	return &id, nil
 }
 
+func MustParseObjectID(key OID) *ObjectID {
+	oid, err := ParseObjectID(key)
+	if err != nil {
+		panic(err)
+	}
+	return oid
+}
+
 func ObjectIDMap(key OID) (map[string]interface{}, error) {
 	id := map[string]interface{}{
 		"group":     "",
