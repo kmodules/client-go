@@ -32,10 +32,14 @@ const (
 	EdgeLabelLocatedOn EdgeLabel = "located_on"
 	// EdgeLabelMonitoredBy is a EdgeLabel of type monitored_by.
 	EdgeLabelMonitoredBy EdgeLabel = "monitored_by"
+	// EdgeLabelOcmBind is a EdgeLabel of type ocm_bind.
+	EdgeLabelOcmBind EdgeLabel = "ocm_bind"
 	// EdgeLabelOffshoot is a EdgeLabel of type offshoot.
 	EdgeLabelOffshoot EdgeLabel = "offshoot"
 	// EdgeLabelOps is a EdgeLabel of type ops.
 	EdgeLabelOps EdgeLabel = "ops"
+	// EdgeLabelPlacedInto is a EdgeLabel of type placed_into.
+	EdgeLabelPlacedInto EdgeLabel = "placed_into"
 	// EdgeLabelPolicy is a EdgeLabel of type policy.
 	EdgeLabelPolicy EdgeLabel = "policy"
 	// EdgeLabelRecommendedFor is a EdgeLabel of type recommended_for.
@@ -63,8 +67,10 @@ var _EdgeLabelNames = []string{
 	string(EdgeLabelExposedBy),
 	string(EdgeLabelLocatedOn),
 	string(EdgeLabelMonitoredBy),
+	string(EdgeLabelOcmBind),
 	string(EdgeLabelOffshoot),
 	string(EdgeLabelOps),
+	string(EdgeLabelPlacedInto),
 	string(EdgeLabelPolicy),
 	string(EdgeLabelRecommendedFor),
 	string(EdgeLabelRestoreInto),
@@ -93,8 +99,10 @@ func EdgeLabelValues() []EdgeLabel {
 		EdgeLabelExposedBy,
 		EdgeLabelLocatedOn,
 		EdgeLabelMonitoredBy,
+		EdgeLabelOcmBind,
 		EdgeLabelOffshoot,
 		EdgeLabelOps,
+		EdgeLabelPlacedInto,
 		EdgeLabelPolicy,
 		EdgeLabelRecommendedFor,
 		EdgeLabelRestoreInto,
@@ -127,8 +135,10 @@ var _EdgeLabelValue = map[string]EdgeLabel{
 	"exposed_by":      EdgeLabelExposedBy,
 	"located_on":      EdgeLabelLocatedOn,
 	"monitored_by":    EdgeLabelMonitoredBy,
+	"ocm_bind":        EdgeLabelOcmBind,
 	"offshoot":        EdgeLabelOffshoot,
 	"ops":             EdgeLabelOps,
+	"placed_into":     EdgeLabelPlacedInto,
 	"policy":          EdgeLabelPolicy,
 	"recommended_for": EdgeLabelRecommendedFor,
 	"restore_into":    EdgeLabelRestoreInto,
