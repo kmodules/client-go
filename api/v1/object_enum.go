@@ -16,6 +16,8 @@ const (
 	EdgeLabelAuthn EdgeLabel = "authn"
 	// EdgeLabelAuthz is a EdgeLabel of type authz.
 	EdgeLabelAuthz EdgeLabel = "authz"
+	// EdgeLabelAuthSecret is a EdgeLabel of type auth_secret.
+	EdgeLabelAuthSecret EdgeLabel = "auth_secret"
 	// EdgeLabelBackupVia is a EdgeLabel of type backup_via.
 	EdgeLabelBackupVia EdgeLabel = "backup_via"
 	// EdgeLabelCatalog is a EdgeLabel of type catalog.
@@ -59,6 +61,7 @@ var ErrInvalidEdgeLabel = fmt.Errorf("not a valid EdgeLabel, try [%s]", strings.
 var _EdgeLabelNames = []string{
 	string(EdgeLabelAuthn),
 	string(EdgeLabelAuthz),
+	string(EdgeLabelAuthSecret),
 	string(EdgeLabelBackupVia),
 	string(EdgeLabelCatalog),
 	string(EdgeLabelCertIssuer),
@@ -91,6 +94,7 @@ func EdgeLabelValues() []EdgeLabel {
 	return []EdgeLabel{
 		EdgeLabelAuthn,
 		EdgeLabelAuthz,
+		EdgeLabelAuthSecret,
 		EdgeLabelBackupVia,
 		EdgeLabelCatalog,
 		EdgeLabelCertIssuer,
@@ -127,6 +131,7 @@ func (x EdgeLabel) IsValid() bool {
 var _EdgeLabelValue = map[string]EdgeLabel{
 	"authn":           EdgeLabelAuthn,
 	"authz":           EdgeLabelAuthz,
+	"auth_secret":     EdgeLabelAuthSecret,
 	"backup_via":      EdgeLabelBackupVia,
 	"catalog":         EdgeLabelCatalog,
 	"cert_issuer":     EdgeLabelCertIssuer,
