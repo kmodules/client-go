@@ -30,6 +30,8 @@ const (
 	EdgeLabelConnectVia EdgeLabel = "connect_via"
 	// EdgeLabelExposedBy is a EdgeLabel of type exposed_by.
 	EdgeLabelExposedBy EdgeLabel = "exposed_by"
+	// EdgeLabelEvent is a EdgeLabel of type event.
+	EdgeLabelEvent EdgeLabel = "event"
 	// EdgeLabelLocatedOn is a EdgeLabel of type located_on.
 	EdgeLabelLocatedOn EdgeLabel = "located_on"
 	// EdgeLabelMonitoredBy is a EdgeLabel of type monitored_by.
@@ -68,6 +70,7 @@ var _EdgeLabelNames = []string{
 	string(EdgeLabelConfig),
 	string(EdgeLabelConnectVia),
 	string(EdgeLabelExposedBy),
+	string(EdgeLabelEvent),
 	string(EdgeLabelLocatedOn),
 	string(EdgeLabelMonitoredBy),
 	string(EdgeLabelOcmBind),
@@ -101,6 +104,7 @@ func EdgeLabelValues() []EdgeLabel {
 		EdgeLabelConfig,
 		EdgeLabelConnectVia,
 		EdgeLabelExposedBy,
+		EdgeLabelEvent,
 		EdgeLabelLocatedOn,
 		EdgeLabelMonitoredBy,
 		EdgeLabelOcmBind,
@@ -138,6 +142,7 @@ var _EdgeLabelValue = map[string]EdgeLabel{
 	"config":          EdgeLabelConfig,
 	"connect_via":     EdgeLabelConnectVia,
 	"exposed_by":      EdgeLabelExposedBy,
+	"event":           EdgeLabelEvent,
 	"located_on":      EdgeLabelLocatedOn,
 	"monitored_by":    EdgeLabelMonitoredBy,
 	"ocm_bind":        EdgeLabelOcmBind,
