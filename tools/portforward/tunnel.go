@@ -132,7 +132,7 @@ func (t *Tunnel) Close() {
 }
 
 func getAvailablePort(preferredPort int) (int, error) {
-	l, err := net.Listen("tcp", fmt.Sprintf(":%v", preferredPort))
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", preferredPort))
 	if err != nil {
 		return 0, err
 	}
