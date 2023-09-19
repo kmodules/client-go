@@ -14,21 +14,42 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package provider
+package meta
 
 import (
 	"context"
 	"errors"
 
-	v1alpha1 "kmodules.xyz/client-go/apis/management/v1alpha1"
+	kmapi "kmodules.xyz/client-go/api/v1"
+	"kmodules.xyz/client-go/tools/clusterid"
 
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func DetectCAPICluster(kc client.Client) (*v1alpha1.CAPIClusterInfo, error) {
+func ClusterUID(c client.Reader) (string, error) {
+	var ns core.Namespace
+	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	if err != nil {
+		return "", err
+	}
+	return string(ns.UID), nil
+}
+
+func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
+	var ns core.Namespace
+	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	if err != nil {
+		return nil, err
+	}
+	return clusterid.ClusterMetadataForNamespace(&ns)
+}
+
+func DetectCAPICluster(kc client.Client) (*kmapi.CAPIClusterInfo, error) {
 	var list unstructured.UnstructuredList
 	list.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
@@ -50,7 +71,7 @@ func DetectCAPICluster(kc client.Client) (*v1alpha1.CAPIClusterInfo, error) {
 		return nil, err
 	}
 
-	return &v1alpha1.CAPIClusterInfo{
+	return &kmapi.CAPIClusterInfo{
 		Provider:    getProviderName(capiProvider),
 		Namespace:   ns,
 		ClusterName: clusterName,

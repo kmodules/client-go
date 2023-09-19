@@ -19,7 +19,7 @@ package manager
 import (
 	"context"
 
-	"kmodules.xyz/client-go/apis/management/v1alpha1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -27,21 +27,21 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func DetectClusterManager(kc client.Client) v1alpha1.ClusterManager {
-	var result v1alpha1.ClusterManager
+func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
+	var result kmapi.ClusterManager
 	if IsACEManaged(kc) {
-		result |= v1alpha1.ClusterManagerACE
+		result |= kmapi.ClusterManagerACE
 	}
 	if IsOpenClusterManaged(kc.RESTMapper()) {
-		result |= v1alpha1.ClusterManagerOCM
+		result |= kmapi.ClusterManagerOCM
 	}
 	if IsRancherManaged(kc.RESTMapper()) {
-		result |= v1alpha1.ClusterManagerRancher
+		result |= kmapi.ClusterManagerRancher
 	}
 	return result
 }
 
-func IsDefault(kc client.Client, cm v1alpha1.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
+func IsDefault(kc client.Client, cm kmapi.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
 	if cm.ManagedByRancher() {
 		return IsRancherSystemResource(kc, key)
 	}

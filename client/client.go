@@ -21,13 +21,8 @@ import (
 	"reflect"
 	"strings"
 
-	kmapi "kmodules.xyz/client-go/api/v1"
-	"kmodules.xyz/client-go/tools/clusterid"
-
 	"github.com/pkg/errors"
-	core "k8s.io/api/core/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -187,22 +182,4 @@ func GetForGVK(ctx context.Context, c client.Client, gvk schema.GroupVersionKind
 	obj := o.(client.Object)
 	err = c.Get(ctx, ref, obj)
 	return obj, err
-}
-
-func ClusterUID(c client.Reader) (string, error) {
-	var ns core.Namespace
-	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
-	if err != nil {
-		return "", err
-	}
-	return string(ns.UID), nil
-}
-
-func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
-	var ns core.Namespace
-	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
-	if err != nil {
-		return nil, err
-	}
-	return clusterid.ClusterMetadataForNamespace(&ns)
 }

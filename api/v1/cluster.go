@@ -46,3 +46,34 @@ type ClusterMetadata struct {
 	DisplayName string          `json:"displayName,omitempty" protobuf:"bytes,3,opt,name=displayName"`
 	Provider    HostingProvider `json:"provider,omitempty" protobuf:"bytes,4,opt,name=provider,casttype=HostingProvider"`
 }
+
+type ClusterManager int
+
+const (
+	ClusterManagerACE ClusterManager = 1 << iota
+	ClusterManagerOCM
+	ClusterManagerRancher
+	ClusterManagerOpenShift
+)
+
+func (cm ClusterManager) ManagedByACE() bool {
+	return cm&ClusterManagerACE == ClusterManagerACE
+}
+
+func (cm ClusterManager) ManagedByOCM() bool {
+	return cm&ClusterManagerOCM == ClusterManagerOCM
+}
+
+func (cm ClusterManager) ManagedByRancher() bool {
+	return cm&ClusterManagerRancher == ClusterManagerRancher
+}
+
+func (cm ClusterManager) ManagedByOpenShift() bool {
+	return cm&ClusterManagerOpenShift == ClusterManagerOpenShift
+}
+
+type CAPIClusterInfo struct {
+	Provider    string `json:"provider,omitempty"`
+	Namespace   string `json:"namespace,omitempty"`
+	ClusterName string `json:"clusterName,omitempty"`
+}
