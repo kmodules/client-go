@@ -21,7 +21,7 @@ import (
 	"sync"
 	"time"
 
-	dbapi "kmodules.xyz/client-go/api/v1"
+	kmapi "kmodules.xyz/client-go/api/v1"
 
 	"k8s.io/klog/v2"
 )
@@ -46,7 +46,7 @@ func NewHealthChecker() *HealthChecker {
 
 // Start creates a health check go routine.
 // Call this method after successful creation of all the replicas of a database.
-func (hc *HealthChecker) Start(key string, healthCheckSpec dbapi.HealthCheckSpec, fn func(string, *HealthCard)) {
+func (hc *HealthChecker) Start(key string, healthCheckSpec kmapi.HealthCheckSpec, fn func(string, *HealthCard)) {
 	if healthCheckSpec.PeriodSeconds == nil || healthCheckSpec.TimeoutSeconds == nil || healthCheckSpec.FailureThreshold == nil {
 		klog.Errorf("spec.healthCheck values are nil, can't start or modify health check.")
 		return
