@@ -18,10 +18,8 @@ GO_PKG   := kmodules.xyz
 REPO     := $(notdir $(shell pwd))
 BIN      := client-go
 
-CRD_OPTIONS          ?= "crd:maxDescLen=0,generateEmbeddedObjectMeta=true,allowDangerousTypes=true"
 # https://github.com/appscodelabs/gengo-builder
 CODE_GENERATOR_IMAGE ?= ghcr.io/appscode/gengo:release-1.25
-API_GROUPS           ?= management:v1alpha1
 
 # This version-strategy uses git tags to set the version string
 git_branch       := $(shell git rev-parse --abbrev-ref HEAD)
@@ -47,7 +45,7 @@ endif
 ### These variables should not need tweaking.
 ###
 
-SRC_PKGS := admissionregistration api apis apiextensions apiregistration apps batch certificates client cluster conditions core discovery dynamic extensions meta networking openapi policy rbac storage tools
+SRC_PKGS := admissionregistration api apiextensions apiregistration apps batch certificates client cluster conditions core discovery dynamic extensions meta networking openapi policy rbac storage tools
 SRC_DIRS := $(SRC_PKGS) *.go
 
 DOCKER_PLATFORMS := linux/amd64 linux/arm linux/arm64
@@ -118,20 +116,6 @@ clientset:
 			--go-header-file "./hack/license/go.txt"       \
 			--input-dirs "$(GO_PKG)/$(REPO)/api/v1"        \
 			--output-file-base zz_generated.deepcopy
-	@docker run --rm	                                 \
-		-u $$(id -u):$$(id -g)                           \
-		-v /tmp:/.cache                                  \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)                   \
-		-w $(DOCKER_REPO_ROOT)                           \
-		--env HTTP_PROXY=$(HTTP_PROXY)                   \
-		--env HTTPS_PROXY=$(HTTPS_PROXY)                 \
-		$(CODE_GENERATOR_IMAGE)                          \
-		/go/src/k8s.io/code-generator/generate-groups.sh \
-			deepcopy                                       \
-			$(GO_PKG)/$(REPO)/client                       \
-			$(GO_PKG)/$(REPO)/apis                         \
-			"$(API_GROUPS)" \
-			--go-header-file "./hack/license/go.txt"
 
 # Generate openapi schema
 .PHONY: openapi
@@ -187,28 +171,8 @@ gen-enum: $(BUILD_DIRS)
 	        go generate ./api/...                               \
 	    "
 
-# Generate CRD manifests
-.PHONY: gen-crds
-gen-crds:
-	@echo "Generating CRD manifests"
-	@docker run --rm	                    \
-		-u $$(id -u):$$(id -g)              \
-		-v /tmp:/.cache                     \
-		-v $$(pwd):$(DOCKER_REPO_ROOT)      \
-		-w $(DOCKER_REPO_ROOT)              \
-	    --env HTTP_PROXY=$(HTTP_PROXY)    \
-	    --env HTTPS_PROXY=$(HTTPS_PROXY)  \
-		$(CODE_GENERATOR_IMAGE)             \
-		controller-gen                      \
-			$(CRD_OPTIONS)                    \
-			paths="./apis/..."                \
-			output:crd:artifacts:config=crds
-
-.PHONY: manifests
-manifests: gen-crds
-
 .PHONY: gen
-gen: clientset manifests gen-enum # openapi gen-crd-protos
+gen: clientset gen-enum # openapi gen-crd-protos
 
 fmt: $(BUILD_DIRS)
 	@docker run                                                 \
