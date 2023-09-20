@@ -132,7 +132,7 @@ func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
 
 func IsDefault(kc client.Client, cm kmapi.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
 	if cm.ManagedByRancher() {
-		return IsRancherSystemResource(kc, key)
+		return IsInSystemProject(kc, key.Namespace)
 	}
 	return IsSingletonResource(kc, gvk, key)
 }
