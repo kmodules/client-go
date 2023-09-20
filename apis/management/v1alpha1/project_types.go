@@ -20,6 +20,12 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	ResourceKindProject = "Project"
+	ResourceProject     = "project"
+	ResourceProjects    = "projects"
+)
+
 // ProjectSpec defines the desired state of Project
 type ProjectSpec struct {
 	// +kubebuilder:default=User
