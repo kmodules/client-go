@@ -30,7 +30,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const labelKeyRancherProjectId = "field.cattle.io/projectId"
+const LabelKeyRancherProjectId = "field.cattle.io/projectId"
 
 func IsRancherManaged(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
@@ -56,7 +56,7 @@ func IsRancherSystemResource(kc client.Client, key types.NamespacedName) (bool, 
 	if err != nil {
 		return false, err
 	}
-	projectId, exists := ns.Labels[labelKeyRancherProjectId]
+	projectId, exists := ns.Labels[LabelKeyRancherProjectId]
 	if !exists {
 		return false, nil
 	}
@@ -67,7 +67,7 @@ func IsRancherSystemResource(kc client.Client, key types.NamespacedName) (bool, 
 		return false, err
 	}
 
-	sysProjectId, exists := ns.Labels[labelKeyRancherProjectId]
+	sysProjectId, exists := ns.Labels[LabelKeyRancherProjectId]
 	if !exists {
 		return false, nil
 	}
@@ -85,7 +85,7 @@ func ListRancherProjects(kc client.Client) ([]v1alpha1.Project, error) {
 
 	projects := map[string]v1alpha1.Project{}
 	for _, ns := range list.Items {
-		projectId, exists := ns.Labels[labelKeyRancherProjectId]
+		projectId, exists := ns.Labels[LabelKeyRancherProjectId]
 		if !exists {
 			continue
 		}
@@ -101,7 +101,7 @@ func ListRancherProjects(kc client.Client) ([]v1alpha1.Project, error) {
 					Namespaces: nil,
 					NamespaceSelector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							labelKeyRancherProjectId: projectId,
+							LabelKeyRancherProjectId: projectId,
 						},
 					},
 					// Quota: core.ResourceRequirements{},
@@ -128,7 +128,7 @@ func ListRancherProjects(kc client.Client) ([]v1alpha1.Project, error) {
 func GetRancherProject(kc client.Client, name string) (*v1alpha1.Project, error) {
 	var list core.NamespaceList
 	err := kc.List(context.TODO(), &list, client.MatchingLabels{
-		labelKeyRancherProjectId: name,
+		LabelKeyRancherProjectId: name,
 	})
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func GetRancherProject(kc client.Client, name string) (*v1alpha1.Project, error)
 			Namespaces: nil,
 			NamespaceSelector: &metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					labelKeyRancherProjectId: name,
+					LabelKeyRancherProjectId: name,
 				},
 			},
 			// Quota: core.ResourceRequirements{},
