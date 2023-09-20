@@ -16,6 +16,8 @@ limitations under the License.
 
 package v1
 
+import "strings"
+
 // +kubebuilder:validation:Enum=Aws;Azure;DigitalOcean;GoogleCloud;Linode;Packet;Scaleway;Vultr;BareMetal;KIND;Generic;Private
 type HostingProvider string
 
@@ -70,6 +72,27 @@ func (cm ClusterManager) ManagedByRancher() bool {
 
 func (cm ClusterManager) ManagedByOpenShift() bool {
 	return cm&ClusterManagerOpenShift == ClusterManagerOpenShift
+}
+
+func (cm ClusterManager) Strings() []string {
+	out := make([]string, 0, 4)
+	if cm.ManagedByACE() {
+		out = append(out, "ACE")
+	}
+	if cm.ManagedByOCM() {
+		out = append(out, "OCM")
+	}
+	if cm.ManagedByRancher() {
+		out = append(out, "Rancher")
+	}
+	if cm.ManagedByOpenShift() {
+		out = append(out, "OpenShift")
+	}
+	return out
+}
+
+func (cm ClusterManager) String() string {
+	return strings.Join(cm.Strings(), ",")
 }
 
 type CAPIClusterInfo struct {

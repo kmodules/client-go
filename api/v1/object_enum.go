@@ -8,7 +8,7 @@ package v1
 
 import (
 	"fmt"
-	strings "strings"
+	"strings"
 )
 
 const (
