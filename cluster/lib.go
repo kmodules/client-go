@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package meta
+package cluster
 
 import (
 	"context"
@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -113,4 +114,35 @@ func getProviderName(kind string) string {
 		return "capg"
 	}
 	return ""
+}
+
+func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
+	var result kmapi.ClusterManager
+	if IsACEManaged(kc) {
+		result |= kmapi.ClusterManagerACE
+	}
+	if IsOpenClusterManaged(kc.RESTMapper()) {
+		result |= kmapi.ClusterManagerOCM
+	}
+	if IsRancherManaged(kc.RESTMapper()) {
+		result |= kmapi.ClusterManagerRancher
+	}
+	return result
+}
+
+func IsDefault(kc client.Client, cm kmapi.ClusterManager, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
+	if cm.ManagedByRancher() {
+		return IsRancherSystemResource(kc, key)
+	}
+	return IsSingletonResource(kc, gvk, key)
+}
+
+func IsSingletonResource(kc client.Client, gvk schema.GroupVersionKind, key types.NamespacedName) (bool, error) {
+	var list unstructured.UnstructuredList
+	list.SetGroupVersionKind(gvk)
+	err := kc.List(context.TODO(), &list, client.InNamespace(key.Namespace))
+	if err != nil {
+		return false, err
+	}
+	return len(list.Items) == 1, nil
 }

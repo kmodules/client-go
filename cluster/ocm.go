@@ -14,26 +14,25 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package manager
+package cluster
 
 import (
-	"context"
-
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/klog/v2"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func IsACEManaged(kc client.Client) bool {
-	var list unstructured.UnstructuredList
-	list.SetAPIVersion("apps/v1")
-	list.SetKind("Deployment")
-	err := kc.List(context.TODO(), &list, client.InNamespace("kubeops"), client.MatchingLabels{
-		"app.kubernetes.io/name":     "kube-ui-server",
-		"app.kubernetes.io/instance": "kube-ui-server",
-	})
-	if err != nil {
-		klog.Errorln(err)
+func IsOpenClusterManaged(mapper meta.RESTMapper) bool {
+	if _, err := mapper.RESTMappings(schema.GroupKind{
+		Group: "cluster.open-cluster-management.io",
+		Kind:  "ManagedCluster",
+	}); err == nil {
+		return true
 	}
-	return len(list.Items) > 0
+	if _, err := mapper.RESTMappings(schema.GroupKind{
+		Group: "work.open-cluster-management.io",
+		Kind:  "AppliedManifestWork",
+	}); err == nil {
+		return true
+	}
+	return false
 }
