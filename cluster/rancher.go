@@ -20,8 +20,6 @@ import (
 	"context"
 	"errors"
 
-	"kmodules.xyz/client-go/apis/management/v1alpha1"
-
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -72,91 +70,4 @@ func IsRancherSystemResource(kc client.Client, key types.NamespacedName) (bool, 
 		return false, nil
 	}
 	return projectId == sysProjectId, nil
-}
-
-func ListRancherProjects(kc client.Client) ([]v1alpha1.Project, error) {
-	var list core.NamespaceList
-	err := kc.List(context.TODO(), &list)
-	if meta.IsNoMatchError(err) {
-		return nil, nil
-	} else if err != nil {
-		return nil, err
-	}
-
-	projects := map[string]v1alpha1.Project{}
-	for _, ns := range list.Items {
-		projectId, exists := ns.Labels[LabelKeyRancherProjectId]
-		if !exists {
-			continue
-		}
-
-		project, exists := projects[projectId]
-		if !exists {
-			project = v1alpha1.Project{
-				ObjectMeta: metav1.ObjectMeta{
-					Name: projectId,
-				},
-				Spec: v1alpha1.ProjectSpec{
-					Type:       v1alpha1.ProjectUser,
-					Namespaces: nil,
-					NamespaceSelector: &metav1.LabelSelector{
-						MatchLabels: map[string]string{
-							LabelKeyRancherProjectId: projectId,
-						},
-					},
-					// Quota: core.ResourceRequirements{},
-				},
-			}
-		}
-		if ns.Name == metav1.NamespaceDefault {
-			project.Spec.Type = v1alpha1.ProjectDefault
-		} else if ns.Name == metav1.NamespaceSystem {
-			project.Spec.Type = v1alpha1.ProjectSystem
-		}
-		project.Spec.Namespaces = append(project.Spec.Namespaces, ns.Name)
-
-		projects[projectId] = project
-	}
-
-	result := make([]v1alpha1.Project, 0, len(projects))
-	for _, p := range projects {
-		result = append(result, p)
-	}
-	return result, nil
-}
-
-func GetRancherProject(kc client.Client, name string) (*v1alpha1.Project, error) {
-	var list core.NamespaceList
-	err := kc.List(context.TODO(), &list, client.MatchingLabels{
-		LabelKeyRancherProjectId: name,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	project := v1alpha1.Project{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: name,
-		},
-		Spec: v1alpha1.ProjectSpec{
-			Type:       v1alpha1.ProjectUser,
-			Namespaces: nil,
-			NamespaceSelector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					LabelKeyRancherProjectId: name,
-				},
-			},
-			// Quota: core.ResourceRequirements{},
-		},
-	}
-	for _, ns := range list.Items {
-		if ns.Name == metav1.NamespaceDefault {
-			project.Spec.Type = v1alpha1.ProjectDefault
-		} else if ns.Name == metav1.NamespaceSystem {
-			project.Spec.Type = v1alpha1.ProjectSystem
-		}
-		project.Spec.Namespaces = append(project.Spec.Namespaces, ns.Name)
-	}
-
-	return &project, nil
 }
