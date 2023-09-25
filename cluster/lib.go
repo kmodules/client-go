@@ -106,7 +106,7 @@ func getCAPIValues(values map[string]any) (string, string, string, error) {
 
 func getProviderName(kind string) string {
 	switch kind {
-	case "AWSManagedControlPlane":
+	case "AWSManagedCluster", "AWSManagedControlPlane":
 		return "capa"
 	case "AzureManagedCluster":
 		return "capz"
