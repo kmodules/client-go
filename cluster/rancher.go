@@ -31,6 +31,9 @@ const (
 	LabelKeyRancherFieldProjectId      = "field.cattle.io/projectId"
 	LabelKeyRancherHelmProjectId       = "helm.cattle.io/projectId"
 	LabelKeyRancherHelmProjectOperated = "helm.cattle.io/helm-project-operated"
+
+	NamespaceRancherMonitoring  = "cattle-monitoring-system"
+	PrometheusRancherMonitoring = "rancher-monitoring-prometheus"
 )
 
 func IsRancherManaged(mapper meta.RESTMapper) bool {
