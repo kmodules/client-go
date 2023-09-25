@@ -21,13 +21,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
-func IsOpenClusterManaged(mapper meta.RESTMapper) bool {
+func IsOpenClusterHub(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
 		Group: "cluster.open-cluster-management.io",
 		Kind:  "ManagedCluster",
 	}); err == nil {
 		return true
 	}
+	return false
+}
+
+func IsOpenClusterSpoke(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
 		Group: "work.open-cluster-management.io",
 		Kind:  "AppliedManifestWork",
@@ -35,4 +39,15 @@ func IsOpenClusterManaged(mapper meta.RESTMapper) bool {
 		return true
 	}
 	return false
+}
+
+func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
+	var missingDeployment bool
+	if _, err := mapper.RESTMappings(schema.GroupKind{
+		Group: "apps",
+		Kind:  "Deployment",
+	}); meta.IsNoMatchError(err) {
+		missingDeployment = true
+	}
+	return IsOpenClusterHub(mapper) && missingDeployment
 }
