@@ -46,10 +46,15 @@ func getServiceAccountTokenSecret(kc client.Client, sa client.ObjectKey) (*core.
 	for _, s := range list.Items {
 		if s.Type == core.SecretTypeServiceAccountToken &&
 			s.Annotations[core.ServiceAccountNameKey] == sa.Name {
-			return &s, nil
+
+			_, caFound := s.Data["ca.crt"]
+			_, tokenFound := s.Data["token"]
+			if caFound && tokenFound {
+				return &s, nil
+			}
 		}
 	}
-	return nil, errors.New("token secret still haven't created yet")
+	return nil, errors.New("token secret is not ready yet")
 }
 
 const (

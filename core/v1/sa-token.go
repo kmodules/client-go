@@ -35,20 +35,25 @@ import (
 
 // https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#token-controller
 func getServiceAccountTokenSecret(kc kubernetes.Interface, sa types.NamespacedName) (*core.Secret, error) {
-	secrets, err := kc.CoreV1().Secrets(sa.Namespace).List(context.TODO(), metav1.ListOptions{})
+	list, err := kc.CoreV1().Secrets(sa.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	if len(secrets.Items) == 0 {
+	if len(list.Items) == 0 {
 		return nil, errors.New("token secret still haven't created yet")
 	}
-	for _, s := range secrets.Items {
+	for _, s := range list.Items {
 		if s.Type == core.SecretTypeServiceAccountToken &&
 			s.Annotations[core.ServiceAccountNameKey] == sa.Name {
-			return &s, nil
+
+			_, caFound := s.Data["ca.crt"]
+			_, tokenFound := s.Data["token"]
+			if caFound && tokenFound {
+				return &s, nil
+			}
 		}
 	}
-	return nil, errors.New("token secret still haven't created yet")
+	return nil, errors.New("token secret is not ready yet")
 }
 
 const (
