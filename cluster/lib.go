@@ -133,6 +133,12 @@ func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
 	if IsRancherManaged(kc.RESTMapper()) {
 		result |= kmapi.ClusterManagerRancher
 	}
+	//if IsRancherManaged(kc.RESTMapper()) {
+	//	result |= kmapi.ClusterManagerRancher
+	//}
+	if MustIsVirtualCluster(kc) {
+		result |= kmapi.ClusterManagerVirtualCluster
+	}
 	return result
 }
 
