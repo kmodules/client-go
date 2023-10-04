@@ -19,11 +19,15 @@ package healthchecker
 type HealthCheckFailureLabel string
 
 const (
-	HealthCheckClientFailure  HealthCheckFailureLabel = "ClientFailure"
-	HealthCheckPingFailure    HealthCheckFailureLabel = "PingFailure"
-	HealthCheckWriteFailure   HealthCheckFailureLabel = "WriteFailure"
-	HealthCheckReadFailure    HealthCheckFailureLabel = "ReadFailure"
-	HealthCheckPrimaryFailure HealthCheckFailureLabel = "PrimaryFailure"
+	HealthCheckClientFailure                HealthCheckFailureLabel = "ClientFailure"
+	HealthCheckPingFailure                  HealthCheckFailureLabel = "PingFailure"
+	HealthCheckWriteFailure                 HealthCheckFailureLabel = "WriteFailure"
+	HealthCheckReadFailure                  HealthCheckFailureLabel = "ReadFailure"
+	HealthCheckPrimaryFailure               HealthCheckFailureLabel = "PrimaryFailure"
+	HealthCheckSecondaryFailure             HealthCheckFailureLabel = "SecondaryFailure"
+	HealthCheckSecondaryUnusualLocked       HealthCheckFailureLabel = "SecondaryUnusualLocked"
+	HealthCheckSecondaryLockCheckingFailure HealthCheckFailureLabel = "SecondaryLockCheckingFailure"
+	HealthCheckKubernetesClientFailure      HealthCheckFailureLabel = "KubernetesClientFailure"
 
 	// replica
 	HealthCheckReplicaFailure HealthCheckFailureLabel = "ReplicaFailure"
