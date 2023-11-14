@@ -121,13 +121,13 @@ func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
 	if IsACEManaged(kc) {
 		result |= kmapi.ClusterManagerACE
 	}
-	if IsOpenClusterHub(kc.RESTMapper()) {
+	if IsOpenClusterHub(kc) {
 		result |= kmapi.ClusterManagerOCMHub
 	}
-	if IsOpenClusterSpoke(kc.RESTMapper()) {
+	if IsOpenClusterSpoke(kc) {
 		result |= kmapi.ClusterManagerOCMSpoke
 	}
-	if IsOpenClusterMulticlusterControlplane(kc.RESTMapper()) {
+	if IsOpenClusterMulticlusterControlplane(kc) {
 		result |= kmapi.ClusterManagerOCMMulticlusterControlplane
 	}
 	if IsRancherManaged(kc.RESTMapper()) {

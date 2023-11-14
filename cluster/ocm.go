@@ -17,37 +17,48 @@ limitations under the License.
 package cluster
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/klog/v2"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func IsOpenClusterHub(mapper meta.RESTMapper) bool {
-	if _, err := mapper.RESTMappings(schema.GroupKind{
-		Group: "cluster.open-cluster-management.io",
-		Kind:  "ManagedCluster",
-	}); err == nil {
-		return true
+func IsOpenClusterHub(kc client.Client) bool {
+	var list unstructured.UnstructuredList
+	list.SetAPIVersion("apps/v1")
+	list.SetKind("Deployment")
+	err := kc.List(context.TODO(), &list, client.InNamespace("open-cluster-management-hub"), client.MatchingLabels{
+		"app": "clustermanager-controller",
+	})
+	if err != nil {
+		klog.Errorln(err)
 	}
-	return false
+	return len(list.Items) > 1
 }
 
-func IsOpenClusterSpoke(mapper meta.RESTMapper) bool {
-	if _, err := mapper.RESTMappings(schema.GroupKind{
-		Group: "work.open-cluster-management.io",
-		Kind:  "AppliedManifestWork",
-	}); err == nil {
-		return true
+func IsOpenClusterSpoke(kc client.Client) bool {
+	var list unstructured.UnstructuredList
+	list.SetAPIVersion("apps/v1")
+	list.SetKind("Deployment")
+	err := kc.List(context.TODO(), &list, client.InNamespace("open-cluster-management-agent"), client.MatchingLabels{
+		"app": "klusterlet-registration-agent",
+	})
+	if err != nil {
+		klog.Errorln(err)
 	}
-	return false
+	return len(list.Items) > 0
 }
 
-func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
+func IsOpenClusterMulticlusterControlplane(kc client.Client) bool {
 	var missingDeployment bool
-	if _, err := mapper.RESTMappings(schema.GroupKind{
+	if _, err := kc.RESTMapper().RESTMappings(schema.GroupKind{
 		Group: "apps",
 		Kind:  "Deployment",
 	}); meta.IsNoMatchError(err) {
 		missingDeployment = true
 	}
-	return IsOpenClusterHub(mapper) && missingDeployment
+	return IsOpenClusterHub(kc) && missingDeployment
 }
