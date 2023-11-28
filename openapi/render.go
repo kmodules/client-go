@@ -137,7 +137,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List"))
+			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List")) // nolint: goconst
 			if err != nil {
 				return "", err
 			}
@@ -188,7 +188,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List"))
+			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List")) // nolint: goconst
 			if err != nil {
 				return "", err
 			}
@@ -239,7 +239,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List"))
+			list, err := cfg.Scheme.New(ti.GroupVersion.WithKind(ti.Kind + "List")) // nolint: goconst
 			if err != nil {
 				return "", err
 			}
