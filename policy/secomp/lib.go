@@ -18,6 +18,7 @@ package secomp
 
 import (
 	"fmt"
+	"sync"
 
 	"kmodules.xyz/client-go/discovery"
 	meta_util "kmodules.xyz/client-go/meta"
@@ -28,35 +29,42 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-var profile string
+var (
+	profile string
+	seccomp *core.SeccompProfile
+	once    sync.Once
+)
 
 func init() {
-	if meta_util.PossiblyInCluster() {
-		cfg, err := rest.InClusterConfig()
-		if err != nil {
-			panic(err)
-		}
-		kc := kubernetes.NewForConfigOrDie(cfg)
-		yes, err := discovery.CheckAPIVersion(kc.Discovery(), ">= 1.27")
-		if err != nil {
-			panic(err)
-		}
-		if yes {
-			profile = string(core.SeccompProfileTypeRuntimeDefault)
-		}
-	}
 	pflag.StringVar(&profile, "default-seccomp-profile-type", profile, "Default seccomp profile")
 }
 
 func DefaultSeccompProfile() *core.SeccompProfile {
-	if profile == "" {
-		return nil
-	} else if profile != string(core.SeccompProfileTypeUnconfined) &&
-		profile != string(core.SeccompProfileTypeRuntimeDefault) &&
-		profile != string(core.SeccompProfileTypeLocalhost) {
-		panic(fmt.Errorf("unknown seccomp profile type %s", profile))
-	}
-	return &core.SeccompProfile{
-		Type: core.SeccompProfileType(profile),
-	}
+	once.Do(func() {
+		if meta_util.PossiblyInCluster() {
+			cfg, err := rest.InClusterConfig()
+			if err != nil {
+				panic(err)
+			}
+			kc := kubernetes.NewForConfigOrDie(cfg)
+			yes, err := discovery.CheckAPIVersion(kc.Discovery(), ">= 1.27")
+			if err != nil {
+				panic(err)
+			}
+			if yes && profile == "" {
+				profile = string(core.SeccompProfileTypeRuntimeDefault)
+			}
+		}
+		if profile == "" {
+			seccomp = nil
+		} else if profile != string(core.SeccompProfileTypeUnconfined) &&
+			profile != string(core.SeccompProfileTypeRuntimeDefault) &&
+			profile != string(core.SeccompProfileTypeLocalhost) {
+			panic(fmt.Errorf("unknown seccomp profile type %s", profile))
+		}
+		seccomp = &core.SeccompProfile{
+			Type: core.SeccompProfileType(profile),
+		}
+	})
+	return seccomp
 }
