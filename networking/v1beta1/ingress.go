@@ -81,7 +81,7 @@ func PatchIngressObject(ctx context.Context, c kubernetes.Interface, cur, mod *n
 
 func TryUpdateIngress(ctx context.Context, c kubernetes.Interface, meta metav1.ObjectMeta, transform func(*networking.Ingress) *networking.Ingress, opts metav1.UpdateOptions) (result *networking.Ingress, err error) {
 	attempt := 0
-	err = wait.PollImmediate(kutil.RetryInterval, kutil.RetryTimeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(ctx, kutil.RetryInterval, kutil.RetryTimeout, true, func(ctx context.Context) (bool, error) {
 		attempt++
 		cur, e2 := c.NetworkingV1beta1().Ingresses(meta.Namespace).Get(ctx, meta.Name, metav1.GetOptions{})
 		if kerr.IsNotFound(e2) {
