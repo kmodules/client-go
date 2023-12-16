@@ -62,7 +62,7 @@ const (
 )
 
 func tryGetServiceAccountTokenSecret(kc client.Client, sa client.ObjectKey) (secret *core.Secret, err error) {
-	err = wait.PollImmediate(kutil.RetryInterval, RetryTimeout, func() (bool, error) {
+	err = wait.PollUntilContextTimeout(context.Background(), kutil.RetryInterval, RetryTimeout, true, func(ctx context.Context) (bool, error) {
 		var e2 error
 		secret, e2 = getServiceAccountTokenSecret(kc, sa)
 		if e2 == nil {

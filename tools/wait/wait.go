@@ -124,7 +124,7 @@ func (o *WaitOptions) RunWait() error {
 func (o *WaitOptions) WaitUntilAvailable(forCondition string) error {
 	if strings.HasPrefix(forCondition, "condition=") {
 		// Wait for the resources to be available
-		return wait.PollImmediate(10*time.Second, o.Timeout, func() (bool, error) {
+		return wait.PollUntilContextTimeout(context.Background(), 10*time.Second, o.Timeout, true, func(ctx context.Context) (bool, error) {
 			visitCount := 0
 			err := o.ResourceFinder.Do().Visit(func(info *resource.Info, err error) error {
 				if err != nil {
@@ -185,7 +185,7 @@ func IsDeleted(info *resource.Info, o *WaitOptions) (runtime.Object, bool, error
 		}
 
 		timeout := time.Until(endTime)
-		errWaitTimeoutWithName := extendErrWaitTimeout(wait.ErrWaitTimeout, info)
+		errWaitTimeoutWithName := extendErrWaitTimeout(info)
 		if timeout < 0 {
 			// we're out of time
 			return gottenObj, false, errWaitTimeoutWithName
@@ -197,9 +197,9 @@ func IsDeleted(info *resource.Info, o *WaitOptions) (runtime.Object, bool, error
 		switch {
 		case err == nil:
 			return watchEvent.Object, true, nil
-		case err == watchtools.ErrWatchClosed:
+		case errors.Is(err, watchtools.ErrWatchClosed):
 			continue
-		case err == wait.ErrWaitTimeout:
+		case wait.Interrupted(err):
 			if watchEvent != nil {
 				return watchEvent.Object, false, errWaitTimeoutWithName
 			}
@@ -280,7 +280,7 @@ func (w ConditionalWait) IsConditionMet(info *resource.Info, o *WaitOptions) (ru
 		}
 
 		timeout := time.Until(endTime)
-		errWaitTimeoutWithName := extendErrWaitTimeout(wait.ErrWaitTimeout, info)
+		errWaitTimeoutWithName := extendErrWaitTimeout(info)
 		if timeout < 0 {
 			// we're out of time
 			return gottenObj, false, errWaitTimeoutWithName
@@ -292,9 +292,9 @@ func (w ConditionalWait) IsConditionMet(info *resource.Info, o *WaitOptions) (ru
 		switch {
 		case err == nil:
 			return watchEvent.Object, true, nil
-		case err == watchtools.ErrWatchClosed:
+		case errors.Is(err, watchtools.ErrWatchClosed):
 			continue
-		case err == wait.ErrWaitTimeout:
+		case wait.Interrupted(err):
 			if watchEvent != nil {
 				return watchEvent.Object, false, errWaitTimeoutWithName
 			}
@@ -345,6 +345,6 @@ func (w ConditionalWait) isConditionMet(event watch.Event) (bool, error) {
 	return w.checkCondition(obj)
 }
 
-func extendErrWaitTimeout(err error, info *resource.Info) error {
-	return fmt.Errorf("%s on %s/%s", err.Error(), info.Mapping.Resource.Resource, info.Name)
+func extendErrWaitTimeout(info *resource.Info) error {
+	return wait.ErrorInterrupted(fmt.Errorf("timed out waiting for the condition on %s/%s", info.Mapping.Resource.Resource, info.Name))
 }
