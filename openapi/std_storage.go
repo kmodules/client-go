@@ -18,6 +18,7 @@ package openapi
 
 import (
 	"context"
+	"strings"
 
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,6 +36,7 @@ var (
 	_ rest.GroupVersionKindProvider = &StandardStorage{}
 	_ rest.Scoper                   = &StandardStorage{}
 	_ rest.StandardStorage          = &StandardStorage{}
+	_ rest.SingularNameProvider     = &StandardStorage{}
 )
 
 func NewStandardStorage(cfg ResourceInfo) *StandardStorage {
@@ -43,6 +45,10 @@ func NewStandardStorage(cfg ResourceInfo) *StandardStorage {
 
 func (r *StandardStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *StandardStorage) GetSingularName() string {
+	return strings.ToLower(r.cfg.gvk.Kind)
 }
 
 func (r *StandardStorage) NamespaceScoped() bool {
