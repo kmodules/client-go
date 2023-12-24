@@ -18,6 +18,7 @@ package openapi
 
 import (
 	"context"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -34,6 +35,7 @@ var (
 	_ rest.Scoper                   = &GetterStorage{}
 	_ rest.Getter                   = &GetterStorage{}
 	_ rest.Storage                  = &GetterStorage{}
+	_ rest.SingularNameProvider     = &GetterStorage{}
 )
 
 func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
@@ -42,6 +44,10 @@ func NewGetterStorage(cfg ResourceInfo) *GetterStorage {
 
 func (r *GetterStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *GetterStorage) GetSingularName() string {
+	return strings.ToLower(r.cfg.gvk.Kind)
 }
 
 func (r *GetterStorage) NamespaceScoped() bool {

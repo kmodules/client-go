@@ -18,6 +18,7 @@ package openapi
 
 import (
 	"context"
+	"strings"
 
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,6 +38,7 @@ var (
 	_ rest.Getter                   = &RDStorage{}
 	_ rest.GracefulDeleter          = &RDStorage{}
 	_ rest.Storage                  = &RDStorage{}
+	_ rest.SingularNameProvider     = &RDStorage{}
 )
 
 func NewRDStorage(cfg ResourceInfo) *RDStorage {
@@ -45,6 +47,10 @@ func NewRDStorage(cfg ResourceInfo) *RDStorage {
 
 func (r *RDStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *RDStorage) GetSingularName() string {
+	return strings.ToLower(r.cfg.gvk.Kind)
 }
 
 func (r *RDStorage) NamespaceScoped() bool {

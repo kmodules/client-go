@@ -18,6 +18,7 @@ package openapi
 
 import (
 	"context"
+	"strings"
 
 	metainternalversion "k8s.io/apimachinery/pkg/apis/meta/internalversion"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +37,7 @@ var (
 	_ rest.Lister                   = &ListerStorage{}
 	_ rest.Getter                   = &ListerStorage{}
 	_ rest.Storage                  = &ListerStorage{}
+	_ rest.SingularNameProvider     = &ListerStorage{}
 )
 
 func NewListerStorage(cfg ResourceInfo) *ListerStorage {
@@ -44,6 +46,10 @@ func NewListerStorage(cfg ResourceInfo) *ListerStorage {
 
 func (r *ListerStorage) GroupVersionKind(containingGV schema.GroupVersion) schema.GroupVersionKind {
 	return r.cfg.gvk
+}
+
+func (r *ListerStorage) GetSingularName() string {
+	return strings.ToLower(r.cfg.gvk.Kind)
 }
 
 func (r *ListerStorage) NamespaceScoped() bool {
