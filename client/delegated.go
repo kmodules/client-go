@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	restclient "k8s.io/client-go/rest"
-	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -172,7 +171,7 @@ func (d *delegatingClient) SubResource(subResource string) client.SubResourceCli
 	return d.SubResourceClientConstructor.SubResource(subResource)
 }
 
-func NewClient(cache cache.Cache, config *restclient.Config, options client.Options, uncachedObjects ...client.Object) (client.Client, error) {
+func NewClient(config *restclient.Config, options client.Options) (client.Client, error) {
 	c, err := client.New(config, options)
 	if err != nil {
 		return nil, err
@@ -181,11 +180,14 @@ func NewClient(cache cache.Cache, config *restclient.Config, options client.Opti
 	if err != nil {
 		return nil, err
 	}
-	return NewDelegatingClient(NewDelegatingClientInput{
-		CacheReader:       cache,
-		Client:            c,
-		UncachedObjects:   uncachedObjects,
-		CacheUnstructured: true, // cache unstructured objects
-		Cachable:          cachable,
-	})
+	co := NewDelegatingClientInput{
+		Client:   c,
+		Cachable: cachable,
+	}
+	if options.Cache != nil {
+		co.CacheReader = options.Cache.Reader
+		co.UncachedObjects = options.Cache.DisableFor
+		co.CacheUnstructured = options.Cache.Unstructured // cache unstructured objects
+	}
+	return NewDelegatingClient(co)
 }
