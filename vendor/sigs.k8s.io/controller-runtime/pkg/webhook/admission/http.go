@@ -42,23 +42,27 @@ func init() {
 var _ http.Handler = &Webhook{}
 
 func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	var body []byte
+	var err error
 	ctx := r.Context()
 	if wh.WithContextFunc != nil {
 		ctx = wh.WithContextFunc(ctx, r)
 	}
 
-	if r.Body == nil || r.Body == http.NoBody {
-		err := errors.New("request body is empty")
+	var reviewResponse Response
+	if r.Body == nil {
+		err = errors.New("request body is empty")
 		wh.getLogger(nil).Error(err, "bad request")
-		wh.writeResponse(w, Errored(http.StatusBadRequest, err))
+		reviewResponse = Errored(http.StatusBadRequest, err)
+		wh.writeResponse(w, reviewResponse)
 		return
 	}
 
 	defer r.Body.Close()
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
+	if body, err = io.ReadAll(r.Body); err != nil {
 		wh.getLogger(nil).Error(err, "unable to read the body from the incoming request")
-		wh.writeResponse(w, Errored(http.StatusBadRequest, err))
+		reviewResponse = Errored(http.StatusBadRequest, err)
+		wh.writeResponse(w, reviewResponse)
 		return
 	}
 
@@ -66,7 +70,8 @@ func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if contentType := r.Header.Get("Content-Type"); contentType != "application/json" {
 		err = fmt.Errorf("contentType=%s, expected application/json", contentType)
 		wh.getLogger(nil).Error(err, "unable to process a request with unknown content type")
-		wh.writeResponse(w, Errored(http.StatusBadRequest, err))
+		reviewResponse = Errored(http.StatusBadRequest, err)
+		wh.writeResponse(w, reviewResponse)
 		return
 	}
 
@@ -84,12 +89,14 @@ func (wh *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, actualAdmRevGVK, err := admissionCodecs.UniversalDeserializer().Decode(body, nil, &ar)
 	if err != nil {
 		wh.getLogger(nil).Error(err, "unable to decode the request")
-		wh.writeResponse(w, Errored(http.StatusBadRequest, err))
+		reviewResponse = Errored(http.StatusBadRequest, err)
+		wh.writeResponse(w, reviewResponse)
 		return
 	}
 	wh.getLogger(&req).V(5).Info("received request")
 
-	wh.writeResponseTyped(w, wh.Handle(ctx, req), actualAdmRevGVK)
+	reviewResponse = wh.Handle(ctx, req)
+	wh.writeResponseTyped(w, reviewResponse, actualAdmRevGVK)
 }
 
 // writeResponse writes response to w generically, i.e. without encoding GVK information.

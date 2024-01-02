@@ -40,7 +40,7 @@ require (
 	k8s.io/kube-aggregator v0.29.0
 	k8s.io/kube-openapi v0.0.0-20231010175941-2dd684a91f00
 	kmodules.xyz/apiversion v0.2.0
-	sigs.k8s.io/controller-runtime v0.16.1-0.20231215020716-1b80b9629af8
+	sigs.k8s.io/controller-runtime v0.16.3
 	sigs.k8s.io/yaml v1.4.0
 )
 
