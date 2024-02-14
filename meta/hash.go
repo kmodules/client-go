@@ -19,7 +19,6 @@ package meta
 import (
 	"fmt"
 	"hash"
-	"hash/fnv"
 	"reflect"
 	"strconv"
 
@@ -66,7 +65,7 @@ func ObjectHash(in metav1.Object) string {
 		}
 	}
 
-	h := fnv.New64a()
+	h := xxh3.New()
 	DeepHashObject(h, obj)
 	return strconv.FormatUint(h.Sum64(), 10)
 }
@@ -86,7 +85,7 @@ func GenerationHash(in metav1.Object) string {
 		}
 		obj["annotations"] = data
 	}
-	h := fnv.New64a()
+	h := xxh3.New()
 	DeepHashObject(h, obj)
 	return strconv.FormatUint(h.Sum64(), 10)
 }
