@@ -19,6 +19,8 @@ package v1
 import (
 	"sort"
 
+	"kmodules.xyz/client-go/meta"
+
 	jsoniter "github.com/json-iterator/go"
 	"gomodules.xyz/mergo"
 	core "k8s.io/api/core/v1"
@@ -108,13 +110,13 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 	return append(containers, upsert)
 }
 
-func MergeContainer(container core.Container, containerTemplate *core.Container) core.Container {
+func MergeContainer(container core.Container, containerTemplate core.Container) core.Container {
 	container.Command = containerTemplate.Command
-	container.Args = containerTemplate.Args
+	container.Args = meta.UpsertArgumentList(container.Args, containerTemplate.Args)
 	container.WorkingDir = containerTemplate.WorkingDir
 	container.EnvFrom = containerTemplate.EnvFrom
 	container.Env = UpsertEnvVars(container.Env, containerTemplate.Env...)
-	container.Ports = UpsertContainerPort(container.Ports, containerTemplate.Ports...)
+	container.Ports = UpsertContainerPorts(container.Ports, containerTemplate.Ports...)
 	container.Resources = containerTemplate.Resources
 	container.ResizePolicy = containerTemplate.ResizePolicy
 	container.RestartPolicy = containerTemplate.RestartPolicy
@@ -289,7 +291,7 @@ func EnsureVolumeMountDeletedByPath(mounts []core.VolumeMount, mountPath string)
 	return mounts
 }
 
-func UpsertContainerPort(ports []core.ContainerPort, np ...core.ContainerPort) []core.ContainerPort {
+func UpsertContainerPorts(ports []core.ContainerPort, np ...core.ContainerPort) []core.ContainerPort {
 	upsert := func(p core.ContainerPort) {
 		for i, port := range ports {
 			if port.Name == p.Name {
