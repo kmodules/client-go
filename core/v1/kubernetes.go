@@ -111,7 +111,9 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 }
 
 func MergeContainer(container core.Container, containerTemplate core.Container) core.Container {
-	container.Command = containerTemplate.Command
+	if len(containerTemplate.Command) > 0 {
+		container.Command = containerTemplate.Command
+	}
 	container.Args = meta.UpsertArgumentList(container.Args, containerTemplate.Args)
 	container.WorkingDir = containerTemplate.WorkingDir
 	container.EnvFrom = containerTemplate.EnvFrom
