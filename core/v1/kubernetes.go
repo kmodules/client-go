@@ -111,7 +111,7 @@ func UpsertContainer(containers []core.Container, upsert core.Container) []core.
 }
 
 func MergeContainer(container core.Container, containerTemplate core.Container) core.Container {
-	container.Command = containerTemplate.Command
+	container.Command = UpsertCommand(container.Command, containerTemplate.Command)
 	container.Args = meta.UpsertArgumentList(container.Args, containerTemplate.Args)
 	container.WorkingDir = containerTemplate.WorkingDir
 	container.EnvFrom = containerTemplate.EnvFrom
@@ -350,6 +350,22 @@ func EnsureEnvVarDeleted(vars []core.EnvVar, name string) []core.EnvVar {
 		}
 	}
 	return vars
+}
+
+func UpsertCommand(commands []string, nc []string) []string {
+	upsert := func(newCommand string) {
+		for _, c := range commands {
+			if c == newCommand {
+				return
+			}
+		}
+		commands = append(commands, newCommand)
+	}
+
+	for _, command := range nc {
+		upsert(command)
+	}
+	return commands
 }
 
 func MergeLocalObjectReferences(l1, l2 []core.LocalObjectReference) []core.LocalObjectReference {
