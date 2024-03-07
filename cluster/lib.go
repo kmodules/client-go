@@ -116,24 +116,29 @@ func getProviderName(kind string) string {
 	return ""
 }
 
-func DetectClusterManager(kc client.Client) kmapi.ClusterManager {
+func DetectClusterManager(kc client.Client, mappers ...meta.RESTMapper) kmapi.ClusterManager {
+	mapper := kc.RESTMapper()
+	if len(mappers) > 0 {
+		mapper = mappers[0]
+	}
+
 	var result kmapi.ClusterManager
 	if IsACEManaged(kc) {
 		result |= kmapi.ClusterManagerACE
 	}
-	if IsOpenClusterHub(kc.RESTMapper()) {
+	if IsOpenClusterHub(mapper) {
 		result |= kmapi.ClusterManagerOCMHub
 	}
-	if IsOpenClusterSpoke(kc.RESTMapper()) {
+	if IsOpenClusterSpoke(mapper) {
 		result |= kmapi.ClusterManagerOCMSpoke
 	}
-	if IsOpenClusterMulticlusterControlplane(kc.RESTMapper()) {
+	if IsOpenClusterMulticlusterControlplane(mapper) {
 		result |= kmapi.ClusterManagerOCMMulticlusterControlplane
 	}
-	if IsRancherManaged(kc.RESTMapper()) {
+	if IsRancherManaged(mapper) {
 		result |= kmapi.ClusterManagerRancher
 	}
-	if IsOpenShiftManaged(kc.RESTMapper()) {
+	if IsOpenShiftManaged(mapper) {
 		result |= kmapi.ClusterManagerOpenShift
 	}
 	if MustIsVirtualCluster(kc) {
