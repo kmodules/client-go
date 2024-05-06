@@ -23,7 +23,6 @@ import (
 
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
@@ -101,14 +100,7 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return kutil.VerbUnchanged, err
 	}
 
-	_, unstructuredObj := obj.(*unstructured.Unstructured)
-
-	var patch client.Patch
-	if isOfficialTypes(gvk.Group) && !unstructuredObj {
-		patch = client.StrategicMergeFrom(cur)
-	} else {
-		patch = client.MergeFrom(cur)
-	}
+	patch := client.MergeFrom(cur)
 	mod := transform(cur.DeepCopyObject().(client.Object), false)
 	err = c.Patch(ctx, mod, patch, opts...)
 	if err != nil {
