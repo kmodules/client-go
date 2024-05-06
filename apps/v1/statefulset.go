@@ -22,13 +22,13 @@ import (
 
 	core_util "kmodules.xyz/client-go/core/v1"
 
+	jsonpatch "github.com/evanphx/json-patch"
 	"github.com/pkg/errors"
 	"gomodules.xyz/pointer"
 	apps "k8s.io/api/apps/v1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog/v2"
@@ -71,7 +71,7 @@ func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mo
 		return nil, kutil.VerbUnchanged, err
 	}
 
-	patch, err := strategicpatch.CreateTwoWayMergePatch(curJson, modJson, apps.StatefulSet{})
+	patch, err := jsonpatch.CreateMergePatch(curJson, modJson)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
@@ -79,7 +79,7 @@ func PatchStatefulSetObject(ctx context.Context, c kubernetes.Interface, cur, mo
 		return cur, kutil.VerbUnchanged, nil
 	}
 	klog.V(3).Infof("Patching StatefulSet %s/%s with %s.", cur.Namespace, cur.Name, string(patch))
-	out, err := c.AppsV1().StatefulSets(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, opts)
+	out, err := c.AppsV1().StatefulSets(cur.Namespace).Patch(ctx, cur.Name, types.MergePatchType, patch, opts)
 	return out, kutil.VerbPatched, err
 }
 
