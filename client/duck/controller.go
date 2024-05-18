@@ -30,7 +30,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
-	"sigs.k8s.io/controller-runtime/pkg/source"
 )
 
 // ControllerBuilder builds a Controller.
@@ -116,7 +115,7 @@ func (blder *ControllerBuilder) Owns(object client.Object, opts ...builder.OwnsO
 
 // WatchesInput represents the information set by Watches method.
 type WatchesInput struct {
-	src          source.Source
+	obj          client.Object
 	eventhandler handler.EventHandler
 	opts         []builder.WatchesOption
 }
@@ -124,9 +123,9 @@ type WatchesInput struct {
 // Watches exposes the lower-level ControllerManagedBy Watches functions through the builder.  Consider using
 // Owns or For instead of Watches directly.
 // Specified predicates are registered only for given source.
-func (blder *ControllerBuilder) Watches(src source.Source, eventhandler handler.EventHandler, opts ...builder.WatchesOption) *ControllerBuilder {
+func (blder *ControllerBuilder) Watches(object client.Object, eventhandler handler.EventHandler, opts ...builder.WatchesOption) *ControllerBuilder {
 	input := WatchesInput{
-		src:          src,
+		obj:          object,
 		eventhandler: eventhandler,
 		opts:         opts,
 	}
@@ -210,7 +209,7 @@ func (blder *ControllerBuilder) Complete(rb ReconcilerBuilder) error {
 			b2.Owns(own.object, own.opts...)
 		}
 		for _, w := range blder.watchesInput {
-			b2.WatchesRawSource(w.src, w.eventhandler, w.opts...)
+			b2.Watches(w.obj, w.eventhandler, w.opts...)
 		}
 		for _, p := range blder.globalPredicates {
 			b2.WithEventFilter(p)
