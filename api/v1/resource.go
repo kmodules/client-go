@@ -156,9 +156,9 @@ func ExtractResourceID(mapper meta.RESTMapper, in ResourceID) (*ResourceID, erro
 	}
 
 	kindFound := in.Kind != ""
-	resFOund := in.Name != ""
+	resFound := in.Name != ""
 	if kindFound {
-		if resFOund {
+		if resFound {
 			return &in, nil
 		} else {
 			var versions []string
@@ -175,7 +175,7 @@ func ExtractResourceID(mapper meta.RESTMapper, in ResourceID) (*ResourceID, erro
 			return NewResourceID(mapping), nil
 		}
 	} else {
-		if resFOund {
+		if resFound {
 			gvk, err := mapper.KindFor(in.GroupVersionResource())
 			if err != nil {
 				return nil, err
