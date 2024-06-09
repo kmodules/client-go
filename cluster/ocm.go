@@ -17,8 +17,13 @@ limitations under the License.
 package cluster
 
 import (
+	"context"
+
+	appsv1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func IsOpenClusterHub(mapper meta.RESTMapper) bool {
@@ -41,13 +46,11 @@ func IsOpenClusterSpoke(mapper meta.RESTMapper) bool {
 	return false
 }
 
-func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
+func IsOpenClusterMulticlusterControlplane(kc client.Client, mapper meta.RESTMapper) bool {
 	var missingDeployment bool
-	if _, err := mapper.RESTMappings(schema.GroupKind{
-		Group: "apps",
-		Kind:  "Deployment",
-	}); meta.IsNoMatchError(err) {
+	var deployment appsv1.Deployment
+	if err := kc.Get(context.Background(), types.NamespacedName{Name: "multicluster-controlplane", Namespace: "multicluster-controlplane"}, &deployment); err != nil {
 		missingDeployment = true
 	}
-	return IsOpenClusterHub(mapper) && missingDeployment
+	return IsOpenClusterSpoke(mapper) && !missingDeployment
 }
