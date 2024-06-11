@@ -18,10 +18,14 @@ package cluster
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
-	"kmodules.xyz/client-go/tools/clusterid"
+	cu "kmodules.xyz/client-go/client"
 
 	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -42,12 +46,112 @@ func ClusterUID(c client.Reader) (string, error) {
 }
 
 func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
-	var ns core.Namespace
-	err := c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	var cm core.ConfigMap
+	err := c.Get(context.TODO(), client.ObjectKey{Name: kmapi.AceInfoConfigMapName, Namespace: metav1.NamespacePublic}, &cm)
 	if err != nil {
 		return nil, err
 	}
-	return clusterid.ClusterMetadataForNamespace(&ns)
+	result, err := ClusterMetadataForConfigMap(&cm)
+	if err == nil {
+		return result, nil
+	}
+
+	var ns core.Namespace
+	err = c.Get(context.TODO(), client.ObjectKey{Name: metav1.NamespaceSystem}, &ns)
+	if err != nil {
+		return nil, err
+	}
+	return LegacyClusterMetadataForNamespace(&ns)
+}
+
+func LegacyClusterMetadataForNamespace(ns *core.Namespace) (*kmapi.ClusterMetadata, error) {
+	if ns.Name != metav1.NamespaceSystem {
+		return nil, fmt.Errorf("expected namespace %s, found namespace %s", metav1.NamespaceSystem, ns.Name)
+	}
+	name := ns.Annotations[kmapi.ClusterNameKey]
+	if name == "" {
+		name = ClusterName()
+	}
+	md := &kmapi.ClusterMetadata{
+		UID:         string(ns.UID),
+		Name:        name,
+		DisplayName: ns.Annotations[kmapi.ClusterDisplayNameKey],
+		Provider:    kmapi.HostingProvider(ns.Annotations[kmapi.ClusterProviderNameKey]),
+	}
+	return md, nil
+}
+
+func ClusterMetadataForConfigMap(cm *core.ConfigMap) (*kmapi.ClusterMetadata, error) {
+	if cm.Name != kmapi.AceInfoConfigMapName || cm.Namespace != metav1.NamespacePublic {
+		return nil, fmt.Errorf("expected configmap %s/%s, found %s/%s", metav1.NamespacePublic, kmapi.AceInfoConfigMapName, cm.Namespace, cm.Name)
+	}
+
+	md := &kmapi.ClusterMetadata{
+		UID:         cm.Data["uid"],
+		Name:        cm.Data["name"],
+		DisplayName: cm.Data["displayName"],
+		Provider:    kmapi.HostingProvider(cm.Data["provider"]),
+		OwnerID:     cm.Data["ownerID"],
+		OwnerType:   cm.Data["ownerType"],
+		APIEndpoint: cm.Data["apiEndpoint"],
+		CABundle:    cm.Data["ca.crt"],
+	}
+
+	data, err := json.Marshal(md)
+	if err != nil {
+		return nil, err
+	}
+	hasher := hmac.New(sha256.New, []byte(md.UID))
+	hasher.Write(data)
+	messageMAC := hasher.Sum(nil)
+	expectedMAC := cm.BinaryData["mac"]
+	if hmac.Equal(messageMAC, expectedMAC) {
+		return nil, fmt.Errorf("configmap %s/%s fails validation", cm.Namespace, cm.Name)
+	}
+
+	if md.Name == "" {
+		md.Name = ClusterName()
+	}
+	return md, nil
+}
+
+func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
+	obj := core.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      kmapi.AceInfoConfigMapName,
+			Namespace: metav1.NamespacePublic,
+		},
+	}
+
+	data, err := json.Marshal(md)
+	if err != nil {
+		return err
+	}
+	hasher := hmac.New(sha256.New, []byte(md.UID))
+	hasher.Write(data)
+	messageMAC := hasher.Sum(nil)
+
+	_, err = cu.CreateOrPatch(context.TODO(), kc, &obj, func(o client.Object, createOp bool) client.Object {
+		cm := o.(*core.ConfigMap)
+		if cm.Data == nil {
+			cm.Data = make(map[string]string)
+		}
+
+		cm.Data["uid"] = md.UID
+		cm.Data["name"] = md.Name
+		cm.Data["displayName"] = md.DisplayName
+		cm.Data["provider"] = string(md.Provider)
+		cm.Data["ownerID"] = md.OwnerID
+		cm.Data["ownerType"] = md.OwnerType
+		cm.Data["apiEndpoint"] = md.APIEndpoint
+		cm.Data["ca.crt"] = md.CABundle
+
+		cm.BinaryData = map[string][]byte{
+			"mac": messageMAC,
+		}
+		return cm
+	})
+	return err
 }
 
 func DetectCAPICluster(kc client.Client) (*kmapi.CAPIClusterInfo, error) {
