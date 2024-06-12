@@ -28,6 +28,7 @@ import (
 	cu "kmodules.xyz/client-go/client"
 
 	core "k8s.io/api/core/v1"
+	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -48,12 +49,13 @@ func ClusterUID(c client.Reader) (string, error) {
 func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
 	var cm core.ConfigMap
 	err := c.Get(context.TODO(), client.ObjectKey{Name: kmapi.AceInfoConfigMapName, Namespace: metav1.NamespacePublic}, &cm)
-	if err != nil {
-		return nil, err
-	}
-	result, err := ClusterMetadataForConfigMap(&cm)
 	if err == nil {
-		return result, nil
+		result, err := ClusterMetadataForConfigMap(&cm)
+		if err == nil {
+			return result, nil
+		}
+	} else if !kerr.IsNotFound(err) {
+		return nil, err
 	}
 
 	var ns core.Namespace
