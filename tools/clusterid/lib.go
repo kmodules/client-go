@@ -37,9 +37,14 @@ func ClusterUID(client corev1.NamespaceInterface) (string, error) {
 }
 
 func ClusterMetadata(client kubernetes.Interface) (*kmapi.ClusterMetadata, error) {
+	ns, err := client.CoreV1().Namespaces().Get(context.TODO(), metav1.NamespaceSystem, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
 	cm, err := client.CoreV1().ConfigMaps(metav1.NamespacePublic).Get(context.TODO(), kmapi.AceInfoConfigMapName, metav1.GetOptions{})
 	if err == nil {
-		result, err := clustermeta.ClusterMetadataForConfigMap(cm)
+		result, err := clustermeta.ClusterMetadataFromConfigMap(cm, string(ns.UID))
 		if err == nil {
 			return result, nil
 		}
@@ -47,9 +52,5 @@ func ClusterMetadata(client kubernetes.Interface) (*kmapi.ClusterMetadata, error
 		return nil, err
 	}
 
-	ns, err := client.CoreV1().Namespaces().Get(context.TODO(), metav1.NamespaceSystem, metav1.GetOptions{})
-	if err != nil {
-		return nil, err
-	}
-	return clustermeta.LegacyClusterMetadataForNamespace(ns)
+	return clustermeta.LegacyClusterMetadataFromNamespace(ns)
 }
