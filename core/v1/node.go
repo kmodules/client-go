@@ -251,10 +251,6 @@ func DetectTopology(ctx context.Context, mc metadata.Interface) (*Topology, erro
 		if os != "linux" {
 			return nil
 		}
-		arch, _ := meta_util.GetStringValueForKeys(labels, core.LabelArchStable, "beta.kubernetes.io/arch")
-		if arch != "amd64" {
-			return nil
-		}
 
 		region, _ := meta_util.GetStringValueForKeys(labels, topology.LabelRegion)
 		zone, _ := meta_util.GetStringValueForKeys(labels, topology.LabelZone)
