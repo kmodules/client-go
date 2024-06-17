@@ -29,14 +29,15 @@ import (
 
 type (
 	SetupFn func(ctx context.Context, mgr ctrl.Manager)
-	TestFn  func(*apiextensionsv1.CustomResourceDefinition) bool
+	TestFn  func(*apiextensionsv1.CustomResourceDefinition) (bool, any)
 )
 
 var (
-	setupFns  = make(map[schema.GroupKind]SetupFn)
-	testFns   = make(map[schema.GroupKind]TestFn)
-	setupDone = map[schema.GroupKind]bool{}
-	mu        sync.Mutex
+	setupFns        = make(map[schema.GroupKind]SetupFn)
+	testFns         = make(map[schema.GroupKind]TestFn)
+	setupDone       = map[schema.GroupKind]bool{}
+	ExtraSetupParam = struct{}{}
+	mu              sync.Mutex
 )
 
 type Reconciler struct {
@@ -68,11 +69,21 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	}
 
 	setup, setupFnExists := setupFns[gk]
-	test, testFnExists := testFns[gk]
-	if setupFnExists && (!testFnExists || test(&crd)) {
-		setup(r.ctx, r.mgr)
-		setupDone[gk] = true
+	if !setupFnExists {
+		return ctrl.Result{}, nil
 	}
+
+	ctxSetup := r.ctx
+	if test, testFnExists := testFns[gk]; testFnExists {
+		passed, extra := test(&crd)
+		if !passed {
+			return ctrl.Result{}, nil
+		}
+		ctxSetup = context.WithValue(r.ctx, ExtraSetupParam, extra)
+	}
+
+	setup(ctxSetup, r.mgr)
+	setupDone[gk] = true
 	return ctrl.Result{}, nil
 }
 
