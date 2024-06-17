@@ -26,6 +26,7 @@ const (
 	HostingProviderAzure        HostingProvider = "Azure"
 	HostingProviderDigitalOcean HostingProvider = "DigitalOcean"
 	HostingProviderGoogleCloud  HostingProvider = "GoogleCloud"
+	HostingProviderExoscale     HostingProvider = "Exoscale"
 	HostingProviderLinode       HostingProvider = "Linode"
 	HostingProviderPacket       HostingProvider = "Packet"
 	HostingProviderScaleway     HostingProvider = "Scaleway"
