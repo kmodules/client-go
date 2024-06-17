@@ -226,16 +226,16 @@ func DetectTopology(ctx context.Context, mc metadata.Interface) (*Topology, erro
 		labels := m.GetLabels()
 
 		if first {
-			if _, ok := labels[core.LabelZoneRegionStable]; ok {
-				topology.LabelRegion = core.LabelZoneRegionStable
+			if _, ok := labels[core.LabelTopologyRegion]; ok {
+				topology.LabelRegion = core.LabelTopologyRegion
 			} else {
-				topology.LabelRegion = core.LabelZoneRegion
+				topology.LabelRegion = core.LabelFailureDomainBetaRegion
 			}
 
-			if _, ok := labels[core.LabelZoneFailureDomainStable]; ok {
-				topology.LabelZone = core.LabelZoneFailureDomainStable
+			if _, ok := labels[core.LabelTopologyZone]; ok {
+				topology.LabelZone = core.LabelTopologyZone
 			} else {
-				topology.LabelZone = core.LabelZoneFailureDomain
+				topology.LabelZone = core.LabelFailureDomainBetaZone
 			}
 
 			if _, ok := labels[core.LabelInstanceTypeStable]; ok {
