@@ -27,13 +27,14 @@ import (
 
 	kmapi "kmodules.xyz/client-go/api/v1"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 )
 
 const (
 	aksDomain      = ".azmk8s.io"
 	eksDomain      = ".eks.amazonaws.com"
-	gkeDomain      = ".gke.com"
 	exoscaleDomain = ".exo.io"
 	doDomain       = ".k8s.ondigitalocean.com"
 	lkeDomain      = ".linodelke.net"
@@ -78,7 +79,7 @@ func APIServerCertificate(cfg *rest.Config) (*x509.Certificate, error) {
 	return nil, fmt.Errorf("no cert found")
 }
 
-func DetectProvider(cfg *rest.Config) (kmapi.HostingProvider, error) {
+func DetectProvider(cfg *rest.Config, mapper meta.RESTMapper) (kmapi.HostingProvider, error) {
 	crt, err := APIServerCertificate(cfg)
 	if err != nil {
 		return "", err
@@ -93,8 +94,6 @@ func DetectProvider(cfg *rest.Config) (kmapi.HostingProvider, error) {
 			return kmapi.HostingProviderDigitalOcean, nil
 		} else if strings.HasSuffix(host, exoscaleDomain) {
 			return kmapi.HostingProviderExoscale, nil
-		} else if strings.HasSuffix(host, gkeDomain) {
-			return kmapi.HostingProviderGoogleCloud, nil
 		} else if strings.HasSuffix(host, lkeDomain) {
 			return kmapi.HostingProviderLinode, nil
 		} else if strings.HasSuffix(host, scalewayDomain) {
@@ -103,5 +102,14 @@ func DetectProvider(cfg *rest.Config) (kmapi.HostingProvider, error) {
 			return kmapi.HostingProviderVultr, nil
 		}
 	}
+
+	// GKE does not use any custom domain
+	if _, err := mapper.RESTMappings(schema.GroupKind{
+		Group: "networking.gke.io",
+		Kind:  "Network",
+	}); err == nil {
+		return kmapi.HostingProviderGoogleCloud, nil
+	}
+
 	return "", nil
 }
