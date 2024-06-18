@@ -134,18 +134,6 @@ type Topology struct {
 	LabelZone         string
 	LabelRegion       string
 	LabelInstanceType string
-
-	// https://github.com/kubernetes/kubernetes/blob/v1.17.2/staging/src/k8s.io/api/core/v1/well_known_labels.go
-
-	//LabelHostname = "kubernetes.io/hostname"
-	//
-	//LabelZoneFailureDomain       = "failure-domain.beta.kubernetes.io/zone"
-	//LabelZoneRegion              = "failure-domain.beta.kubernetes.io/region"
-	//LabelZoneFailureDomainStable = "topology.kubernetes.io/zone"
-	//LabelZoneRegionStable        = "topology.kubernetes.io/region"
-	//
-	//LabelInstanceType       = "beta.kubernetes.io/instance-type"
-	//LabelInstanceTypeStable = "node.kubernetes.io/instance-type"
 }
 
 func (t Topology) ConvertAffinity(affinity *core.Affinity) {
@@ -252,12 +240,14 @@ func DetectTopology(ctx context.Context, mc metadata.Interface) (*Topology, erro
 			return nil
 		}
 
-		region, _ := meta_util.GetStringValueForKeys(labels, topology.LabelRegion)
-		zone, _ := meta_util.GetStringValueForKeys(labels, topology.LabelZone)
-		if _, ok := mapRegion[region]; !ok {
-			mapRegion[region] = sets.Set[string]{}
+		if region, ok := labels[topology.LabelRegion]; ok {
+			if _, ok := mapRegion[region]; !ok {
+				mapRegion[region] = sets.Set[string]{}
+			}
+			if zone, ok := labels[topology.LabelZone]; ok {
+				mapRegion[region].Insert(zone)
+			}
 		}
-		mapRegion[region].Insert(zone)
 
 		instance, _ := meta_util.GetStringValueForKeys(labels, topology.LabelInstanceType)
 		if n, ok := instances[instance]; ok {
