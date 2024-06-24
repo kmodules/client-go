@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -28,8 +29,8 @@ import (
 )
 
 type (
-	SetupFn func(ctx context.Context, mgr ctrl.Manager)
-	TestFn  func(*apiextensionsv1.CustomResourceDefinition) bool
+	SetupFn func(context.Context, ctrl.Manager)
+	TestFn  func(meta.RESTMapper, *apiextensionsv1.CustomResourceDefinition) bool
 )
 
 type setupGroup struct {
@@ -77,7 +78,7 @@ func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Resu
 	if !setupFnExists {
 		return ctrl.Result{}, nil
 	}
-	if !testFns[gk](&crd) {
+	if !testFns[gk](r.mgr.GetRESTMapper(), &crd) {
 		return ctrl.Result{}, nil
 	}
 
@@ -111,7 +112,7 @@ func MultiRegisterSetup(gks []schema.GroupKind, fn SetupFn, tn ...TestFn) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	testFN := andTestFn(tn...)
+	testFN := andTestFn(append(tn, allCRDPresent(gks))...)
 	for _, gk := range gks {
 		setupFns[gk] = setupGroup{
 			gks: gks,
@@ -121,10 +122,26 @@ func MultiRegisterSetup(gks []schema.GroupKind, fn SetupFn, tn ...TestFn) {
 	}
 }
 
+func allCRDPresent(gks []schema.GroupKind) TestFn {
+	return func(mapper meta.RESTMapper, definition *apiextensionsv1.CustomResourceDefinition) bool {
+		for _, gk := range gks {
+			if !crdFound(mapper, gk) {
+				return false
+			}
+		}
+		return true
+	}
+}
+
+func crdFound(mapper meta.RESTMapper, gk schema.GroupKind) bool {
+	_, err := mapper.RESTMappings(gk)
+	return err == nil
+}
+
 func andTestFn(fns ...TestFn) TestFn {
-	return func(crd *apiextensionsv1.CustomResourceDefinition) bool {
+	return func(mapper meta.RESTMapper, crd *apiextensionsv1.CustomResourceDefinition) bool {
 		for _, fn := range fns {
-			if !fn(crd) {
+			if !fn(mapper, crd) {
 				return false
 			}
 		}
