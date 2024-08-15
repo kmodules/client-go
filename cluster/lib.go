@@ -108,7 +108,7 @@ func ClusterMetadataFromConfigMap(cm *core.ConfigMap, clusterUIDVerifier string)
 	hasher.Write(data)
 	messageMAC := hasher.Sum(nil)
 	expectedMAC := cm.BinaryData["mac"]
-	if hmac.Equal(messageMAC, expectedMAC) {
+	if !hmac.Equal(messageMAC, expectedMAC) {
 		return nil, fmt.Errorf("configmap %s/%s fails validation", cm.Namespace, cm.Name)
 	}
 
