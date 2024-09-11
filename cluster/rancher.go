@@ -32,6 +32,8 @@ const (
 	LabelKeyRancherHelmProjectId       = "helm.cattle.io/projectId"
 	LabelKeyRancherHelmProjectOperated = "helm.cattle.io/helm-project-operated"
 
+	FakeRancherProjectId = "p-fake"
+
 	NamespaceRancherMonitoring  = "cattle-monitoring-system"
 	PrometheusRancherMonitoring = "rancher-monitoring-prometheus"
 )
