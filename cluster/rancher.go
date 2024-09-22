@@ -41,8 +41,9 @@ const (
 
 	FakeRancherProjectId = "p-fake"
 
-	NamespaceRancherMonitoring  = "cattle-monitoring-system"
-	PrometheusRancherMonitoring = "rancher-monitoring-prometheus"
+	RancherMonitoringNamespace    = "cattle-monitoring-system"
+	RancherMonitoringPrometheus   = "rancher-monitoring-prometheus"
+	RancherMonitoringAlertmanager = "rancher-monitoring-alertmanager"
 )
 
 func IsRancherManaged(mapper meta.RESTMapper) bool {
