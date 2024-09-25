@@ -153,7 +153,26 @@ func (cm ClusterManager) String() string {
 }
 
 type CAPIClusterInfo struct {
-	Provider    string `json:"provider,omitempty"`
-	Namespace   string `json:"namespace,omitempty"`
-	ClusterName string `json:"clusterName,omitempty"`
+	Provider    CAPIProvider `json:"provider,omitempty"`
+	Namespace   string       `json:"namespace,omitempty"`
+	ClusterName string       `json:"clusterName,omitempty"`
 }
+
+// ClusterInfo used in ace-installer
+type ClusterInfo struct {
+	UID             string   `json:"uid"`
+	Name            string   `json:"name"`
+	ClusterManagers []string `json:"clusterManagers"`
+	// +optional
+	CAPI CAPIClusterInfo `json:"capi"`
+}
+
+// +kubebuilder:validation:Enum=capa;capg;capz
+type CAPIProvider string
+
+const (
+	CAPIProviderDisabled CAPIProvider = ""
+	CAPIProviderCAPA     CAPIProvider = "capa"
+	CAPIProviderCAPG     CAPIProvider = "capg"
+	CAPIProviderCAPZ     CAPIProvider = "capz"
+)
