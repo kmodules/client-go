@@ -153,9 +153,9 @@ func (cm ClusterManager) String() string {
 }
 
 type CAPIClusterInfo struct {
-	Provider    CAPIProvider `json:"provider,omitempty"`
-	Namespace   string       `json:"namespace,omitempty"`
-	ClusterName string       `json:"clusterName,omitempty"`
+	Provider    CAPIProvider `json:"provider"`
+	Namespace   string       `json:"namespace"`
+	ClusterName string       `json:"clusterName"`
 }
 
 // ClusterInfo used in ace-installer
@@ -171,8 +171,9 @@ type ClusterInfo struct {
 type CAPIProvider string
 
 const (
-	CAPIProviderDisabled CAPIProvider = ""
-	CAPIProviderCAPA     CAPIProvider = "capa"
-	CAPIProviderCAPG     CAPIProvider = "capg"
-	CAPIProviderCAPZ     CAPIProvider = "capz"
+	CAPIProviderUnknown CAPIProvider = ""
+	CAPIProviderCAPA    CAPIProvider = "capa"
+	CAPIProviderCAPG    CAPIProvider = "capg"
+	CAPIProviderCAPZ    CAPIProvider = "capz"
+	CAPIProviderCAPH    CAPIProvider = "caph"
 )
