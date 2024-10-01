@@ -33,8 +33,8 @@ func IsOpenClusterHub(mapper meta.RESTMapper) bool {
 
 func IsOpenClusterSpoke(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
-		Group: "work.open-cluster-management.io",
-		Kind:  "AppliedManifestWork",
+		Group: "operator.open-cluster-management.io",
+		Kind:  "Klusterlet",
 	}); err == nil {
 		return true
 	}
