@@ -21,7 +21,6 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
@@ -34,6 +33,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -170,7 +170,8 @@ func DetectCAPICluster(kc client.Client) (*kmapi.CAPIClusterInfo, error) {
 	} else if err != nil {
 		return nil, err
 	} else if len(list.Items) > 1 {
-		return nil, errors.New("multiple CAPI cluster object found")
+		klog.Warningln("multiple CAPI cluster object found")
+		return nil, nil
 	}
 
 	obj := list.Items[0].UnstructuredContent()
