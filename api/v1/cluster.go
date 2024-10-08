@@ -24,7 +24,7 @@ import (
 	"strings"
 )
 
-// +kubebuilder:validation:Enum=Aws;Azure;DigitalOcean;GoogleCloud;Linode;Packet;Scaleway;Vultr;BareMetal;KIND;Generic;Private
+// +kubebuilder:validation:Enum=Aws;Azure;DigitalOcean;GoogleCloud;Linode;Packet;Scaleway;Vultr;BareMetal;KIND;Generic
 type HostingProvider string
 
 const (
@@ -40,7 +40,6 @@ const (
 	HostingProviderBareMetal    HostingProvider = "BareMetal"
 	HostingProviderKIND         HostingProvider = "KIND"
 	HostingProviderGeneric      HostingProvider = "Generic"
-	HostingProviderPrivate      HostingProvider = "Private"
 )
 
 const (
@@ -164,16 +163,15 @@ type ClusterInfo struct {
 	Name            string   `json:"name"`
 	ClusterManagers []string `json:"clusterManagers"`
 	// +optional
-	CAPI CAPIClusterInfo `json:"capi"`
+	CAPI *CAPIClusterInfo `json:"capi"`
 }
 
 // +kubebuilder:validation:Enum=capa;capg;capz
 type CAPIProvider string
 
 const (
-	CAPIProviderUnknown CAPIProvider = ""
-	CAPIProviderCAPA    CAPIProvider = "capa"
-	CAPIProviderCAPG    CAPIProvider = "capg"
-	CAPIProviderCAPZ    CAPIProvider = "capz"
-	CAPIProviderCAPH    CAPIProvider = "caph"
+	CAPIProviderCAPA CAPIProvider = "capa"
+	CAPIProviderCAPG CAPIProvider = "capg"
+	CAPIProviderCAPZ CAPIProvider = "capz"
+	CAPIProviderCAPH CAPIProvider = "caph"
 )
