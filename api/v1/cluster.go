@@ -24,22 +24,21 @@ import (
 	"strings"
 )
 
-// +kubebuilder:validation:Enum=Aws;Azure;DigitalOcean;GoogleCloud;Linode;Packet;Scaleway;Vultr;BareMetal;KIND;Generic
+// +kubebuilder:validation:Enum=AKS;DigitalOcean;EKS;Exoscale;Generic;GKE;Linode;Packet;Rancher;Scaleway;Vultr
 type HostingProvider string
 
 const (
-	HostingProviderAWS          HostingProvider = "Aws"
-	HostingProviderAzure        HostingProvider = "Azure"
+	HostingProviderAKS          HostingProvider = "AKS"
 	HostingProviderDigitalOcean HostingProvider = "DigitalOcean"
-	HostingProviderGoogleCloud  HostingProvider = "GoogleCloud"
+	HostingProviderEKS          HostingProvider = "EKS"
 	HostingProviderExoscale     HostingProvider = "Exoscale"
+	HostingProviderGeneric      HostingProvider = "Generic"
+	HostingProviderGKE          HostingProvider = "GKE"
 	HostingProviderLinode       HostingProvider = "Linode"
 	HostingProviderPacket       HostingProvider = "Packet"
+	HostingProviderRancher      HostingProvider = "Rancher"
 	HostingProviderScaleway     HostingProvider = "Scaleway"
 	HostingProviderVultr        HostingProvider = "Vultr"
-	HostingProviderBareMetal    HostingProvider = "BareMetal"
-	HostingProviderKIND         HostingProvider = "KIND"
-	HostingProviderGeneric      HostingProvider = "Generic"
 )
 
 const (
