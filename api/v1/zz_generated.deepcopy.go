@@ -76,11 +76,6 @@ func (in *CertificateSpec) DeepCopyInto(out *CertificateSpec) {
 		*out = new(metav1.Duration)
 		**out = **in
 	}
-	if in.RenewBefore != nil {
-		in, out := &in.RenewBefore, &out.RenewBefore
-		*out = new(metav1.Duration)
-		**out = **in
-	}
 	if in.DNSNames != nil {
 		in, out := &in.DNSNames, &out.DNSNames
 		*out = make([]string, len(*in))

@@ -54,10 +54,10 @@ type ClusterMetadata struct {
 	Name        string          `json:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
 	DisplayName string          `json:"displayName,omitempty" protobuf:"bytes,3,opt,name=displayName"`
 	Provider    HostingProvider `json:"provider,omitempty" protobuf:"bytes,4,opt,name=provider,casttype=HostingProvider"`
-	OwnerID     string          `json:"ownerID,omitempty"`
-	OwnerType   string          `json:"ownerType,omitempty"`
-	APIEndpoint string          `json:"apiEndpoint,omitempty"`
-	CABundle    string          `json:"caBundle,omitempty"`
+	OwnerID     string          `json:"ownerID,omitempty" protobuf:"bytes,5,opt,name=ownerID"`
+	OwnerType   string          `json:"ownerType,omitempty" protobuf:"bytes,6,opt,name=ownerType"`
+	APIEndpoint string          `json:"apiEndpoint,omitempty" protobuf:"bytes,7,opt,name=apiEndpoint"`
+	CABundle    string          `json:"caBundle,omitempty" protobuf:"bytes,8,opt,name=caBundle"`
 }
 
 func (md ClusterMetadata) State() string {
@@ -151,18 +151,18 @@ func (cm ClusterManager) String() string {
 }
 
 type CAPIClusterInfo struct {
-	Provider    CAPIProvider `json:"provider"`
-	Namespace   string       `json:"namespace"`
-	ClusterName string       `json:"clusterName"`
+	Provider    CAPIProvider `json:"provider" protobuf:"bytes,1,opt,name=provider,casttype=CAPIProvider"`
+	Namespace   string       `json:"namespace" protobuf:"bytes,2,opt,name=namespace"`
+	ClusterName string       `json:"clusterName" protobuf:"bytes,3,opt,name=clusterName"`
 }
 
 // ClusterInfo used in ace-installer
 type ClusterInfo struct {
-	UID             string   `json:"uid"`
-	Name            string   `json:"name"`
-	ClusterManagers []string `json:"clusterManagers"`
+	UID             string   `json:"uid" protobuf:"bytes,1,opt,name=uid"`
+	Name            string   `json:"name" protobuf:"bytes,2,opt,name=name"`
+	ClusterManagers []string `json:"clusterManagers" protobuf:"bytes,3,rep,name=clusterManagers"`
 	// +optional
-	CAPI *CAPIClusterInfo `json:"capi"`
+	CAPI *CAPIClusterInfo `json:"capi" protobuf:"bytes,4,opt,name=capi"`
 }
 
 // +kubebuilder:validation:Enum=capa;capg;capz
