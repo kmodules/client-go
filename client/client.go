@@ -115,8 +115,13 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 		return kutil.VerbUnchanged, err
 	}
 
-	assign(obj, mod)
-	return kutil.VerbPatched, nil
+	vt := kutil.VerbUnchanged
+	if obj.GetGeneration() != mod.GetGeneration() {
+		vt = kutil.VerbPatched
+	} else {
+		assign(obj, mod)
+	}
+	return vt, nil
 }
 
 func assign(target, src any) {
