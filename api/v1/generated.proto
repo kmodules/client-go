@@ -71,6 +71,10 @@ message CertificateSpec {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration duration = 5;
 
   // Certificate renew before expiration duration
+  //
+  // Deprecated use `ReconfigureTLS` type OpsRequest instead.
+  //
+  // +deprecated
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration renewBefore = 6;
 
