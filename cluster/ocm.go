@@ -17,8 +17,12 @@ limitations under the License.
 package cluster
 
 import (
+	"context"
+
 	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func IsOpenClusterHub(mapper meta.RESTMapper) bool {
@@ -31,14 +35,12 @@ func IsOpenClusterHub(mapper meta.RESTMapper) bool {
 	return false
 }
 
-func IsOpenClusterSpoke(mapper meta.RESTMapper) bool {
-	if _, err := mapper.RESTMappings(schema.GroupKind{
-		Group: "operator.open-cluster-management.io",
-		Kind:  "Klusterlet",
-	}); err == nil {
-		return true
-	}
-	return false
+func IsOpenClusterSpoke(kc client.Client) bool {
+	var list unstructured.UnstructuredList
+	list.SetAPIVersion("operator.open-cluster-management.io/v1")
+	list.SetKind("Klusterlet")
+	err := kc.List(context.TODO(), &list)
+	return err == nil && len(list.Items) > 0
 }
 
 func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {

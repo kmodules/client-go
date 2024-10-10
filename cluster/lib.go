@@ -237,7 +237,7 @@ func DetectClusterManager(kc client.Client, mappers ...meta.RESTMapper) kmapi.Cl
 	if IsOpenClusterHub(mapper) {
 		result |= kmapi.ClusterManagerOCMHub
 	}
-	if IsOpenClusterSpoke(mapper) {
+	if IsOpenClusterSpoke(kc) {
 		result |= kmapi.ClusterManagerOCMSpoke
 	}
 	if IsOpenClusterMulticlusterControlplane(mapper) {
