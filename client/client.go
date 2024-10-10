@@ -21,6 +21,8 @@ import (
 	"reflect"
 	"strings"
 
+	"kmodules.xyz/client-go/meta"
+
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -116,8 +118,15 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	}
 
 	vt := kutil.VerbUnchanged
-	if cur.GetGeneration() != mod.GetGeneration() {
-		vt = kutil.VerbPatched
+	if mod.GetGeneration() > 0 {
+		if cur.GetGeneration() != mod.GetGeneration() {
+			vt = kutil.VerbPatched
+		}
+	} else {
+		// Secret, ServiceAccount etc resources do not use metadata.generation
+		if meta.ObjectHash(cur) != meta.ObjectHash(mod) {
+			vt = kutil.VerbPatched
+		}
 	}
 	assign(obj, mod)
 	return vt, nil
