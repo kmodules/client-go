@@ -35,7 +35,7 @@ func IsOpenClusterHub(mapper meta.RESTMapper) bool {
 	return false
 }
 
-func IsOpenClusterSpoke(kc client.Client) bool {
+func IsOpenClusterSpoke(kc client.Reader) bool {
 	var list unstructured.UnstructuredList
 	list.SetAPIVersion("operator.open-cluster-management.io/v1")
 	list.SetKind("Klusterlet")

@@ -157,7 +157,7 @@ func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
 	return err
 }
 
-func DetectCAPICluster(kc client.Client) (*kmapi.CAPIClusterInfo, error) {
+func DetectCAPICluster(kc client.Reader) (*kmapi.CAPIClusterInfo, error) {
 	var list unstructured.UnstructuredList
 	list.SetGroupVersionKind(schema.GroupVersionKind{
 		Group:   "cluster.x-k8s.io",
