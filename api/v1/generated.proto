@@ -127,6 +127,10 @@ message ClusterMetadata {
   optional string apiEndpoint = 7;
 
   optional string caBundle = 8;
+
+  optional string managerID = 9;
+
+  optional string hubClusterID = 10;
 }
 
 // Condition defines an observation of a object operational state.
