@@ -133,12 +133,16 @@ func (uc *unstructuredClient) Patch(ctx context.Context, obj client.Object, patc
 		return uc.c.Patch(ctx, obj, patch, opts...)
 	}
 
+	rawPatch, err := NewRawPatch(obj, patch)
+	if err != nil {
+		return err
+	}
+
 	var llo unstructured.Unstructured
 	llo.GetObjectKind().SetGroupVersionKind(uc.rawGVK)
 	llo.SetNamespace(obj.GetNamespace())
 	llo.SetName(obj.GetName())
-	llo.SetLabels(obj.GetLabels())
-	return uc.c.Patch(ctx, &llo, patch, opts...)
+	return uc.c.Patch(ctx, &llo, rawPatch, opts...)
 }
 
 // Get implements client.Client.
