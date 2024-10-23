@@ -258,12 +258,17 @@ func (sw *unstructuredStatusWriter) Patch(ctx context.Context, obj client.Object
 		return sw.client.c.Status().Patch(ctx, obj, patch, opts...)
 	}
 
+	rawPatch, err := NewRawPatch(obj, patch)
+	if err != nil {
+		return err
+	}
+
 	var llo unstructured.Unstructured
 	llo.GetObjectKind().SetGroupVersionKind(sw.client.rawGVK)
 	llo.SetNamespace(obj.GetNamespace())
 	llo.SetName(obj.GetName())
 	llo.SetLabels(obj.GetLabels())
-	return sw.client.c.Status().Patch(ctx, &llo, patch, opts...)
+	return sw.client.c.Status().Patch(ctx, &llo, rawPatch, opts...)
 }
 
 func (d *unstructuredClient) SubResource(subResource string) client.SubResourceClient {
