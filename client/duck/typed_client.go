@@ -185,6 +185,11 @@ func (d *typedClient) Patch(ctx context.Context, obj client.Object, patch client
 		return d.c.Patch(ctx, obj, patch, opts...)
 	}
 
+	rawPatch, err := NewRawPatch(obj, patch)
+	if err != nil {
+		return err
+	}
+
 	ll, err := d.c.Scheme().New(d.rawGVK)
 	if err != nil {
 		return err
@@ -192,8 +197,7 @@ func (d *typedClient) Patch(ctx context.Context, obj client.Object, patch client
 	llo := ll.(client.Object)
 	llo.SetNamespace(obj.GetNamespace())
 	llo.SetName(obj.GetName())
-	llo.SetLabels(obj.GetLabels())
-	return d.c.Patch(ctx, llo, patch, opts...)
+	return d.c.Patch(ctx, llo, rawPatch, opts...)
 }
 
 func (d *typedClient) DeleteAllOf(ctx context.Context, obj client.Object, opts ...client.DeleteAllOfOption) error {
