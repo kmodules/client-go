@@ -197,7 +197,7 @@ type ClusterClaimInfo struct {
 }
 
 type ClusterClaimFeatures struct {
-	EnabledFeatures    []string `json:"enabledFeatures,omitempty"`
-	NotManagedFeatures []string `json:"notManagedFeatures,omitempty"`
-	DisabledFeatures   []string `json:"disabledFeatures,omitempty"`
+	EnabledFeatures           []string `json:"enabledFeatures,omitempty"`
+	ExternallyManagedFeatures []string `json:"externallyManagedFeatures,omitempty"`
+	DisabledFeatures          []string `json:"disabledFeatures,omitempty"`
 }
