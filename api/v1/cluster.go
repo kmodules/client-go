@@ -51,6 +51,10 @@ const (
 	AceOrgIDKey     string = "ace.appscode.com/org-id"
 	ClientOrgKey    string = "ace.appscode.com/client-org"
 	ClientKeyPrefix string = "client.ace.appscode.com/"
+
+	ClusterClaimID       string = "id.k8s.io"
+	ClusterClaimInfo     string = "cluster.ace.info"
+	ClusterClaimFeatures string = "features.ace.info"
 )
 
 type ClusterMetadata struct {
