@@ -52,9 +52,9 @@ const (
 	ClientOrgKey    string = "ace.appscode.com/client-org"
 	ClientKeyPrefix string = "client.ace.appscode.com/"
 
-	ClusterClaimID       string = "id.k8s.io"
-	ClusterClaimInfo     string = "cluster.ace.info"
-	ClusterClaimFeatures string = "features.ace.info"
+	ClusterClaimKeyID       string = "id.k8s.io"
+	ClusterClaimKeyInfo     string = "cluster.ace.info"
+	ClusterClaimKeyFeatures string = "features.ace.info"
 )
 
 type ClusterMetadata struct {
@@ -191,3 +191,13 @@ const (
 	CAPIProviderCAPZ CAPIProvider = "capz"
 	CAPIProviderCAPH CAPIProvider = "caph"
 )
+
+type ClusterClaimInfo struct {
+	ClusterMetadata ClusterInfo `json:"clusterMetadata"`
+}
+
+type ClusterClaimFeatures struct {
+	EnabledFeatures    []string `json:"enabledFeatures,omitempty"`
+	NotManagedFeatures []string `json:"notManagedFeatures,omitempty"`
+	DisabledFeatures   []string `json:"disabledFeatures,omitempty"`
+}
