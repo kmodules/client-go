@@ -35,11 +35,20 @@ const (
 	HostingProviderGeneric      HostingProvider = "Generic"
 	HostingProviderGKE          HostingProvider = "GKE"
 	HostingProviderLinode       HostingProvider = "Linode"
+	HostingProviderAkamai       HostingProvider = "Akamai"
 	HostingProviderPacket       HostingProvider = "Packet"
 	HostingProviderRancher      HostingProvider = "Rancher"
 	HostingProviderScaleway     HostingProvider = "Scaleway"
 	HostingProviderVultr        HostingProvider = "Vultr"
 )
+
+func (h HostingProvider) ConvertToPreferredProvider() HostingProvider {
+	switch h {
+	case HostingProviderLinode:
+		return HostingProviderAkamai
+	}
+	return h
+}
 
 const (
 	AceInfoConfigMapName = "ace-info"
