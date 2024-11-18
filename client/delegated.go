@@ -106,7 +106,16 @@ func (d *DelegatingClient) Impersonate(u user.Info) (client.Client, error) {
 		Groups:   u.GetGroups(),
 		Extra:    u.GetExtra(),
 	}
-	return NewClient(config, d.options)
+	// share the transport between all clients
+	httpClient, err := restclient.HTTPClientFor(config)
+	if err != nil {
+		return nil, err
+	}
+
+	optionsShallowCopy := d.options
+	optionsShallowCopy.HTTPClient = httpClient
+
+	return NewClient(config, optionsShallowCopy)
 }
 
 // GroupVersionKindFor returns the GroupVersionKind for the given object.
