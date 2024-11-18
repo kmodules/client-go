@@ -18,6 +18,7 @@ package client
 
 import (
 	"context"
+	"net/http"
 	"strings"
 
 	apiutil2 "kmodules.xyz/client-go/client/apiutil"
@@ -28,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/authentication/user"
 	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/transport"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 )
@@ -98,7 +100,7 @@ func (d *DelegatingClient) RestConfig() *restclient.Config {
 	return d.config
 }
 
-func (d *DelegatingClient) Impersonate(u user.Info) (client.Client, error) {
+func (d *DelegatingClient) Impersonate(u user.Info) (*restclient.Config, client.Client, error) {
 	config := restclient.CopyConfig(d.config)
 	config.Impersonate = restclient.ImpersonationConfig{
 		UserName: u.GetName(),
@@ -106,16 +108,21 @@ func (d *DelegatingClient) Impersonate(u user.Info) (client.Client, error) {
 		Groups:   u.GetGroups(),
 		Extra:    u.GetExtra(),
 	}
+
 	// share the transport between all clients
-	httpClient, err := restclient.HTTPClientFor(config)
-	if err != nil {
-		return nil, err
-	}
-
 	optionsShallowCopy := d.options
-	optionsShallowCopy.HTTPClient = httpClient
-
-	return NewClient(config, optionsShallowCopy)
+	if d.options.HTTPClient != nil {
+		optionsShallowCopy.HTTPClient = &http.Client{
+			Transport: transport.NewImpersonatingRoundTripper(transport.ImpersonationConfig{
+				UserName: u.GetName(),
+				UID:      u.GetUID(),
+				Groups:   u.GetGroups(),
+				Extra:    u.GetExtra(),
+			}, d.options.HTTPClient.Transport),
+		}
+	}
+	cc, err := NewClient(config, optionsShallowCopy)
+	return config, cc, err
 }
 
 // GroupVersionKindFor returns the GroupVersionKind for the given object.
