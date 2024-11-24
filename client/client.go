@@ -67,10 +67,11 @@ func NewUncachedClient(cfg *rest.Config, funcs ...func(*runtime.Scheme) error) (
 
 type (
 	TransformFunc       func(obj client.Object, createOp bool) client.Object
+	TransformFuncE      func(obj client.Object, createOp bool) (client.Object, error)
 	TransformStatusFunc func(obj client.Object) client.Object
 )
 
-func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (kutil.VerbType, error) {
+func CreateOrPatchE(ctx context.Context, c client.Client, obj client.Object, transform TransformFuncE, opts ...client.PatchOption) (kutil.VerbType, error) {
 	gvk, err := apiutil.GVKForObject(obj, c.Scheme())
 	if err != nil {
 		return kutil.VerbUnchanged, errors.Wrapf(err, "failed to get GVK for object %T", obj)
@@ -91,8 +92,11 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 				createOpts = append(createOpts, opt)
 			}
 		}
-		mod := transform(obj.DeepCopyObject().(client.Object), true)
-		err := c.Create(ctx, mod, createOpts...)
+		mod, err := transform(obj.DeepCopyObject().(client.Object), true)
+		if err != nil {
+			return kutil.VerbUnchanged, err
+		}
+		err = c.Create(ctx, mod, createOpts...)
 		if err != nil {
 			return kutil.VerbUnchanged, err
 		}
@@ -111,7 +115,10 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	} else {
 		patch = client.MergeFrom(cur)
 	}
-	mod := transform(cur.DeepCopyObject().(client.Object), false)
+	mod, err := transform(cur.DeepCopyObject().(client.Object), false)
+	if err != nil {
+		return kutil.VerbUnchanged, err
+	}
 	err = c.Patch(ctx, mod, patch, opts...)
 	if err != nil {
 		return kutil.VerbUnchanged, err
@@ -130,6 +137,13 @@ func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, tran
 	}
 	assign(obj, mod)
 	return vt, nil
+}
+
+func CreateOrPatch(ctx context.Context, c client.Client, obj client.Object, transform TransformFunc, opts ...client.PatchOption) (kutil.VerbType, error) {
+	return CreateOrPatchE(ctx, c, obj, func(obj client.Object, createOp bool) (client.Object, error) {
+		transform(obj, createOp)
+		return obj, nil
+	}, opts...)
 }
 
 func assign(target, src any) {
