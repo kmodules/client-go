@@ -96,6 +96,7 @@ func CreateOrPatchE(ctx context.Context, c client.Client, obj client.Object, tra
 		if err != nil {
 			return kutil.VerbUnchanged, err
 		}
+		mod.SetResourceVersion("")
 		err = c.Create(ctx, mod, createOpts...)
 		if err != nil {
 			return kutil.VerbUnchanged, err
