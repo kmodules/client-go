@@ -18,10 +18,15 @@ package cluster
 
 import (
 	"context"
+	"fmt"
 
+	kmapi "kmodules.xyz/client-go/api/v1"
+
+	core "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apiserver/pkg/authentication/user"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -52,4 +57,28 @@ func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
 		missingDeployment = true
 	}
 	return IsOpenClusterHub(mapper) && missingDeployment
+}
+
+func IsClientOrgMember(kc client.Client, user user.Info) (bool, string, error) {
+	orgs, exists := user.GetExtra()[kmapi.AceOrgIDKey]
+	if !exists || len(orgs) == 0 {
+		return false, "", nil
+	}
+	if len(orgs) > 1 {
+		return false, "", fmt.Errorf("user %s associated with multiple orgs %v", user.GetName(), orgs)
+	}
+
+	var list core.NamespaceList
+	if err := kc.List(context.TODO(), &list, client.MatchingLabels{
+		kmapi.ClientOrgKey: "true",
+	}); err != nil {
+		return false, "", err
+	}
+
+	for _, ns := range list.Items {
+		if ns.Annotations[kmapi.AceOrgIDKey] == orgs[0] {
+			return true, orgs[0], nil
+		}
+	}
+	return false, "", nil
 }
