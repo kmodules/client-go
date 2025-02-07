@@ -19,6 +19,7 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	kmapi "kmodules.xyz/client-go/api/v1"
 
@@ -81,4 +82,9 @@ func IsClientOrgMember(kc client.Client, user user.Info) (bool, string, error) {
 		}
 	}
 	return false, "", nil
+}
+
+func ClientDashboardTitle(title string) string {
+	title = strings.TrimPrefix(title, "KubeDB /")
+	return strings.TrimSpace(title)
 }
