@@ -93,7 +93,6 @@ func TryUpdatePodDisruptionBudget(ctx context.Context, c kubernetes.Interface, m
 		klog.Errorf("Attempt %d failed to update PodDisruptionBudget %s due to %v.", attempt, cur.Name, e2)
 		return false, nil
 	})
-
 	if err != nil {
 		err = errors.Errorf("failed to update PodDisruptionBudget %s after %d attempts due to %v", meta.Name, attempt, err)
 	}
