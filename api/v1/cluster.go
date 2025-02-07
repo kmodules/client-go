@@ -22,9 +22,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
-
-	core "k8s.io/api/core/v1"
-	"k8s.io/apiserver/pkg/authentication/user"
 )
 
 // +kubebuilder:validation:Enum=AKS;DigitalOcean;EKS;Exoscale;Generic;GKE;Linode;Packet;Rancher;Scaleway;Vultr
@@ -148,20 +145,6 @@ func (cm ClusterManager) ManagedByOpenShift() bool {
 
 func (cm ClusterManager) ManagedByVirtualCluster() bool {
 	return cm&ClusterManagerVirtualCluster == ClusterManagerVirtualCluster
-}
-
-func IsClientOrgMember(user user.Info, list core.NamespaceList) (bool, string) {
-	cOrg, exists := user.GetExtra()[AceOrgIDKey]
-	if exists && len(cOrg) > 0 {
-		for _, ns := range list.Items {
-			if val, exist := ns.Annotations[AceOrgIDKey]; exist && val == cOrg[0] {
-				if val, exist = ns.Labels[ClientOrgKey]; exist && val == "true" {
-					return true, cOrg[0]
-				}
-			}
-		}
-	}
-	return false, ""
 }
 
 func (cm ClusterManager) Strings() []string {
