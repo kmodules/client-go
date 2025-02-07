@@ -60,28 +60,38 @@ func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
 	return IsOpenClusterHub(mapper) && missingDeployment
 }
 
-func IsClientOrgMember(kc client.Client, user user.Info) (bool, string, error) {
+type ClientOrgResult struct {
+	IsClientOrg bool
+	OrgID       string
+	Namespace   core.Namespace
+}
+
+func IsClientOrgMember(kc client.Client, user user.Info) (*ClientOrgResult, error) {
 	orgs, exists := user.GetExtra()[kmapi.AceOrgIDKey]
 	if !exists || len(orgs) == 0 {
-		return false, "", nil
+		return &ClientOrgResult{}, nil
 	}
 	if len(orgs) > 1 {
-		return false, "", fmt.Errorf("user %s associated with multiple orgs %v", user.GetName(), orgs)
+		return nil, fmt.Errorf("user %s associated with multiple orgs %v", user.GetName(), orgs)
 	}
 
 	var list core.NamespaceList
 	if err := kc.List(context.TODO(), &list, client.MatchingLabels{
 		kmapi.ClientOrgKey: "true",
 	}); err != nil {
-		return false, "", err
+		return nil, err
 	}
 
 	for _, ns := range list.Items {
 		if ns.Annotations[kmapi.AceOrgIDKey] == orgs[0] {
-			return true, orgs[0], nil
+			return &ClientOrgResult{
+				IsClientOrg: true,
+				OrgID:       orgs[0],
+				Namespace:   ns,
+			}, nil
 		}
 	}
-	return false, "", nil
+	return &ClientOrgResult{}, nil
 }
 
 func ClientDashboardTitle(title string) string {
