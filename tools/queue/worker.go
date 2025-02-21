@@ -17,6 +17,7 @@ limitations under the License.
 package queue
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -116,7 +117,7 @@ func (w *Worker) panicSafeReconcile(key string) (paniced bool, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			for _, fn := range runtime.PanicHandlers {
-				fn(r)
+				fn(context.TODO(), r)
 			}
 			paniced = true
 			err = fmt.Errorf("panic: %v [recovered]", r)
