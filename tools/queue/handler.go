@@ -65,7 +65,7 @@ func logLevel(apiGroup string) klog.Level {
 
 // QueueingEventHandler queues the key for the object on add and update events
 type QueueingEventHandler struct {
-	queue               workqueue.RateLimitingInterface
+	queue               workqueue.TypedRateLimitingInterface[any]
 	enqueueAdd          func(obj interface{}) bool
 	enqueueUpdate       func(oldObj, newObj interface{}) bool
 	enqueueDelete       bool
@@ -74,7 +74,7 @@ type QueueingEventHandler struct {
 
 var _ cache.ResourceEventHandler = &QueueingEventHandler{}
 
-func DefaultEventHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func DefaultEventHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:               queue,
 		enqueueAdd:          nil,
@@ -84,7 +84,7 @@ func DefaultEventHandler(queue workqueue.RateLimitingInterface, restrictToNamesp
 	}
 }
 
-func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(oldObj, newObj interface{}) bool, restrictToNamespace string) cache.ResourceEventHandler {
+func NewEventHandler(queue workqueue.TypedRateLimitingInterface[any], enqueueUpdate func(oldObj, newObj interface{}) bool, restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:               queue,
 		enqueueAdd:          nil,
@@ -94,7 +94,7 @@ func NewEventHandler(queue workqueue.RateLimitingInterface, enqueueUpdate func(o
 	}
 }
 
-func NewUpsertHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func NewUpsertHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:               queue,
 		enqueueAdd:          nil,
@@ -104,7 +104,7 @@ func NewUpsertHandler(queue workqueue.RateLimitingInterface, restrictToNamespace
 	}
 }
 
-func NewDeleteHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func NewDeleteHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:               queue,
 		enqueueAdd:          func(_ interface{}) bool { return false },
@@ -114,7 +114,7 @@ func NewDeleteHandler(queue workqueue.RateLimitingInterface, restrictToNamespace
 	}
 }
 
-func NewReconcilableHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func NewReconcilableHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue: queue,
 		enqueueAdd: func(o interface{}) bool {
@@ -128,7 +128,7 @@ func NewReconcilableHandler(queue workqueue.RateLimitingInterface, restrictToNam
 	}
 }
 
-func NewChangeHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func NewChangeHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:      queue,
 		enqueueAdd: nil,
@@ -146,7 +146,7 @@ func NewChangeHandler(queue workqueue.RateLimitingInterface, restrictToNamespace
 	}
 }
 
-func NewSpecStatusChangeHandler(queue workqueue.RateLimitingInterface, restrictToNamespace string) cache.ResourceEventHandler {
+func NewSpecStatusChangeHandler(queue workqueue.TypedRateLimitingInterface[any], restrictToNamespace string) cache.ResourceEventHandler {
 	return &QueueingEventHandler{
 		queue:      queue,
 		enqueueAdd: nil,
@@ -161,7 +161,7 @@ func NewSpecStatusChangeHandler(queue workqueue.RateLimitingInterface, restrictT
 	}
 }
 
-func Enqueue(queue workqueue.RateLimitingInterface, obj interface{}) {
+func Enqueue(queue workqueue.TypedRateLimitingInterface[any], obj interface{}) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
 		klog.Errorf("Couldn't get key for object %+v: %v", obj, err)
@@ -170,7 +170,7 @@ func Enqueue(queue workqueue.RateLimitingInterface, obj interface{}) {
 	queue.Add(key)
 }
 
-func EnqueueAfter(queue workqueue.RateLimitingInterface, obj interface{}, duration time.Duration) {
+func EnqueueAfter(queue workqueue.TypedRateLimitingInterface[any], obj interface{}, duration time.Duration) {
 	key, err := cache.DeletionHandlingMetaNamespaceKeyFunc(obj)
 	if err != nil {
 		klog.Errorf("Couldn't get key for object %+v: %v", obj, err)
