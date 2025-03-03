@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/apimachinery/pkg/util/version"
 	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -33,6 +34,7 @@ import (
 	clientgoinformers "k8s.io/client-go/informers"
 	clientgoclientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
+	utilversion "k8s.io/component-base/version"
 	"k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
@@ -117,6 +119,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 	serverConfig.OpenAPIConfig.Info.InfoProps = cfg.Info
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(cfg.GetOpenAPIDefinitions, openapinamer.NewDefinitionNamer(cfg.Scheme))
 	serverConfig.OpenAPIV3Config.Info.InfoProps = cfg.Info
+	serverConfig.EffectiveVersion = &effectiveVersion{}
 
 	genericServer, err := serverConfig.Complete().New("stash-server", genericapiserver.NewEmptyDelegate()) // completion is done in Complete, no need for a second time
 	if err != nil {
@@ -277,4 +280,35 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 		return "", err
 	}
 	return string(data), nil
+}
+
+type effectiveVersion struct{}
+
+var _ utilversion.EffectiveVersion = &effectiveVersion{}
+
+func (e effectiveVersion) BinaryVersion() *version.Version {
+	return version.MustParse("v1.32.2")
+}
+
+func (e effectiveVersion) EmulationVersion() *version.Version {
+	return version.MustParse("v1.32.2")
+}
+
+func (e effectiveVersion) MinCompatibilityVersion() *version.Version {
+	return version.MustParse("v1.32.2")
+}
+
+func (e effectiveVersion) EqualTo(other utilversion.EffectiveVersion) bool {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (e effectiveVersion) String() string {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (e effectiveVersion) Validate() []error {
+	// TODO implement me
+	panic("implement me")
 }
