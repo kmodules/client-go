@@ -446,9 +446,12 @@ func RemoveOwnerReference(dependent metav1.Object, owner metav1.Object) {
 
 // IsOwnedBy checks if the dependent has a owner reference to the given owner
 func IsOwnedBy(dependent metav1.Object, owner metav1.Object) (owned bool, controller bool) {
+	if dependent.GetNamespace() != owner.GetNamespace() {
+		return false, false
+	}
 	refs := dependent.GetOwnerReferences()
 	for i := range refs {
-		if refs[i].UID == owner.GetUID() {
+		if refs[i].Name == owner.GetName() {
 			return true, refs[i].Controller != nil && *refs[i].Controller
 		}
 	}
