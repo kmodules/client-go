@@ -26,7 +26,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"k8s.io/apimachinery/pkg/util/version"
 	openapinamer "k8s.io/apiserver/pkg/endpoints/openapi"
 	"k8s.io/apiserver/pkg/registry/rest"
 	genericapiserver "k8s.io/apiserver/pkg/server"
@@ -40,6 +39,10 @@ import (
 	"k8s.io/kube-openapi/pkg/common"
 	"k8s.io/kube-openapi/pkg/common/restfuladapter"
 	"k8s.io/kube-openapi/pkg/validation/spec"
+)
+
+const (
+	DefaultKubernetesVersion = "v1.32.2"
 )
 
 type TypeInfo struct {
@@ -119,7 +122,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 	serverConfig.OpenAPIConfig.Info.InfoProps = cfg.Info
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(cfg.GetOpenAPIDefinitions, openapinamer.NewDefinitionNamer(cfg.Scheme))
 	serverConfig.OpenAPIV3Config.Info.InfoProps = cfg.Info
-	serverConfig.EffectiveVersion = &effectiveVersion{}
+	serverConfig.EffectiveVersion = utilversion.NewEffectiveVersion(DefaultKubernetesVersion)
 
 	genericServer, err := serverConfig.Complete().New("stash-server", genericapiserver.NewEmptyDelegate()) // completion is done in Complete, no need for a second time
 	if err != nil {
@@ -280,35 +283,4 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 		return "", err
 	}
 	return string(data), nil
-}
-
-type effectiveVersion struct{}
-
-var _ utilversion.EffectiveVersion = &effectiveVersion{}
-
-func (e effectiveVersion) BinaryVersion() *version.Version {
-	return version.MustParse("v1.32.2")
-}
-
-func (e effectiveVersion) EmulationVersion() *version.Version {
-	return version.MustParse("v1.32.2")
-}
-
-func (e effectiveVersion) MinCompatibilityVersion() *version.Version {
-	return version.MustParse("v1.32.2")
-}
-
-func (e effectiveVersion) EqualTo(other utilversion.EffectiveVersion) bool {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (e effectiveVersion) String() string {
-	// TODO implement me
-	panic("implement me")
-}
-
-func (e effectiveVersion) Validate() []error {
-	// TODO implement me
-	panic("implement me")
 }
