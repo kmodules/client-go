@@ -30,7 +30,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
 	golang.org/x/time v0.10.0
-	gomodules.xyz/jsonpatch/v2 v2.4.0
+	gomodules.xyz/jsonpatch/v2 v2.5.0
 	gomodules.xyz/mergo v0.3.13
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sync v0.1.0

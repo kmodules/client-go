@@ -522,7 +522,7 @@ golang.org/x/time/rate
 # gomodules.xyz/homedir v0.1.0
 ## explicit; go 1.15
 gomodules.xyz/homedir
-# gomodules.xyz/jsonpatch/v2 v2.4.0
+# gomodules.xyz/jsonpatch/v2 v2.5.0
 ## explicit; go 1.20
 gomodules.xyz/jsonpatch/v2
 # gomodules.xyz/mergo v0.3.13
