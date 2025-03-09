@@ -1,8 +1,8 @@
 module kmodules.xyz/client-go
 
-go 1.22.0
+go 1.23.0
 
-toolchain go1.22.1
+toolchain go1.24.1
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -30,7 +30,7 @@ require (
 	github.com/yudai/gojsondiff v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
 	golang.org/x/time v0.5.0
-	gomodules.xyz/jsonpatch/v2 v2.4.0
+	gomodules.xyz/jsonpatch/v2 v2.5.0
 	gomodules.xyz/mergo v0.3.13
 	gomodules.xyz/pointer v0.1.0
 	gomodules.xyz/sync v0.1.0
@@ -123,14 +123,14 @@ require (
 	go.starlark.net v0.0.0-20230525235612-a134d8f9ddca // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/crypto v0.31.0 // indirect
+	golang.org/x/crypto v0.35.0 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect
 	golang.org/x/net v0.33.0 // indirect
-	golang.org/x/oauth2 v0.22.0 // indirect
-	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/oauth2 v0.27.0 // indirect
+	golang.org/x/sync v0.11.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/term v0.29.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	gomodules.xyz/homedir v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20230803162519-f966b187b2e5 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230726155614-23370e0ffb3e // indirect
