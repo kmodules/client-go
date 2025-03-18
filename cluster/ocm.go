@@ -46,7 +46,10 @@ func IsOpenClusterSpoke(kc client.Reader) bool {
 	list.SetAPIVersion("operator.open-cluster-management.io/v1")
 	list.SetKind("Klusterlet")
 	err := kc.List(context.TODO(), &list)
-	return err == nil && len(list.Items) > 0
+	if err != nil {
+		panic(err)
+	}
+	return len(list.Items) > 0
 }
 
 func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
