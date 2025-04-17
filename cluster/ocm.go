@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -53,6 +54,32 @@ func IsOpenClusterSpoke(kc client.Reader) bool {
 		}
 	}
 	return len(list.Items) > 0
+}
+
+func IsACEManagedSpoke(kc client.Reader) bool {
+	if !IsOpenClusterSpoke(kc) {
+		return false
+	}
+
+	var list unstructured.UnstructuredList
+	list.SetAPIVersion("cluster.open-cluster-management.io/v1alpha1")
+	list.SetKind("ClusterClaim")
+	err := kc.List(context.TODO(), &list)
+	if err != nil {
+		klog.Errorln(err)
+	}
+
+	n := 0
+	for _, item := range list.Items {
+		if item.GetName() == kmapi.ClusterClaimKeyID ||
+			item.GetName() == kmapi.ClusterClaimKeyInfo {
+			n++
+		}
+		if n == 2 {
+			return true
+		}
+	}
+	return false
 }
 
 func IsOpenClusterMulticlusterControlplane(mapper meta.RESTMapper) bool {
