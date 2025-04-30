@@ -80,6 +80,8 @@ type ClusterMetadata struct {
 	CABundle     string          `json:"caBundle,omitempty" protobuf:"bytes,8,opt,name=caBundle"`
 	ManagerID    string          `json:"managerID,omitempty" protobuf:"bytes,9,opt,name=managerID"`
 	HubClusterID string          `json:"hubClusterID,omitempty" protobuf:"bytes,10,opt,name=hubClusterID"`
+	Region       string          `json:"region,omitempty" protobuf:"bytes,11,opt,name=region"`
+	AuthMethod   string          `json:"authMethod,omitempty" protobuf:"bytes,12,opt,name=authMethod"`
 }
 
 func (md ClusterMetadata) Manager() string {

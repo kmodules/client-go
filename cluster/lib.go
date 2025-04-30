@@ -98,6 +98,8 @@ func ClusterMetadataFromConfigMap(cm *core.ConfigMap, clusterUIDVerifier string)
 		OwnerType:   cm.Data["ownerType"],
 		APIEndpoint: cm.Data["apiEndpoint"],
 		CABundle:    cm.Data["ca.crt"],
+		Region:      cm.Data["region"],
+		AuthMethod:  cm.Data["authMethod"],
 	}
 
 	data, err := json.Marshal(md)
@@ -148,6 +150,8 @@ func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
 		cm.Data["ownerType"] = md.OwnerType
 		cm.Data["apiEndpoint"] = md.APIEndpoint
 		cm.Data["ca.crt"] = md.CABundle
+		cm.Data["region"] = md.Region
+		cm.Data["authMethod"] = md.AuthMethod
 
 		cm.BinaryData = map[string][]byte{
 			"mac": messageMAC,
