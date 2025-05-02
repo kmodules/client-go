@@ -90,16 +90,15 @@ func ClusterMetadataFromConfigMap(cm *core.ConfigMap, clusterUIDVerifier string)
 	}
 
 	md := &kmapi.ClusterMetadata{
-		UID:         cm.Data["uid"],
-		Name:        cm.Data["name"],
-		DisplayName: cm.Data["displayName"],
-		Provider:    kmapi.HostingProvider(cm.Data["provider"]),
-		OwnerID:     cm.Data["ownerID"],
-		OwnerType:   cm.Data["ownerType"],
-		APIEndpoint: cm.Data["apiEndpoint"],
-		CABundle:    cm.Data["ca.crt"],
-		Region:      cm.Data["region"],
-		AuthMethod:  cm.Data["authMethod"],
+		UID:                  cm.Data["uid"],
+		Name:                 cm.Data["name"],
+		DisplayName:          cm.Data["displayName"],
+		Provider:             kmapi.HostingProvider(cm.Data["provider"]),
+		OwnerID:              cm.Data["ownerID"],
+		OwnerType:            cm.Data["ownerType"],
+		APIEndpoint:          cm.Data["apiEndpoint"],
+		CABundle:             cm.Data["ca.crt"],
+		CloudServiceAuthMode: cm.Data["cloudServiceAuthMode"],
 	}
 
 	data, err := json.Marshal(md)
@@ -150,8 +149,7 @@ func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
 		cm.Data["ownerType"] = md.OwnerType
 		cm.Data["apiEndpoint"] = md.APIEndpoint
 		cm.Data["ca.crt"] = md.CABundle
-		cm.Data["region"] = md.Region
-		cm.Data["authMethod"] = md.AuthMethod
+		cm.Data["cloudServiceAuthMode"] = md.CloudServiceAuthMode
 
 		cm.BinaryData = map[string][]byte{
 			"mac": messageMAC,
