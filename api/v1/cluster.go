@@ -59,11 +59,11 @@ const (
 	ClusterProviderNameKey string = "cluster.appscode.com/provider"
 	ClusterProfileLabel    string = "cluster.appscode.com/profile"
 
-	AceOrgIDKey            string = "ace.appscode.com/org-id"
-	AceSkipBillingKey      string = "ace.appscode.com/skip-billing"
-	ClientOrgKey           string = "ace.appscode.com/client-org"
-	ClientOrgMonitoringKey string = "ace.appscode.com/client-org-monitoring"
-	ClientKeyPrefix        string = "client.ace.appscode.com/"
+	AceOrgIDKey               string = "ace.appscode.com/org-id"
+	AceEnableResourceTrialKey string = "ace.appscode.com/enable-resource-trial"
+	ClientOrgKey              string = "ace.appscode.com/client-org"
+	ClientOrgMonitoringKey    string = "ace.appscode.com/client-org-monitoring"
+	ClientKeyPrefix           string = "client.ace.appscode.com/"
 
 	ClusterClaimKeyID       string = "id.k8s.io"
 	ClusterClaimKeyInfo     string = "cluster.ace.info"
