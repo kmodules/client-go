@@ -21,6 +21,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
+	"math/bits"
 	"strings"
 )
 
@@ -172,6 +173,18 @@ func (cm ClusterManager) Strings() []string {
 		out = append(out, "vcluster")
 	}
 	return out
+}
+
+func isPowerOfTwo(n int) bool {
+	return n > 0 && (n&(n-1)) == 0
+}
+
+func (cm ClusterManager) Name() string {
+	if !isPowerOfTwo(int(cm)) {
+		return cm.String()
+	}
+	idx := bits.TrailingZeros(uint(cm))
+	return _ClusterManagerNames[idx]
 }
 
 func (cm ClusterManager) String() string {
