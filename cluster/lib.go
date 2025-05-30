@@ -56,7 +56,7 @@ func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
 	var cm core.ConfigMap
 	err = c.Get(context.TODO(), client.ObjectKey{Name: kmapi.AceInfoConfigMapName, Namespace: metav1.NamespacePublic}, &cm)
 	if err == nil {
-		result, err := ClusterMetadataFromConfigMap(&cm, string(ns.UID))
+		result, err := ClusterMetadataFromConfigMap(&cm, DetectClusterMode(&ns), string(ns.UID))
 		if err == nil {
 			return result, nil
 		}
@@ -65,6 +65,14 @@ func ClusterMetadata(c client.Reader) (*kmapi.ClusterMetadata, error) {
 	}
 
 	return LegacyClusterMetadataFromNamespace(&ns)
+}
+
+func DetectClusterMode(ns *core.Namespace) kmapi.ClusterMode {
+	v := ns.Annotations[kmapi.ClusterModeKey]
+	if mode, err := kmapi.ParseClusterMode(v); err == nil {
+		return mode
+	}
+	return kmapi.ClusterModeProd
 }
 
 func LegacyClusterMetadataFromNamespace(ns *core.Namespace) (*kmapi.ClusterMetadata, error) {
@@ -80,11 +88,12 @@ func LegacyClusterMetadataFromNamespace(ns *core.Namespace) (*kmapi.ClusterMetad
 		Name:        name,
 		DisplayName: ns.Annotations[kmapi.ClusterDisplayNameKey],
 		Provider:    kmapi.HostingProvider(ns.Annotations[kmapi.ClusterProviderNameKey]),
+		Mode:        DetectClusterMode(ns),
 	}
 	return md, nil
 }
 
-func ClusterMetadataFromConfigMap(cm *core.ConfigMap, clusterUIDVerifier string) (*kmapi.ClusterMetadata, error) {
+func ClusterMetadataFromConfigMap(cm *core.ConfigMap, mode kmapi.ClusterMode, clusterUIDVerifier string) (*kmapi.ClusterMetadata, error) {
 	if cm.Name != kmapi.AceInfoConfigMapName || cm.Namespace != metav1.NamespacePublic {
 		return nil, fmt.Errorf("expected configmap %s/%s, found %s/%s", metav1.NamespacePublic, kmapi.AceInfoConfigMapName, cm.Namespace, cm.Name)
 	}
@@ -116,6 +125,7 @@ func ClusterMetadataFromConfigMap(cm *core.ConfigMap, clusterUIDVerifier string)
 	if md.Name == "" {
 		md.Name = ClusterName()
 	}
+	md.Mode = mode
 	return md, nil
 }
 
