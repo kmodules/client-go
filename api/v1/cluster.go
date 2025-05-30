@@ -83,7 +83,7 @@ type ClusterMetadata struct {
 	ManagerID            string          `json:"managerID,omitempty" protobuf:"bytes,9,opt,name=managerID"`
 	HubClusterID         string          `json:"hubClusterID,omitempty" protobuf:"bytes,10,opt,name=hubClusterID"`
 	CloudServiceAuthMode string          `json:"cloudServiceAuthMode,omitempty" protobuf:"bytes,11,opt,name=cloudServiceAuthMode"`
-	Mode                 ClusterMode     `protobuf:"bytes,12,opt,name=mode,casttype=ClusterMode"`
+	Mode                 ClusterMode     `json:"mode,omitempty" protobuf:"bytes,12,opt,name=mode,casttype=ClusterMode"`
 }
 
 func (md ClusterMetadata) Manager() string {
