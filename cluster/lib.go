@@ -192,6 +192,10 @@ func DetectCAPICluster(kc client.Reader) (*kmapi.CAPIClusterInfo, error) {
 		return nil, err
 	}
 
+	if getProviderName(capiProvider) == "" {
+		return nil, nil
+	}
+
 	return &kmapi.CAPIClusterInfo{
 		Provider:    getProviderName(capiProvider),
 		Namespace:   ns,
