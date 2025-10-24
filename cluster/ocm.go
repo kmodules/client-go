@@ -50,7 +50,7 @@ func IsOpenClusterSpoke(kc client.Reader) bool {
 	err := kc.List(context.TODO(), &list)
 	if err != nil {
 		if !meta.IsNoMatchError(err) && !apierrors.IsNotFound(err) {
-			panic(err) // panic if 403 (missing rbac)
+			klog.Errorln(err)
 		}
 	}
 	return len(list.Items) > 0
