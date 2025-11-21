@@ -201,7 +201,7 @@ func (t *TimeOfDay) Fuzz(c fuzz.Continue) {
 	// Allow for about 1000 years of randomness.  Leave off nanoseconds
 	// because JSON doesn't represent them so they can't round-trip
 	// properly.
-	t.Time = time.Unix(c.Rand.Int63n(1000*365*24*60*60), 0)
+	t.Time = time.Unix(c.Int63n(1000*365*24*60*60), 0)
 }
 
 // ensure Time implements fuzz.Interface

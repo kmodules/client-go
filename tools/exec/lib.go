@@ -68,7 +68,7 @@ func Input(in string) func(*Options) {
 
 func TTY(enable bool) func(*Options) {
 	return func(opts *Options) {
-		opts.PodExecOptions.TTY = enable
+		opts.TTY = enable
 	}
 }
 
@@ -121,14 +121,14 @@ func execIntoPod(ctx context.Context, config *rest.Config, kc kubernetes.Interfa
 
 	if opts.CheckForRunningContainer {
 		for _, status := range pod.Status.ContainerStatuses {
-			if status.Name == opts.PodExecOptions.Container {
+			if status.Name == opts.Container {
 				if status.State.Running == nil {
 					return "", NotRunning
 				}
 			}
 		}
 		for _, status := range pod.Status.InitContainerStatuses {
-			if status.Name == opts.PodExecOptions.Container {
+			if status.Name == opts.Container {
 				if status.State.Running == nil {
 					return "", NotRunning
 				}

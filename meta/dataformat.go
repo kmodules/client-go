@@ -57,9 +57,10 @@ func NewDataFormat(format string, def DataFormat) DataFormat {
 }
 
 func Marshal(v interface{}, format DataFormat) ([]byte, error) {
-	if format == JsonFormat {
+	switch format {
+	case JsonFormat:
 		return json.Marshal(v)
-	} else if format == YAMLFormat {
+	case YAMLFormat:
 		return yaml.Marshal(v)
 	}
 	return nil, fmt.Errorf("unknonw format: %v", format)

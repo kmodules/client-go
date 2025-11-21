@@ -30,13 +30,14 @@ import (
 )
 
 func Convert(name string, data []byte, format meta.DataFormat) ([]byte, string, error) {
-	if format == meta.JsonFormat {
+	switch format {
+	case meta.JsonFormat:
 		out, err := ylib.ToJSON(data)
 		if err != nil {
 			return nil, "", err
 		}
 		return out, "application/json", nil
-	} else if format == meta.YAMLFormat {
+	case meta.YAMLFormat:
 		if hasJSONPrefix(data) {
 			out, err := yaml.JSONToYAML(data)
 			if err != nil {
