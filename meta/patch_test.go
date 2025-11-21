@@ -90,11 +90,12 @@ func TestCreateStrategicPatch_Conditions(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			_, err := CreateStrategicPatch(&c.x, &c.y, c.cond...)
-			if c.result == true {
+			switch c.result {
+			case true:
 				if err != nil {
 					t.Errorf("Modifications should be passed. error: %v", err)
 				}
-			} else if c.result == false {
+			case false:
 				if err == nil || !mergepatch.IsPreconditionFailed(err) {
 					t.Errorf("Modifications should be failed. error: %v", err)
 				}
@@ -127,11 +128,12 @@ func TestCreateJSONMergePatch_Conditions(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			_, err := CreateJSONMergePatch(&c.x, &c.y, c.cond...)
-			if c.result == true {
+			switch c.result {
+			case true:
 				if err != nil {
 					t.Errorf("Modifications should be passed. error: %v", err)
 				}
-			} else if c.result == false {
+			case false:
 				if err == nil || !mergepatch.IsPreconditionFailed(err) {
 					t.Errorf("Modifications should be failed. error: %v", err)
 				}

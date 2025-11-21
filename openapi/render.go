@@ -33,7 +33,7 @@ import (
 	clientgoinformers "k8s.io/client-go/informers"
 	clientgoclientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
-	utilversion "k8s.io/component-base/version"
+	basecompatibility "k8s.io/component-base/compatibility"
 	"k8s.io/klog/v2"
 	"k8s.io/kube-openapi/pkg/builder"
 	"k8s.io/kube-openapi/pkg/common"
@@ -122,7 +122,7 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 	serverConfig.OpenAPIConfig.Info.InfoProps = cfg.Info
 	serverConfig.OpenAPIV3Config = genericapiserver.DefaultOpenAPIV3Config(cfg.GetOpenAPIDefinitions, openapinamer.NewDefinitionNamer(cfg.Scheme))
 	serverConfig.OpenAPIV3Config.Info.InfoProps = cfg.Info
-	serverConfig.EffectiveVersion = utilversion.NewEffectiveVersion(DefaultKubernetesVersion)
+	serverConfig.EffectiveVersion = basecompatibility.NewEffectiveVersionFromString(DefaultKubernetesVersion, "", "")
 
 	genericServer, err := serverConfig.Complete().New("stash-server", genericapiserver.NewEmptyDelegate()) // completion is done in Complete, no need for a second time
 	if err != nil {
