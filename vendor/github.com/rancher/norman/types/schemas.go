@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
-	"slices"
 	"strings"
 	"sync"
 
@@ -85,10 +84,6 @@ func (s *Schemas) doRemoveSchema(schema Schema) *Schemas {
 		s.removeEmbed(&schema)
 	}
 
-	s.schemas = slices.DeleteFunc(s.schemas, func(candidate *Schema) bool {
-		return candidate.ID == schema.ID
-	})
-
 	return s
 }
 
@@ -141,12 +136,11 @@ func (s *Schemas) doAddSchema(schema Schema, replace bool) *Schemas {
 		schemas[schema.ID] = &schema
 
 		if replace {
-			i := slices.IndexFunc(s.schemas, func(candidate *Schema) bool {
-				return candidate.ID == schema.ID
-			})
-
-			if i >= 0 {
-				s.schemas[i] = &schema
+			for i, candidate := range s.schemas {
+				if candidate.ID == schema.ID {
+					s.schemas[i] = &schema
+					break
+				}
 			}
 		} else {
 			s.schemas = append(s.schemas, &schema)

@@ -87,6 +87,10 @@ func (uc *unstructuredClient) Update(ctx context.Context, obj client.Object, opt
 	return fmt.Errorf("update not supported for duck type %+v", uc.duckGVK)
 }
 
+func (uc *unstructuredClient) Apply(ctx context.Context, obj runtime.ApplyConfiguration, opts ...client.ApplyOption) error {
+	panic("not implemented")
+}
+
 // Delete implements client.Client.
 func (uc *unstructuredClient) Delete(ctx context.Context, obj client.Object, opts ...client.DeleteOption) error {
 	gvk, err := apiutil.GVKForObject(obj, uc.c.Scheme())
