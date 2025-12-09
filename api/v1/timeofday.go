@@ -164,7 +164,7 @@ func (t TimeOfDay) MarshalJSON() ([]byte, error) {
 }
 
 // ToUnstructured implements the value.UnstructuredConverter interface.
-func (t TimeOfDay) ToUnstructured() interface{} {
+func (t TimeOfDay) ToUnstructured() any {
 	if t.IsZero() {
 		return nil
 	}
@@ -177,11 +177,11 @@ func (t TimeOfDay) ToUnstructured() interface{} {
 // the OpenAPI spec of this type.
 //
 // See: https://github.com/kubernetes/kube-openapi/tree/master/pkg/generators
-func (_ TimeOfDay) OpenAPISchemaType() []string { return []string{"string"} }
+func (TimeOfDay) OpenAPISchemaType() []string { return []string{"string"} }
 
 // OpenAPISchemaFormat is used by the kube-openapi generator when constructing
 // the OpenAPI spec of this type.
-func (_ TimeOfDay) OpenAPISchemaFormat() string { return "time" }
+func (TimeOfDay) OpenAPISchemaFormat() string { return "time" }
 
 // MarshalQueryParameter converts to a URL query parameter value
 func (t TimeOfDay) MarshalQueryParameter() (string, error) {

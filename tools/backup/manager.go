@@ -48,7 +48,7 @@ const (
 )
 
 type ItemList struct {
-	Items []map[string]interface{} `json:"items,omitempty"`
+	Items []map[string]any `json:"items,omitempty"`
 }
 
 type BackupManager struct {
@@ -112,12 +112,12 @@ func (mgr BackupManager) BackupToTar(backupDir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer file.Close()
+	defer file.Close() // nolint:errcheck
 	// set up the gzip writer
 	gw := gzip.NewWriter(file)
-	defer gw.Close()
+	defer gw.Close() // nolint:errcheck
 	tw := tar.NewWriter(gw)
-	defer tw.Close()
+	defer tw.Close() // nolint:errcheck
 
 	p := func(relPath string, data []byte) error {
 		// now lets create the header as needed for this file within the tarball
@@ -214,7 +214,7 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 					}
 				}
 				if mgr.sanitize {
-					if spec, ok := item["spec"].(map[string]interface{}); ok {
+					if spec, ok := item["spec"].(map[string]any); ok {
 						switch r.Kind {
 						case "Pod":
 							item["spec"], err = cleanUpPodSpec(spec)
@@ -222,9 +222,9 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 								return err
 							}
 						case "StatefulSet", "Deployment", "ReplicaSet", "DaemonSet", "ReplicationController", "Job":
-							template, ok := spec["template"].(map[string]interface{})
+							template, ok := spec["template"].(map[string]any)
 							if ok {
-								podSpec, ok := template["spec"].(map[string]interface{})
+								podSpec, ok := template["spec"].(map[string]any)
 								if ok {
 									template["spec"], err = cleanUpPodSpec(podSpec)
 									if err != nil {
@@ -250,8 +250,8 @@ func (mgr BackupManager) Backup(process processorFunc) error {
 	return nil
 }
 
-func cleanUpObjectMeta(md interface{}) {
-	meta, ok := md.(map[string]interface{})
+func cleanUpObjectMeta(md any) {
+	meta, ok := md.(map[string]any)
 	if !ok {
 		return
 	}
@@ -281,7 +281,7 @@ func cleanUpDecorators(m map[string]string) {
 	delete(m, "pv.kubernetes.io/bound-by-controller")
 }
 
-func cleanUpPodSpec(in map[string]interface{}) (map[string]interface{}, error) {
+func cleanUpPodSpec(in map[string]any) (map[string]any, error) {
 	b, err := yaml.Marshal(in)
 	if err != nil {
 		return nil, err
@@ -309,12 +309,12 @@ func cleanUpPodSpec(in map[string]interface{}) (map[string]interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var out map[string]interface{}
+	var out map[string]any
 	err = yaml.Unmarshal(b, &out)
 	return out, err
 }
 
-func getPathFromSelfLink(mapper meta.RESTMapper, obj map[string]interface{}) string {
+func getPathFromSelfLink(mapper meta.RESTMapper, obj map[string]any) string {
 	u := unstructured.Unstructured{Object: obj}
 	gvk := u.GetObjectKind().GroupVersionKind()
 	mapping, err := mapper.RESTMapping(gvk.GroupKind(), gvk.Version)

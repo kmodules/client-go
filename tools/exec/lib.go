@@ -33,7 +33,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-var NotRunning = errors.New("container not running")
+var ErrNotRunning = errors.New("container not running")
 
 type Options struct {
 	core.PodExecOptions
@@ -123,14 +123,14 @@ func execIntoPod(ctx context.Context, config *rest.Config, kc kubernetes.Interfa
 		for _, status := range pod.Status.ContainerStatuses {
 			if status.Name == opts.Container {
 				if status.State.Running == nil {
-					return "", NotRunning
+					return "", ErrNotRunning
 				}
 			}
 		}
 		for _, status := range pod.Status.InitContainerStatuses {
 			if status.Name == opts.Container {
 				if status.State.Running == nil {
-					return "", NotRunning
+					return "", ErrNotRunning
 				}
 			}
 		}

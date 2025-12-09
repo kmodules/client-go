@@ -49,10 +49,10 @@ func newUnstructuredList(items ...*unstructured.Unstructured) *unstructured.Unst
 
 func newUnstructured(apiVersion, kind, namespace, name string) *unstructured.Unstructured {
 	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": apiVersion,
 			"kind":       kind,
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"namespace": namespace,
 				"name":      name,
 				"uid":       "some-UID-value",
@@ -73,7 +73,7 @@ func newUnstructuredStatus(status *metav1.Status) runtime.Unstructured {
 
 func addCondition(in *unstructured.Unstructured, name, status string) *unstructured.Unstructured {
 	conditions, _, _ := unstructured.NestedSlice(in.Object, "status", "conditions")
-	conditions = append(conditions, map[string]interface{}{
+	conditions = append(conditions, map[string]any{
 		"type":   name,
 		"status": status,
 	})

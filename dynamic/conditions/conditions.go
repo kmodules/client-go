@@ -64,7 +64,7 @@ func (do *DynamicOptions) SetCondition(newCond kmapi.Condition) error {
 	}
 	conds = conditions.SetCondition(conds, newCond)
 
-	unstrConds := make([]interface{}, len(conds))
+	unstrConds := make([]any, len(conds))
 	for i := range conds {
 		cond, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&conds[i])
 		if err != nil {
@@ -87,7 +87,7 @@ func (do *DynamicOptions) RemoveCondition(condType string) error {
 	}
 	conds = conditions.RemoveCondition(conds, condType)
 
-	unstrConds := make([]interface{}, len(conds))
+	unstrConds := make([]any, len(conds))
 	for i := range conds {
 		cond, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&conds[i])
 		if err != nil {
@@ -147,7 +147,7 @@ func (do *DynamicOptions) UpdateConditions(conditions []kmapi.Condition) error {
 		return err
 	}
 
-	unstrConds := make([]interface{}, len(conditions))
+	unstrConds := make([]any, len(conditions))
 	for i := range conditions {
 		cond, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&conditions[i])
 		if err != nil {
@@ -170,8 +170,8 @@ func stringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
 	return func(
 		f reflect.Type,
 		t reflect.Type,
-		data interface{},
-	) (interface{}, error) {
+		data any,
+	) (any, error) {
 		if f.Kind() != reflect.String {
 			return data, nil
 		}
