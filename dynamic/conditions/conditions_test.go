@@ -59,7 +59,7 @@ var conds = []kmapi.Condition{
 }
 
 func newFoo() (*unstructured.Unstructured, error) {
-	unstrConds := make([]interface{}, len(conds))
+	unstrConds := make([]any, len(conds))
 	for i := range conds {
 		cond, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&conds[i])
 		if err != nil {
@@ -68,17 +68,17 @@ func newFoo() (*unstructured.Unstructured, error) {
 		unstrConds[i] = cond
 	}
 	return &unstructured.Unstructured{
-		Object: map[string]interface{}{
+		Object: map[string]any{
 			"apiVersion": "foo/v1",
 			"kind":       "Foo",
-			"metadata": map[string]interface{}{
+			"metadata": map[string]any{
 				"name":      "foo-test",
 				"namespace": "bar",
 			},
-			"spec": map[string]interface{}{
+			"spec": map[string]any{
 				"foo": "bar",
 			},
-			"status": map[string]interface{}{
+			"status": map[string]any{
 				"conditions": unstrConds,
 			},
 		},

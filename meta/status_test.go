@@ -273,8 +273,8 @@ var (
 
 func TestStatusConditionAwareEqual(t *testing.T) {
 	type args struct {
-		old interface{}
-		new interface{}
+		old any
+		new any
 	}
 	tests := []struct {
 		name string
@@ -429,10 +429,10 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=missing, new.status=missing",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{},
+					Object: map[string]any{},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{},
+					Object: map[string]any{},
 				},
 			},
 			want: true,
@@ -441,12 +441,12 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=nil, new.status=nil",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"status": nil,
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"status": nil,
 					},
 				},
@@ -457,13 +457,13 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=empty, new.status=empty",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 			},
@@ -473,15 +473,15 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=full, new.status=full",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
@@ -493,13 +493,13 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=empty, new.status=full",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
@@ -511,15 +511,15 @@ func TestStatusConditionAwareEqual(t *testing.T) {
 			name: "Unstructured: old.status=full, new.status=empty",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 			},
@@ -549,8 +549,8 @@ func toUnstructured(s string) runtime.Object {
 
 func TestStatusEqual(t *testing.T) {
 	type args struct {
-		old interface{}
-		new interface{}
+		old any
+		new any
 	}
 	tests := []struct {
 		name string
@@ -705,10 +705,10 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=missing, new.status=missing",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{},
+					Object: map[string]any{},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{},
+					Object: map[string]any{},
 				},
 			},
 			want: true,
@@ -717,12 +717,12 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=nil, new.status=nil",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"status": nil,
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"status": nil,
 					},
 				},
@@ -733,13 +733,13 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=empty, new.status=empty",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 			},
@@ -749,15 +749,15 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=full, new.status=full",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
@@ -769,13 +769,13 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=empty, new.status=full",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
@@ -787,15 +787,15 @@ func TestStatusEqual(t *testing.T) {
 			name: "Unstructured: old.status=full, new.status=empty",
 			args: args{
 				old: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{
+					Object: map[string]any{
+						"status": map[string]any{
 							"observedGeneration": 1,
 						},
 					},
 				},
 				new: &unstructured.Unstructured{
-					Object: map[string]interface{}{
-						"status": map[string]interface{}{},
+					Object: map[string]any{
+						"status": map[string]any{},
 					},
 				},
 			},

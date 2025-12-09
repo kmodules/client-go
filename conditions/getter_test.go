@@ -37,9 +37,9 @@ var (
 func newConditioned(name string) *conditioned { // nolint: errcheck
 	return &conditioned{
 		Unstructured: &unstructured.Unstructured{
-			Object: map[string]interface{}{
+			Object: map[string]any{
 				"kind": "Foo",
-				"metadata": map[string]interface{}{
+				"metadata": map[string]any{
 					"name": name,
 				},
 			},
