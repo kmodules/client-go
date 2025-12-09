@@ -270,7 +270,7 @@ type ConditionsMatcher struct {
 	Expected kmapi.Conditions
 }
 
-func (matcher *ConditionsMatcher) Match(actual interface{}) (success bool, err error) {
+func (matcher *ConditionsMatcher) Match(actual any) (success bool, err error) {
 	actualConditions, ok := actual.(kmapi.Conditions)
 	if !ok {
 		return false, errors.New("value should be a conditions list")
@@ -288,10 +288,10 @@ func (matcher *ConditionsMatcher) Match(actual interface{}) (success bool, err e
 	return true, nil
 }
 
-func (matcher *ConditionsMatcher) FailureMessage(actual interface{}) (message string) {
+func (matcher *ConditionsMatcher) FailureMessage(actual any) (message string) {
 	return format.Message(actual, "to have the same conditions of", matcher.Expected)
 }
 
-func (matcher *ConditionsMatcher) NegatedFailureMessage(actual interface{}) (message string) {
+func (matcher *ConditionsMatcher) NegatedFailureMessage(actual any) (message string) {
 	return format.Message(actual, "not to have the same conditions of", matcher.Expected)
 }

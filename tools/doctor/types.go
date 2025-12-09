@@ -130,7 +130,7 @@ func (c ClusterInfo) Validate() error {
 
 	{
 		if c.ClientConfig.Insecure {
-			errs = append(errs, errors.New("Admission webhooks can't be used when kube apiserver is accesible without verifying its TLS certificate (insecure-skip-tls-verify : true)."))
+			errs = append(errs, errors.New("admission webhooks can't be used when kube apiserver is accesible without verifying its TLS certificate (insecure-skip-tls-verify : true)."))
 		} else {
 			if c.ExtensionServerConfig.ClientCAData == "" {
 				errs = append(errs, errors.Errorf(`"%s/%s" configmap is missing "client-ca-file" key.`, authenticationConfigMapNamespace, authenticationConfigMapName))

@@ -44,7 +44,7 @@ func (w *Watcher) Run(stopCh <-chan struct{}) error {
 	}
 	go func() {
 		<-stopCh
-		defer watcher.Close()
+		defer watcher.Close() // nolint:errcheck
 	}()
 
 	go func() {

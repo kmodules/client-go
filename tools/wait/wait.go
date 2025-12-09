@@ -222,7 +222,7 @@ func (w Wait) IsDeleted(event watch.Event) (bool, error) {
 		// keep waiting in the event we see an error - we expect the watch to be closed by
 		// the server if the error is unrecoverable.
 		err := apierrors.FromObject(event.Object)
-		fmt.Fprintf(w.errOut, "error: An error occurred while waiting for the object to be deleted: %v", err)
+		_, _ = fmt.Fprintf(w.errOut, "error: An error occurred while waiting for the object to be deleted: %v", err)
 		return false, nil
 	case watch.Deleted:
 		return true, nil
@@ -314,7 +314,7 @@ func (w ConditionalWait) checkCondition(obj *unstructured.Unstructured) (bool, e
 		return false, nil
 	}
 	for _, conditionUncast := range conditions {
-		condition := conditionUncast.(map[string]interface{})
+		condition := conditionUncast.(map[string]any)
 		name, found, err := unstructured.NestedString(condition, "type")
 		if !found || err != nil || !strings.EqualFold(name, w.conditionName) {
 			continue
@@ -334,7 +334,7 @@ func (w ConditionalWait) isConditionMet(event watch.Event) (bool, error) {
 		// keep waiting in the event we see an error - we expect the watch to be closed by
 		// the server
 		err := apierrors.FromObject(event.Object)
-		fmt.Fprintf(w.errOut, "error: An error occurred while waiting for the condition to be satisfied: %v", err)
+		_, _ = fmt.Fprintf(w.errOut, "error: An error occurred while waiting for the condition to be satisfied: %v", err)
 		return false, nil
 	}
 	if event.Type == watch.Deleted {
