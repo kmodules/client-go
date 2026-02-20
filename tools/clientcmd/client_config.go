@@ -131,7 +131,3 @@ func Fix(cfg *rest.Config) *rest.Config {
 	}
 	return cfg
 }
-
-func in(x string, a ...string) bool {
-	return slices.Contains(a, x)
-}
