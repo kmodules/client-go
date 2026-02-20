@@ -17,6 +17,8 @@ limitations under the License.
 package openapi
 
 import (
+	"maps"
+
 	"k8s.io/kube-openapi/pkg/common"
 )
 
@@ -28,13 +30,9 @@ func GetDefinitions(first common.GetOpenAPIDefinitions, rest ...common.GetOpenAP
 		}
 
 		defs := make(map[string]common.OpenAPIDefinition, n)
-		for k, v := range first(ref) {
-			defs[k] = v
-		}
+		maps.Copy(defs, first(ref))
 		for _, fn := range rest {
-			for k, v := range fn(ref) {
-				defs[k] = v
-			}
+			maps.Copy(defs, fn(ref))
 		}
 		return defs
 	}

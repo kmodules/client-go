@@ -133,8 +133,8 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["runtime-config"]; ok && v != "" {
-		apis := strings.Split(v, ",")
-		for _, api := range apis {
+		apis := strings.SplitSeq(v, ",")
+		for api := range apis {
 			parts := strings.SplitN(api, "=", 2)
 			if len(parts) == 2 {
 				if e, _ := strconv.ParseBool(parts[1]); e {
@@ -149,8 +149,8 @@ func (d *Doctor) processPod(pod core.Pod) (*APIServerConfig, error) {
 	}
 
 	if v, ok := args["feature-gates"]; ok && v != "" {
-		features := strings.Split(v, ",")
-		for _, f := range features {
+		features := strings.SplitSeq(v, ",")
+		for f := range features {
 			parts := strings.SplitN(f, "=", 2)
 			if len(parts) == 2 {
 				if e, _ := strconv.ParseBool(parts[1]); e {

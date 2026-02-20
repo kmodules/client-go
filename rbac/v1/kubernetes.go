@@ -17,6 +17,8 @@ limitations under the License.
 package v1
 
 import (
+	"slices"
+
 	jsoniter "github.com/json-iterator/go"
 	rbac "k8s.io/api/rbac/v1"
 )
@@ -26,11 +28,8 @@ var json = jsoniter.ConfigFastest
 func UpsertSubjects(subjects []rbac.Subject, upsert ...rbac.Subject) []rbac.Subject {
 	for i := range upsert {
 		var found bool
-		for j := range subjects {
-			if subjects[j] == upsert[i] {
-				found = true
-				break
-			}
+		if slices.Contains(subjects, upsert[i]) {
+			found = true
 		}
 		if !found {
 			subjects = append(subjects, upsert[i])
