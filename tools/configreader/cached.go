@@ -52,7 +52,7 @@ func (i *cachedImpl) ConfigMaps(namespace string) v1.ConfigMapNamespaceLister {
 			return i.cfgLister
 		}
 
-		informerType := reflect.TypeOf(&core.ConfigMap{})
+		informerType := reflect.TypeFor[*core.ConfigMap]()
 		informerDep, _ := i.factory.ForResource(core.SchemeGroupVersion.WithResource("configmaps"))
 		i.factory.Start(i.stopCh)
 		if synced := i.factory.WaitForCacheSync(i.stopCh); !synced[informerType] {
@@ -79,7 +79,7 @@ func (i *cachedImpl) Secrets(namespace string) v1.SecretNamespaceLister {
 			return i.secretLister
 		}
 
-		informerType := reflect.TypeOf(&core.Secret{})
+		informerType := reflect.TypeFor[*core.Secret]()
 		informerDep, _ := i.factory.ForResource(core.SchemeGroupVersion.WithResource("secrets"))
 		i.factory.Start(i.stopCh)
 		if synced := i.factory.WaitForCacheSync(i.stopCh); !synced[informerType] {

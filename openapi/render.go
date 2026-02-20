@@ -19,6 +19,7 @@ package openapi
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net"
 	"time"
 
@@ -73,9 +74,7 @@ type Config struct {
 func (c *Config) GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenAPIDefinition {
 	out := map[string]common.OpenAPIDefinition{}
 	for _, def := range c.OpenAPIDefinitions {
-		for k, v := range def(ref) {
-			out[k] = v
-		}
+		maps.Copy(out, def(ref))
 	}
 	return out
 }

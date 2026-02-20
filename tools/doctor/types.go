@@ -30,10 +30,10 @@ import (
 
 type ClusterInfo struct {
 	Version               *VersionInfo          `json:"version,omitempty"`
-	ClientConfig          RestConfig            `json:"clientConfig,omitempty"`
-	Capabilities          Capabilities          `json:"capabilities,omitempty"`
+	ClientConfig          RestConfig            `json:"clientConfig"`
+	Capabilities          Capabilities          `json:"capabilities"`
 	APIServers            APIServers            `json:"apiServers,omitempty"`
-	ExtensionServerConfig ExtensionServerConfig `json:"extensionServerConfig,omitempty"`
+	ExtensionServerConfig ExtensionServerConfig `json:"extensionServerConfig"`
 }
 
 type VersionInfo struct {
@@ -72,8 +72,8 @@ type APIServerConfig struct {
 	RequestHeaderCAData string            `json:"requestHeaderCAData,omitempty"`
 	AllowPrivileged     bool              `json:"allowPrivileged,omitempty"`
 	AuthorizationMode   []string          `json:"authorizationMode,omitempty"`
-	RuntimeConfig       FeatureList       `json:"runtimeConfig,omitempty"`
-	FeatureGates        FeatureList       `json:"featureGates,omitempty"`
+	RuntimeConfig       FeatureList       `json:"runtimeConfig"`
+	FeatureGates        FeatureList       `json:"featureGates"`
 	KubeProxyFound      bool              `json:"kubeProxyFound,omitempty"`
 	KubeProxyRunning    bool              `json:"kubeProxyRunning,omitempty"`
 	ProxySettings       map[string]string `json:"proxySettings,omitempty"`

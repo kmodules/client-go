@@ -175,7 +175,7 @@ func stringToTimeHookFunc(layout string) mapstructure.DecodeHookFunc {
 		if f.Kind() != reflect.String {
 			return data, nil
 		}
-		if t != reflect.TypeOf(metav1.Time{}) {
+		if t != reflect.TypeFor[metav1.Time]() {
 			return data, nil
 		}
 		// Convert it by parsing
