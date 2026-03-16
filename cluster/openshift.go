@@ -21,6 +21,17 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+const (
+	OpenShiftClusterMonitoringNamespace = "openshift-monitoring"
+	OpenShiftClusterPrometheus          = "k8s"
+	OpenShiftClusterAlertmanager        = "main"
+	OpenShiftThanosQuerierService       = "thanos-querier"
+
+	OpenShiftUserWorkloadMonitoringNamespace = "openshift-user-workload-monitoring"
+	OpenShiftUserWorkloadPrometheus          = "user-workload"
+	OpenShiftUserWorkloadAlertmanager        = "user-workload"
+)
+
 func IsOpenShiftManaged(mapper meta.RESTMapper) bool {
 	if _, err := mapper.RESTMappings(schema.GroupKind{
 		Group: "project.openshift.io",
