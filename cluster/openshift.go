@@ -68,7 +68,7 @@ func GetOpenShiftAppsDomain(kc client.Client) (string, error) {
 }
 
 // GetOpenShiftServiceSigner fetches the OpenShift service signer CA certificate
-func GetOpenShiftSigner(kc client.Client) ([]byte, error) {
+func GetOpenShiftServiceSigner(kc client.Client) ([]byte, error) {
 	var cm core.ConfigMap
 	err := kc.Get(context.TODO(), client.ObjectKey{Namespace: "kube-public", Name: "openshift-service-ca.crt"}, &cm)
 	if err != nil {
