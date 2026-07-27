@@ -161,7 +161,8 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 		lw,
 		&reg.MutatingWebhookConfiguration{},
 		nil,
-		conditions...)
+		conditions...,
+	)
 	return err
 }
 
@@ -213,7 +214,8 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 				default:
 					return false, fmt.Errorf("unexpected event type: %v", event.Type)
 				}
-			})
+			},
+		)
 		utilruntime.Must(err)
 	}()
 	return
