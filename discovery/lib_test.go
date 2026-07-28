@@ -54,7 +54,8 @@ func TestDefaultSupportedVersion(t *testing.T) {
 			tc.multiMaster,
 			DefaultConstraint,
 			DefaultBlackListedVersions,
-			DefaultBlackListedMultiMasterVersions)
+			DefaultBlackListedMultiMasterVersions,
+		)
 		if tc.err && err == nil {
 			t.Fatalf("expected error for input: %s", tc.version)
 		} else if !tc.err && err != nil {

@@ -86,7 +86,8 @@ func RenderOpenAPISpec(cfg Config) (string, error) {
 
 	// TODO: keep the generic API server from wanting this
 	unversioned := schema.GroupVersion{Group: "", Version: "v1"}
-	cfg.Scheme.AddUnversionedTypes(unversioned,
+	cfg.Scheme.AddUnversionedTypes(
+		unversioned,
 		&metav1.Status{},
 		&metav1.APIVersions{},
 		&metav1.APIGroupList{},

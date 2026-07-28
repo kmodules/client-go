@@ -156,7 +156,8 @@ func UpdateValidatingWebhookCABundle(config *rest.Config, webhookConfigName stri
 		},
 	}, extraConditions...)
 
-	_, err = watchtools.UntilWithSync(ctx,
+	_, err = watchtools.UntilWithSync(
+		ctx,
 		lw,
 		&reg.ValidatingWebhookConfiguration{},
 		nil,
@@ -213,7 +214,8 @@ func SyncValidatingWebhookCABundle(config *rest.Config, webhookConfigName string
 				default:
 					return false, fmt.Errorf("unexpected event type: %v", event.Type)
 				}
-			})
+			},
+		)
 		utilruntime.Must(err)
 	}()
 	return

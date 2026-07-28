@@ -121,7 +121,7 @@ func NewReconcilableHandler(queue workqueue.TypedRateLimitingInterface[any], res
 			return !meta_util.MustAlreadyReconciled(o)
 		},
 		enqueueUpdate: func(old, nu any) bool {
-			return (nu.(metav1.Object)).GetDeletionTimestamp() != nil || !meta_util.MustAlreadyReconciled(nu)
+			return nu.(metav1.Object).GetDeletionTimestamp() != nil || !meta_util.MustAlreadyReconciled(nu)
 		},
 		enqueueDelete:       true,
 		restrictToNamespace: restrictToNamespace,

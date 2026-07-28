@@ -28,7 +28,8 @@ import (
 func TestGetStepCounterMessage(t *testing.T) {
 	g := NewWithT(t)
 
-	groups := getConditionGroups(conditionsWithSource(&conditioned{},
+	groups := getConditionGroups(conditionsWithSource(
+		&conditioned{},
 		nil1,
 		true1, true1,
 		falseInfo1,
