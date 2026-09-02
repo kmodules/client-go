@@ -47,8 +47,7 @@ func NewFakeClient[T runtime.Object](
 // server's representation of the resource, and an error, if there is any.
 func (c *FakeClient[T]) Create(ctx context.Context, resource T, opts metav1.CreateOptions) (result T, err error) {
 	emptyResult := c.newObject()
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateActionWithOptions(c.resource, c.ns, resource, opts), emptyResult)
+	obj, err := c.Invokes(testing.NewCreateActionWithOptions(c.resource, c.ns, resource, opts), emptyResult)
 	if obj == nil {
 		return emptyResult, err
 	}
