@@ -109,6 +109,14 @@ func ClusterMetadataFromConfigMap(cm *core.ConfigMap, mode kmapi.ClusterMode, cl
 		CABundle:             cm.Data["ca.crt"],
 		CloudServiceAuthMode: cm.Data["cloudServiceAuthMode"],
 	}
+	li := kmapi.LicenseInfo{
+		Distributor: kmapi.LicenseDistributor(cm.Data["licenseDistributor"]),
+		Endpoint:    cm.Data["licenseEndpoint"],
+		OrgID:       cm.Data["licenseOrgID"],
+	}
+	if !li.IsEmpty() {
+		md.License = &li
+	}
 
 	data, err := json.Marshal(md)
 	if err != nil {
@@ -137,7 +145,17 @@ func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
 		},
 	}
 
-	data, err := json.Marshal(md)
+	// an all-empty License must sign as absent, so a reader that finds no license
+	// keys in the ConfigMap reconstructs the same payload the mac was taken over
+	signed := *md
+	var li kmapi.LicenseInfo
+	if signed.License.IsEmpty() {
+		signed.License = nil
+	} else {
+		li = *signed.License
+	}
+
+	data, err := json.Marshal(signed)
 	if err != nil {
 		return err
 	}
@@ -160,6 +178,9 @@ func UpsertClusterMetadata(kc client.Client, md *kmapi.ClusterMetadata) error {
 		cm.Data["apiEndpoint"] = md.APIEndpoint
 		cm.Data["ca.crt"] = md.CABundle
 		cm.Data["cloudServiceAuthMode"] = md.CloudServiceAuthMode
+		cm.Data["licenseDistributor"] = string(li.Distributor)
+		cm.Data["licenseEndpoint"] = li.Endpoint
+		cm.Data["licenseOrgID"] = li.OrgID
 
 		cm.BinaryData = map[string][]byte{
 			"mac": messageMAC,
