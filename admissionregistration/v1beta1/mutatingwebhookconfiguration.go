@@ -121,11 +121,11 @@ func UpdateMutatingWebhookCABundle(config *rest.Config, webhookConfigName string
 
 	kc := kubernetes.NewForConfigOrDie(config)
 	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+		ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, webhookConfigName).String()
 			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(ctx, options)
 		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+		WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, webhookConfigName).String()
 			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Watch(ctx, options)
 		},
@@ -177,11 +177,11 @@ func SyncMutatingWebhookCABundle(config *rest.Config, webhookConfigName string) 
 
 	kc := kubernetes.NewForConfigOrDie(config)
 	lw := &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (runtime.Object, error) {
+		ListWithContextFunc: func(ctx context.Context, options metav1.ListOptions) (runtime.Object, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, webhookConfigName).String()
 			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().List(ctx, options)
 		},
-		WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
+		WatchFuncWithContext: func(ctx context.Context, options metav1.ListOptions) (watch.Interface, error) {
 			options.FieldSelector = fields.OneTermEqualSelector(kutil.ObjectNameField, webhookConfigName).String()
 			return kc.AdmissionregistrationV1beta1().MutatingWebhookConfigurations().Watch(ctx, options)
 		},
