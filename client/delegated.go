@@ -136,6 +136,11 @@ func (d *DelegatingClient) Impersonate(u user.Info) (*restclient.Config, client.
 
 	// share the transport between all clients
 	optionsShallowCopy := d.options
+	// The shared cache is populated with the base client's credentials, so serving an
+	// impersonated read from it would skip the impersonated user's authorization. Drop it
+	// here: the impersonated client reads directly from the API with the impersonation
+	// headers set on config above.
+	optionsShallowCopy.Cache = nil
 	if d.options.HTTPClient != nil {
 		optionsShallowCopy.HTTPClient = &http.Client{
 			Transport: transport.NewImpersonatingRoundTripper(transport.ImpersonationConfig{
@@ -186,6 +191,9 @@ type delegatingReader struct {
 }
 
 func (d *delegatingReader) shouldBypassCache(obj runtime.Object) (bool, error) {
+	if d.CacheReader == nil {
+		return true, nil
+	}
 	gvk, err := apiutil.GVKForObject(obj, d.scheme)
 	if err != nil {
 		return false, err
